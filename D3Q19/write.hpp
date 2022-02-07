@@ -12,7 +12,7 @@ if(Fwrite && nextOutTime < nt +1)
     {
         writeFile.open("./out/res"+filename+".vtk", std::ios::out);
     }
-    char str[300];// for binary
+    char str[300];// For binary
 
     std::cout << "Time = " << nt << std::endl;
 
@@ -169,9 +169,15 @@ if(Fwrite && nextOutTime < nt +1)
 
     writeFile.close();
 
+    // Writing for restart
     std::string filename_data = std::to_string(nt);
     std::ofstream writeFile_data;
-    writeFile_data.open("./out/data"+filename_data+".dat", std::ios::out | std::ios::binary);
+    writeFile_data.open("./out/data.dat", std::ios::out | std::ios::binary);
+
+    // timeStep
+    {
+        writeFile_data.write((char *) &nt,sizeof(int));
+    }
 
     //nx ny nz output
     {

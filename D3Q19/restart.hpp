@@ -1,11 +1,10 @@
-std::string filename_restart = std::to_string(startTimeStep);
 std::ifstream restartFile;
 
-std::cout << "Reading from ./out/data" << filename_restart << ".dat" <<std::endl;
+std::cout << "Reading from ./out/data.dat" <<std::endl;
+restartFile.open("./out/data.dat", std::ios::in | std::ios::binary);
 
-
-restartFile.open("./out/data"+filename_restart+".dat", std::ios::in | std::ios::binary);
-
+restartFile.read((char *) &startTimeStep,sizeof(int));
+nextOutTime = startTimeStep;
 
 restartFile.read((char *) &nx,sizeof(int));
 restartFile.read((char *) &ny,sizeof(int));
@@ -22,7 +21,7 @@ for(int q = 0; q < 19; q++)
                 int ic = index1d(i,j,k,nx,ny);
                 int qic = idf(q,ic,nx,ny,nz);
                 restartFile.read((char *) &f[qic],sizeof(float));
-                /* std::cout << "f[" << qic << "] = " << f[qic] << std::endl; */
+                //std::cout << "f[" << qic << "] = " << f[qic] << std::endl; // For debug
             }
         }
     }
