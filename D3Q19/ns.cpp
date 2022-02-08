@@ -1,3 +1,4 @@
+#include <boost/algorithm/string.hpp>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -284,35 +285,127 @@ void collision(const float omega, const int ic, const int nx, const int ny, cons
     }
 }
 
+
+template <typename Type = std::string>
+Type returnWrapper(std::string arg) {
+    return arg;
+}
+
+template <>
+int returnWrapper<int>(std::string arg) {
+  return std::stoi(arg);
+}
+
+template <>
+bool returnWrapper<bool>(std::string arg) {
+  return arg == "true" ? true : false;
+}
+
+template <>
+float returnWrapper<float>(std::string arg) {
+  return std::stof(arg);
+}
+
+
+template<typename Type> Type lookup(std::vector<std::string>& lines, std::string& str)
+{
+    for(auto itr = std::begin(lines); itr != std::end(lines); ++itr)
+    {
+        if(*itr == str)
+        {
+            ++itr;
+            Type i = returnWrapper<Type>(*itr);
+            --itr;
+            ++itr;
+            std::cout <<
+                str << ": " << i << std::endl;
+            --itr;
+            return i;
+        }
+    }
+    std::cerr << "Could not find " << str << std::endl;
+
+    exit(EXIT_FAILURE);
+}
+
+
+
+
 int main()
 {
-    // omp_set_num_threads(4);
-    
-    bool restart = false;
-    /* bool restart = true; */
-    
-    bool Fwrite = true;
-    // bool Fwrite = false;
-    bool writeBinary = true;
-    /* bool writeBinary = false; */
+    std::string inputFileName("input.txt");
+    std::vector<std::string> lines;
+    std::string line;
+    std::ifstream inputFile(inputFileName);
 
-    int startTimeStep = 0;
-    const int endTimeStep = 1000;
+    if(!inputFile.is_open())
+    {
+        std::cerr << "Could not open the file - '"
+            << inputFileName << "'" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+
+    while(std::getline(inputFile, line))
+    {
+        std::vector<std::string> list_string;
+        boost::split(list_string,line, boost::is_space());
+        for(auto& str: list_string)
+        {
+            lines.push_back(str);
+        }
+    }
+
+    std::string nThreadsStr("nThreads");
+    omp_set_num_threads(lookup<int>(lines, nThreadsStr));
+
+    std::string restartStr("restart");
+    bool restart = lookup<bool>(lines, restartStr);
+
+    std::string FwriteStr("Fwrite");
+    bool Fwrite = lookup<bool>(lines, FwriteStr);
+
+    std::string writeBinaryStr("writeBinary");
+    bool writeBinary = lookup<bool>(lines, writeBinaryStr);
+    
+    std::string startTimeStepStr("startTimeStep");
+    int startTimeStep = lookup<int>(lines, startTimeStepStr);
+    
+    std::string endTimeStepStr("endTimeStep");
+    const int endTimeStep = lookup<int>(lines, endTimeStepStr);
 
     int nextOutTime = startTimeStep;
-    int outInterval = 200;
+
+    std::string outIntervalStr("outInterval");
+    const int outInterval = lookup<int>(lines, outIntervalStr);
+    std::cout << std::endl;
+
+    std::string nxStr("nx");
+    const int nx = lookup<int>(lines, nxStr);
+
+    std::string nyStr("ny");
+    const int ny = lookup<int>(lines, nyStr);
+
+    std::string nzStr("nz");
+    const int nz = lookup<int>(lines, nzStr);
+    std::cout << std::endl;
+
+    std::string u0Str("u0");
+    const float u0 = lookup<float>(lines, u0Str);
+
+    std::string rho0Str("rho0");
+    const float rho0 = lookup<float>(lines, rho0Str);
+
+    std::string ReStr("Re");
+    const float Re = lookup<float>(lines, ReStr);
+    std::cout << std::endl;
+
+    inputFile.close();
     
-    const int nx = 40; // number of x points
-    const int ny = 40;// number of y points
-    const int nz = 40;
-    
-    float u0 = 0.1;
-    float rho0 = 1.0;
-    float Re = 100.0;
 
     // Single Relaxation Time model
     float nu = std::abs(u0)*float(nx)/Re;
-    std::cout << "nu = " << nu << "\n";
+    std::cout << "nu = " << nu << "\n\n";
     float omega = 1.0/(3.0*nu +0.5);
 
     const std::vector<float> wt = {1.0/3.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0};
@@ -377,5 +470,5 @@ int main()
         pf = ptmp;
     }
 
-    return 0;
+    return EXIT_SUCCESS;
 }

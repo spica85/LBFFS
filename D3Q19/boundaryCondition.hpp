@@ -8,7 +8,7 @@ for(int k = 0; k < nz; k++)
             int ic = index1d(i,j,k,nx,ny);
             if(i == 0)
             {
-                obst[ic].boundary = 2;
+                obst[ic].boundary = 1;
                 obst[ic].normal = -1;
                 obst[ic].inner = false;
                 obst[ic].v0 = u0;
@@ -21,7 +21,7 @@ for(int k = 0; k < nz; k++)
             }
             else if(j == 0)
             {
-                obst[ic].boundary = 2;
+                obst[ic].boundary = 1;
                 obst[ic].normal = -2;
                 obst[ic].inner = false;
                 obst[ic].u0 = u0;
@@ -35,13 +35,13 @@ for(int k = 0; k < nz; k++)
             }                    
             else if(k == 0)
             {
-                obst[ic].boundary = 1;
+                obst[ic].boundary = 0;
                 obst[ic].normal = -3;
                 obst[ic].inner = false;
             }
             else if(k == nz-1)
             {
-                obst[ic].boundary = 1;
+                obst[ic].boundary = 0;
                 obst[ic].normal = 3;
                 obst[ic].inner = false;                                   
             }                
