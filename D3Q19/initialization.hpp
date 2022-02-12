@@ -7,20 +7,19 @@ for(int k = 0; k < nz; k++)
         {
             int ic = index1d(i,j,k,nx,ny);
         
-            rho[ic] = rho0;
-            u[ic] = 0.0;
-            v[ic] = 0.0;
-            w[ic] = 0.0;                 
-
+            float rho = rho0;
+            float u = 0.0;
+            float v = 0.0;
+            float w = 0.0;
             for(int q = 0; q < 19; q++)
             {
-                float uSqr =u[ic]*u[ic]+v[ic]*v[ic]+w[ic]*w[ic];
-                float uDotC = u[ic]*cx[q]+v[ic]*cy[q]+w[ic]*cz[q];
-                float feq = (1.0+3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr)*wt[q]*rho[ic];
-            
-                int icf = idf(q, ic, nx, ny, nz);                       
+                float uSqr =u*u+v*v+w*w;
+                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+                float feq = (1.0+3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr)*wt[q]*rho;
+
+                int icf = idf(q,ic,nx,ny,nz);
                 f[icf] = feq;
-                ftmp[icf] = f[icf];                        
+                ftmp[icf] = f[icf];
             }
         }
     }

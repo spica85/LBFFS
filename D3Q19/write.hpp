@@ -48,7 +48,7 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,u[ic]);
+                        asciiToBinary(str,(float)u[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
@@ -74,7 +74,7 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,v[ic]);
+                        asciiToBinary(str,(float)v[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
@@ -100,7 +100,7 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,w[ic]);
+                        asciiToBinary(str,(float)w[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
@@ -128,7 +128,7 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,rho[ic]);
+                        asciiToBinary(str,(float)rho[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
@@ -154,7 +154,7 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,obst[ic].boundary);
+                        asciiToBinary(str,(float)obst[ic].boundary);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
