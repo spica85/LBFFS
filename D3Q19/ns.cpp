@@ -57,27 +57,27 @@ char* asciiToBinary(char* str, const float x)
     return str;    
 }
 
-void streaming(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, std::vector<double>* pf, std::vector<double>* pftmp)
+void streaming(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, std::vector<double>& ftmp, std::vector<double>& f)
 {
-    double& Vc    = (*pftmp)[idf(0, ic,nx,ny,nz)]; //(0)
-    double& Vin   = (*pftmp)[idf(1, ic,nx,ny,nz)]; //(+x)
-    double& Vip   = (*pftmp)[idf(2, ic,nx,ny,nz)]; //(-x)
-    double& Vjn   = (*pftmp)[idf(3, ic,nx,ny,nz)]; //(+y)
-    double& Vjp   = (*pftmp)[idf(4, ic,nx,ny,nz)]; //(-y)
-    double& Vkn   = (*pftmp)[idf(5, ic,nx,ny,nz)]; //(+z)
-    double& Vkp   = (*pftmp)[idf(6, ic,nx,ny,nz)]; //(-z)
-    double& Vinjn = (*pftmp)[idf(7, ic,nx,ny,nz)]; //(+x,+y)
-    double& Vipjp = (*pftmp)[idf(8, ic,nx,ny,nz)]; //(-x,-y)
-    double& Vinjp = (*pftmp)[idf(9, ic,nx,ny,nz)]; //(+x,-y)
-    double& Vipjn = (*pftmp)[idf(10,ic,nx,ny,nz)];//(-x,+y)
-    double& Vinkn = (*pftmp)[idf(11,ic,nx,ny,nz)];//(+x,+z)
-    double& Vipkp = (*pftmp)[idf(12,ic,nx,ny,nz)];//(-x,-z)
-    double& Vinkp = (*pftmp)[idf(13,ic,nx,ny,nz)];//(+x,-z)
-    double& Vipkn = (*pftmp)[idf(14,ic,nx,ny,nz)];//(-x,+z)
-    double& Vjnkn = (*pftmp)[idf(15,ic,nx,ny,nz)];//(+y,+z)
-    double& Vjpkp = (*pftmp)[idf(16,ic,nx,ny,nz)];//(-y,-z)
-    double& Vjnkp = (*pftmp)[idf(17,ic,nx,ny,nz)];//(+y,-z)
-    double& Vjpkn = (*pftmp)[idf(18,ic,nx,ny,nz)];//(-y,+z)
+    double& Vc    = f[idf(0, ic,nx,ny,nz)]; //(0)
+    double& Vin   = f[idf(1, ic,nx,ny,nz)]; //(+x)
+    double& Vip   = f[idf(2, ic,nx,ny,nz)]; //(-x)
+    double& Vjn   = f[idf(3, ic,nx,ny,nz)]; //(+y)
+    double& Vjp   = f[idf(4, ic,nx,ny,nz)]; //(-y)
+    double& Vkn   = f[idf(5, ic,nx,ny,nz)]; //(+z)
+    double& Vkp   = f[idf(6, ic,nx,ny,nz)]; //(-z)
+    double& Vinjn = f[idf(7, ic,nx,ny,nz)]; //(+x,+y)
+    double& Vipjp = f[idf(8, ic,nx,ny,nz)]; //(-x,-y)
+    double& Vinjp = f[idf(9, ic,nx,ny,nz)]; //(+x,-y)
+    double& Vipjn = f[idf(10,ic,nx,ny,nz)];//(-x,+y)
+    double& Vinkn = f[idf(11,ic,nx,ny,nz)];//(+x,+z)
+    double& Vipkp = f[idf(12,ic,nx,ny,nz)];//(-x,-z)
+    double& Vinkp = f[idf(13,ic,nx,ny,nz)];//(+x,-z)
+    double& Vipkn = f[idf(14,ic,nx,ny,nz)];//(-x,+z)
+    double& Vjnkn = f[idf(15,ic,nx,ny,nz)];//(+y,+z)
+    double& Vjpkp = f[idf(16,ic,nx,ny,nz)];//(-y,-z)
+    double& Vjnkp = f[idf(17,ic,nx,ny,nz)];//(+y,-z)
+    double& Vjpkn = f[idf(18,ic,nx,ny,nz)];//(-y,+z)
 
     int in = (i != 0)    ? index1d(i-1, j, k, nx, ny) : index1d(nx-1, j, k, nx, ny);
     int ip = (i != nx-1) ? index1d(i+1, j, k, nx, ny) : index1d(0, j, k, nx, ny);
@@ -137,48 +137,48 @@ void streaming(const int ic, const int i, const int j, const int k,const int nx,
                (j != ny-1 && k == nz-1) ? index1d(i, j+1, 0, nx, ny) :
                index1d(i, 0, 0, nx, ny);
 
-    Vc    = (*pf)[idf(0, ic  ,nx,ny,nz)];
-    Vin   = (*pf)[idf(1, in  ,nx,ny,nz)];
-    Vip   = (*pf)[idf(2, ip  ,nx,ny,nz)];
-    Vjn   = (*pf)[idf(3, jn  ,nx,ny,nz)];
-    Vjp   = (*pf)[idf(4, jp  ,nx,ny,nz)];
-    Vkn   = (*pf)[idf(5, kn  ,nx,ny,nz)];
-    Vkp   = (*pf)[idf(6, kp  ,nx,ny,nz)];
-    Vinjn = (*pf)[idf(7, injn,nx,ny,nz)];
-    Vipjp = (*pf)[idf(8, ipjp,nx,ny,nz)];
-    Vinjp = (*pf)[idf(9, injp,nx,ny,nz)];
-    Vipjn = (*pf)[idf(10,ipjn,nx,ny,nz)];
-    Vinkn = (*pf)[idf(11,inkn,nx,ny,nz)];
-    Vipkp = (*pf)[idf(12,ipkp,nx,ny,nz)];
-    Vinkp = (*pf)[idf(13,inkp,nx,ny,nz)];
-    Vipkn = (*pf)[idf(14,ipkn,nx,ny,nz)];
-    Vjnkn = (*pf)[idf(15,jnkn,nx,ny,nz)];
-    Vjpkp = (*pf)[idf(16,jpkp,nx,ny,nz)];
-    Vjnkp = (*pf)[idf(17,jnkp,nx,ny,nz)];
-    Vjpkn = (*pf)[idf(18,jpkn,nx,ny,nz)];
+    Vc    = ftmp[idf(0, ic  ,nx,ny,nz)];
+    Vin   = ftmp[idf(1, in  ,nx,ny,nz)];
+    Vip   = ftmp[idf(2, ip  ,nx,ny,nz)];
+    Vjn   = ftmp[idf(3, jn  ,nx,ny,nz)];
+    Vjp   = ftmp[idf(4, jp  ,nx,ny,nz)];
+    Vkn   = ftmp[idf(5, kn  ,nx,ny,nz)];
+    Vkp   = ftmp[idf(6, kp  ,nx,ny,nz)];
+    Vinjn = ftmp[idf(7, injn,nx,ny,nz)];
+    Vipjp = ftmp[idf(8, ipjp,nx,ny,nz)];
+    Vinjp = ftmp[idf(9, injp,nx,ny,nz)];
+    Vipjn = ftmp[idf(10,ipjn,nx,ny,nz)];
+    Vinkn = ftmp[idf(11,inkn,nx,ny,nz)];
+    Vipkp = ftmp[idf(12,ipkp,nx,ny,nz)];
+    Vinkp = ftmp[idf(13,inkp,nx,ny,nz)];
+    Vipkn = ftmp[idf(14,ipkn,nx,ny,nz)];
+    Vjnkn = ftmp[idf(15,jnkn,nx,ny,nz)];
+    Vjpkp = ftmp[idf(16,jpkp,nx,ny,nz)];
+    Vjnkp = ftmp[idf(17,jnkp,nx,ny,nz)];
+    Vjpkn = ftmp[idf(18,jpkn,nx,ny,nz)];
 }
 
-void boundaryConditions(obstructure& obst, std::vector<double>* pftmp, int ic, int nx, int ny, int nz)
+void boundaryConditions(obstructure& obst, std::vector<double>& f, int ic, int nx, int ny, int nz)
 {
-    double& Vc    = (*pftmp)[idf(0, ic,nx,ny,nz)];//(0)
-    double& Vin   = (*pftmp)[idf(1, ic,nx,ny,nz)];//(+x)
-    double& Vip   = (*pftmp)[idf(2, ic,nx,ny,nz)];//(-x)
-    double& Vjn   = (*pftmp)[idf(3, ic,nx,ny,nz)];//(+y)
-    double& Vjp   = (*pftmp)[idf(4, ic,nx,ny,nz)];//(-y)
-    double& Vkn   = (*pftmp)[idf(5, ic,nx,ny,nz)];//(+z)
-    double& Vkp   = (*pftmp)[idf(6, ic,nx,ny,nz)];//(-z)
-    double& Vinjn = (*pftmp)[idf(7, ic,nx,ny,nz)];//(+x,+y)
-    double& Vipjp = (*pftmp)[idf(8, ic,nx,ny,nz)];//(-x,-y)
-    double& Vinjp = (*pftmp)[idf(9, ic,nx,ny,nz)];//(+x,-y)
-    double& Vipjn = (*pftmp)[idf(10,ic,nx,ny,nz)];//(-x,+y)
-    double& Vinkn = (*pftmp)[idf(11,ic,nx,ny,nz)];//(+x,+z)
-    double& Vipkp = (*pftmp)[idf(12,ic,nx,ny,nz)];//(-x,-z)
-    double& Vinkp = (*pftmp)[idf(13,ic,nx,ny,nz)];//(+x,-z)
-    double& Vipkn = (*pftmp)[idf(14,ic,nx,ny,nz)];//(-x,+z)
-    double& Vjnkn = (*pftmp)[idf(15,ic,nx,ny,nz)];//(+y,+z)
-    double& Vjpkp = (*pftmp)[idf(16,ic,nx,ny,nz)];//(-y,-z)
-    double& Vjnkp = (*pftmp)[idf(17,ic,nx,ny,nz)];//(+y,-z)
-    double& Vjpkn = (*pftmp)[idf(18,ic,nx,ny,nz)];//(-y,+z)
+    double& Vc    = f[idf(0, ic,nx,ny,nz)];//(0)
+    double& Vin   = f[idf(1, ic,nx,ny,nz)];//(+x)
+    double& Vip   = f[idf(2, ic,nx,ny,nz)];//(-x)
+    double& Vjn   = f[idf(3, ic,nx,ny,nz)];//(+y)
+    double& Vjp   = f[idf(4, ic,nx,ny,nz)];//(-y)
+    double& Vkn   = f[idf(5, ic,nx,ny,nz)];//(+z)
+    double& Vkp   = f[idf(6, ic,nx,ny,nz)];//(-z)
+    double& Vinjn = f[idf(7, ic,nx,ny,nz)];//(+x,+y)
+    double& Vipjp = f[idf(8, ic,nx,ny,nz)];//(-x,-y)
+    double& Vinjp = f[idf(9, ic,nx,ny,nz)];//(+x,-y)
+    double& Vipjn = f[idf(10,ic,nx,ny,nz)];//(-x,+y)
+    double& Vinkn = f[idf(11,ic,nx,ny,nz)];//(+x,+z)
+    double& Vipkp = f[idf(12,ic,nx,ny,nz)];//(-x,-z)
+    double& Vinkp = f[idf(13,ic,nx,ny,nz)];//(+x,-z)
+    double& Vipkn = f[idf(14,ic,nx,ny,nz)];//(-x,+z)
+    double& Vjnkn = f[idf(15,ic,nx,ny,nz)];//(+y,+z)
+    double& Vjpkp = f[idf(16,ic,nx,ny,nz)];//(-y,-z)
+    double& Vjnkp = f[idf(17,ic,nx,ny,nz)];//(+y,-z)
+    double& Vjpkn = f[idf(18,ic,nx,ny,nz)];//(-y,+z)
 
     if(obst.boundary == 1) //bounce back
     {
@@ -237,55 +237,54 @@ void boundaryConditions(obstructure& obst, std::vector<double>* pftmp, int ic, i
         double v = obst.v0;
         double w = obst.w0;
 
-        // if(obst.normal == -1)
-        // {
-        //     double rho =(V[0]+V[3]+V[4]+V[5]+V[6]+V[13]+V[14]+V[17]+V[18]+2.0*(V[2]+V[8]+V[9]+Vipkp+V[15]))/(1.0+u);
-        //     V[1]  = V[2]  +rho*u/3.0;
-        //     V[10] = V[9]  +rho*u/6.0 +0.5*(V[3]+V[13]+V[18] -(V[4]+V[14]+V[17])) -rho*v/2.0;
-        //     V[7]  = V[8]  +rho*u/6.0 -0.5*(V[3]+V[13]+V[18] -(V[4]+V[14]+V[17])) +rho*v/2.0;
-        //     V[11] = V[12] +rho*u/6.0 -0.5*(V[5]+V[9]+V[13]  -(V[6]+V[14]+V[18])) +rho*w/2.0;
-        //     V[16] = V[15] +rho*u/6.0 +0.5*(V[5]+V[9]+V[13]  -(V[6]+V[14]+V[18])) -rho*w/2.0;
-        // }
-        // else if(obst.normal == 1)
-        // {
-        //     double rho =(V[0]+V[3]+V[4]+V[5]+V[6]+V[13]+V[14]+V[17]+V[18]+2.0*(V[1]+V[7]+V[10]+V[11]+V[16]))/(1.0-u);
-        //     V[2]  = V[1]  -rho*u/3.0;
-        //     V[9]  = V[10] -rho*u/6.0 -0.5*(V[3]+V[13]+V[18] -(V[4]+V[14]+V[17])) +rho*v/2.0;
-        //     V[8]  = V[7]  -rho*u/6.0 +0.5*(V[3]+V[13]+V[18] -(V[4]+V[14]+V[17])) -rho*v/2.0;
-        //     V[12] = V[11] -rho*u/6.0 +0.5*(V[5]+V[9]+V[13]  -(V[6]+V[14]+V[18])) -rho*w/2.0;
-        //     V[15] = V[16] -rho*u/6.0 -0.5*(V[5]+V[9]+V[13]  -(V[6]+V[14]+V[18])) +rho*w/2.0;
-        // }
-        // else if(obst.normal == -2)
-        // {
-        //     double rho =(V[0]+V[1]+V[2]+V[5]+V[6]+V[11]+V[12]+V[15]+V[16] +2.0*(V[4]+V[8]+V[10]+V[14]+V[17]))/(1.0-v);
-        //     V[3]  = V[4]  +rho*v/3.0;
-        //     V[7]  = V[8]  +rho*v/6.0 -0.5*(V[1]+V[11]+V[16] -(V[2]+V[12]+V[15])) +rho*u/2.0;
-        //     V[9]  = V[10] +rho*v/6.0 +0.5*(V[1]+V[11]+V[16] -(V[2]+V[12]+V[15])) -rho*u/2.0;
-        //     V[13] = V[14] +rho*v/6.0 -0.5*(V[5]+V[11]+V[15] -(V[6]+V[12]+V[16])) +rho*w/2.0;
-        //     V[18] = V[17] +rho*v/6.0 +0.5*(V[5]+V[11]+V[15] -(V[6]+V[12]+V[16])) -rho*w/2.0;
-        // }
-        // else if(obst.normal == 2)
-        // {
-        //     double rho =(V[0]+V[1]+V[2]+V[5]+V[6]+V[11]+V[12]+V[15]+V[16] +2.0*(V[3]+V[7]+V[9]+V[13]+V[18]))/(1.0+v);
-        //     V[4]      = V[3]  -rho*v/3.0;
-        //     V[8]  = V[7]  -rho*v/6.0 +0.5*(V[1]+V[11]+V[16] -(V[2]+V[12]+V[15])) -rho*u/2.0;
-        //     V[10] = V[9]  -rho*v/6.0 -0.5*(V[1]+V[11]+V[16] -(V[2]+V[12]+V[15])) +rho*u/2.0;
-        //     V[14] = V[13] -rho*v/6.0 +0.5*(V[5]+V[11]+V[15] -(V[6]+V[12]+V[16])) -rho*w/2.0;
-        //     V[17] = V[18] -rho*v/6.0 -0.5*(V[5]+V[11]+V[15] -(V[6]+V[12]+V[16])) +rho*w/2.0;
-        // }
-        // else if(obst.normal == -3)
-        // {
-        //     double rho = (Vc_+Vin_+Vip_+Vjn_+Vjp_+Vinjn_+Vipjp_+Vinjp_+Vipjn_+2.0*(Vkp_+Vipkp_+Vipkn_+Vjpkp_+Vjpkn_))/(1.0-w);
-        //     Vkn  = Vkp_  +rho*w/3.0;
-        //     Vinkn = Vipkp_ +rho*w/6.0 -0.5*(Vin_+Vinjn_+Vipjn_ -(Vip_+Vinjp_+Vipjp_))  +rho*u/2.0;
-        //     Vjnkn = Vjpkp_ +rho*w/6.0 +0.5*(Vin_+Vinjn_+Vipjn_ -(Vip_+Vinjp_+Vipjp_))  -rho*u/2.0;
-        //     Vinkp = Vipkn_ +rho*w/6.0 -0.5*(Vjn_+Vinjn_+Vinjp_  -(Vjp_+Vipjp_+Vipjn_)) +rho*v/2.0;
-        //     Vjnkp = Vjpkn_ +rho*w/6.0 +0.5*(Vjn_+Vinjn_+Vinjp_  -(Vjp_+Vipjp_+Vipjn_)) -rho*v/2.0;
-        // }
-        // else 
-        if(obst.normal == 3)
+        if(obst.normal == -1)
         {
-            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkp+Vipkp+Vinkp+Vjpkp+Vjnkp))/(1.0-w);
+            double rho =(Vc+Vjn+Vjp+Vkn+Vkp+Vjnkn+Vjpkp+Vjnkp+Vjpkn +2.0*(Vin+Vinjn+Vinjp+Vinkn+Vinkp))/(1.0-u);
+            Vin   = Vip   +rho*u/3.0;
+            Vinjp = Vipjn +rho*u/6.0 -0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) +rho*v/2.0;
+            Vinjn = Vipjp +rho*u/6.0 +0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) -rho*v/2.0;
+            Vinkp = Vipkn +rho*u/6.0 -0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) +rho*w/2.0;
+            Vinkn = Vipkp +rho*u/6.0 +0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) -rho*w/2.0;
+        }
+        else if(obst.normal == 1)
+        {
+            double rho =(Vc+Vjn+Vjp+Vkn+Vkp+Vjnkn+Vjpkp+Vjnkp+Vjpkn +2.0*(Vip+Vipjn+Vipjp+Vipkn+Vipkp))/(1.0+u);
+            Vip   = Vin   -rho*u/3.0;
+            Vipjn = Vinjp -rho*u/6.0 +0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) -rho*v/2.0;
+            Vipjp = Vinjn -rho*u/6.0 -0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) +rho*v/2.0;
+            Vipkn = Vinkp -rho*u/6.0 +0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) -rho*w/2.0;
+            Vipkp = Vinkn -rho*u/6.0 -0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) +rho*w/2.0;
+        }
+        else if(obst.normal == -2)
+        {
+            double rho = (Vc+Vin+Vip+Vkn+Vkp+Vinkn+Vipkp+Vipkn+Vinkp +2.0*(Vjn+Vinjn+Vipjn+Vjnkn+Vjnkp))/(1.0-v);
+            Vjn   = Vjp   +rho*v/3.0;
+            Vipjn = Vinjp +rho*v/6.0 -0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) +rho*u/2.0;
+            Vinjn = Vipjp +rho*v/6.0 +0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) -rho*u/2.0;
+            Vjnkp = Vjpkn +rho*v/6.0 -0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) +rho*w/2.0;
+            Vjnkn = Vjpkp +rho*v/6.0 +0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) -rho*w/2.0;
+        }
+        else if(obst.normal == 2)
+        {
+            double rho =(Vc+Vin+Vip+Vkn+Vkp+Vinkn+Vipkp+Vipkn+Vinkp +2.0*(Vjp+Vinjp+Vipjp+Vjpkn+Vjpkp))/(1.0+v);
+            Vjp   = Vjn    -rho*v/3.0;
+            Vinjp = Vipjn  -rho*v/6.0 +0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) -rho*u/2.0;
+            Vipjp = Vinjn  -rho*v/6.0 -0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) +rho*u/2.0;
+            Vjpkn = Vjnkp  -rho*v/6.0 +0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) -rho*w/2.0;
+            Vjpkp = Vjnkn  -rho*v/6.0 -0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) +rho*w/2.0;
+        }
+        else if(obst.normal == -3)
+        {
+            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkn+Vipkn+Vinkn+Vjpkn+Vjnkn))/(1.0-w);
+            Vkn   = Vkp    +rho*w/3.0;
+            Vinkn = Vipkp +rho*w/6.0 -0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjp+Vipjn))  +rho*u/2.0;
+            Vipkn = Vinkp +rho*w/6.0 +0.5*(Vin+Vinjn+Vinjp  -(Vip+Vipjp+Vipjn)) -rho*u/2.0;
+            Vjnkn = Vjpkp +rho*w/6.0 -0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vipjp+Vinjp))  +rho*v/2.0;
+            Vjpkn = Vjnkn +rho*w/6.0 +0.5*(Vjn+Vinjn+Vipjn  -(Vjp+Vipjp+Vinjp)) -rho*v/2.0;
+        }
+        else if(obst.normal == 3)
+        {
+            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkp+Vipkp+Vinkp+Vjpkp+Vjnkp))/(1.0+w);
             Vkp   = Vkn   -rho*w/3.0;
             Vipkp = Vinkn -rho*w/6.0 +0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjp+Vipjn))  -rho*u/2.0;
             Vinkp = Vipkn -rho*w/6.0 -0.5*(Vin+Vinjn+Vinjp  -(Vip+Vipjp+Vipjn)) +rho*u/2.0;
@@ -295,7 +294,7 @@ void boundaryConditions(obstructure& obst, std::vector<double>* pftmp, int ic, i
     }
 }
 
-void collision(const double omega, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>* pftmp)
+void collision(const double omega, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>& f)
 {
     double rho = 0.0;
     double u = 0.0;
@@ -303,13 +302,13 @@ void collision(const double omega, const int ic, const int nx, const int ny, con
     double w = 0.0;
     for(int q = 0; q < 19; q++)
     {
-        int idc = idf(q,ic,nx,ny,nz);
+        int qic = idf(q,ic,nx,ny,nz);
 
-        rho += (*pftmp)[idc];
+        rho += f[qic];
 
-        u += (*pftmp)[idc]*cx[q];
-        v += (*pftmp)[idc]*cy[q];
-        w += (*pftmp)[idc]*cz[q];
+        u += f[qic]*cx[q];
+        v += f[qic]*cy[q];
+        w += f[qic]*cz[q];
     }
     u /= rho;
     v /= rho;
@@ -321,24 +320,24 @@ void collision(const double omega, const int ic, const int nx, const int ny, con
         double uDotC = u*cx[q]+v*cy[q]+w*cz[q];
         double feq = (1.0+3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr)*wt[q]*rho;
 
-        int idc = idf(q,ic,nx,ny,nz);
+        int qic = idf(q,ic,nx,ny,nz);
 
-        (*pftmp)[idc] += -omega *((*pftmp)[idc] -feq);
+        f[qic] += -omega *(f[qic] -feq);
     }
 }
 
-void externalForce(const double dpdx, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>* pftmp)
+void externalForce(const double dpdx, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>& f)
 {
     double rho = 0.0;
     for(int q = 0; q < 19; q++)
     {
-        int idc = idf(q,ic,nx,ny,nz);
-        rho += (*pftmp)[idc];
+        int qic = idf(q,ic,nx,ny,nz);
+        rho += f[qic];
     }
     for(int q = 0; q < 19; q++)
     {
-        int idc = idf(q,ic,nx,ny,nz);
-        (*pftmp)[idc] += rho*wt[q]*3.0*dpdx*cx[q];
+        int qic = idf(q,ic,nx,ny,nz);
+        f[qic] += rho*wt[q]*3.0*dpdx*cx[q];
     }
 }
 
@@ -467,6 +466,7 @@ int main()
 
     // For cavity flow
     // double nu = std::abs(u0)*double(nx)/Re;
+    // double dpdx = 0.0;
 
     //For channel flow
     // double Retau = 10;
@@ -476,17 +476,17 @@ int main()
     // double dpdx = utau*utau/(0.5*ny);
 
     //For Poiseuille flow
-    double umax = 0.1;
-    double h = 1.0;
-    double nu = umax*h/Re;
+    // double umax = 0.1;
+    // double h = 1.0;
+    // double nu = umax*h/Re;
     // double dpdx = umax/(h*h)*8.0*nu/(ny-1);
     double dpdx = 0.00001;
 
     std::cout << "dpdx = " << dpdx << std::endl;
 
-    std::cout << "nu = " << nu << std::endl;
+    // std::cout << "nu = " << nu << std::endl;
     
-    nu = nu*(ny-1);
+    // nu = nu*(ny-1);
 
     // double omega = 1.0/(3.0*nu +0.5);
     double omega = 1.0/0.56;
@@ -510,10 +510,6 @@ int main()
 
     std::vector<double> f(19*nx*ny*nz);
     std::vector<double> ftmp(19*nx*ny*nz);
-
-    std::vector<double>* pf = &f;
-    std::vector<double>* pftmp = &ftmp;
-    std::vector<double>* ptmp;
     
     std::vector<double> rho(nx*ny*nz);
     std::vector<double> u(nx*ny*nz);
@@ -550,17 +546,30 @@ int main()
                 {
                     int ic = index1d(i,j,k,nx,ny);
 
-                    streaming(ic,i,j,k,nx,ny,nz,pf,pftmp);
-                    collision(omega,ic,nx,ny,nz,cx,cy,cz,wt,pftmp);
-                    externalForce(dpdx,ic,nx,ny,nz,cx,cy,cz,wt,pftmp);
-                    boundaryConditions(obst[ic],pftmp,ic,nx,ny,nz);
+                    collision(omega,ic,nx,ny,nz,cx,cy,cz,wt,f);
+                    externalForce(dpdx,ic,nx,ny,nz,cx,cy,cz,wt,f);
+                    for(int q = 0; q < 19; q++)
+                    {
+                        int qic = idf(q,ic,nx,ny,nz);
+                        ftmp[qic] = f[qic];
+                    }
                 }
             }
         }
 
-        ptmp = pftmp;
-        pftmp = pf;
-        pf = ptmp;
+        #pragma omp parallel for
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    streaming(ic,i,j,k,nx,ny,nz,ftmp,f);
+                    boundaryConditions(obst[ic],f,ic,nx,ny,nz);
+                }
+            }
+        }
     }
 
     return EXIT_SUCCESS;

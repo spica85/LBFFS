@@ -11,8 +11,8 @@ for(int k = 0; k < nz; k++)
             rho[ic] = 0.0;
             for(int q = 0; q < 19; q++)
             {
-                int icf = idf(q,ic,nx,ny,nz);
-                rho[ic] += (*pf)[icf];
+                int qic = idf(q,ic,nx,ny,nz);
+                rho[ic] += f[qic];
             }
                                     
             // Update of u, v
@@ -21,10 +21,10 @@ for(int k = 0; k < nz; k++)
             w[ic] = 0.0;                
             for(int q = 0; q < 19; q++)
             {
-                int icf = idf(q,ic,nx,ny,nz);
-                u[ic] += (*pf)[icf]*cx[q];
-                v[ic] += (*pf)[icf]*cy[q];
-                w[ic] += (*pf)[icf]*cz[q];
+                int qic = idf(q,ic,nx,ny,nz);
+                u[ic] += f[qic]*cx[q];
+                v[ic] += f[qic]*cy[q];
+                w[ic] += f[qic]*cz[q];
             }
             u[ic] /= rho[ic];
             v[ic] /= rho[ic];
