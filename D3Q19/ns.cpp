@@ -239,57 +239,69 @@ void boundaryConditions(obstructure& obst, std::vector<double>& f, int ic, int n
 
         if(obst.normal == -1)
         {
-            double rho =(Vc+Vjn+Vjp+Vkn+Vkp+Vjnkn+Vjpkp+Vjnkp+Vjpkn +2.0*(Vin+Vinjn+Vinjp+Vinkn+Vinkp))/(1.0-u);
-            Vin   = Vip   +rho*u/3.0;
-            Vinjp = Vipjn +rho*u/6.0 -0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) +rho*v/2.0;
-            Vinjn = Vipjp +rho*u/6.0 +0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) -rho*v/2.0;
-            Vinkp = Vipkn +rho*u/6.0 -0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) +rho*w/2.0;
-            Vinkn = Vipkp +rho*u/6.0 +0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) -rho*w/2.0;
+            double rho =(Vc+Vjn+Vjp+Vkn+Vkp+Vjnkn+Vjpkp+Vjnkp+Vjpkn +2.0*(Vip+Vipjn+Vipjp+Vipkn+Vipkp))/(1.0-u);
+            Vin = Vip +rho*u/3.0;
+            double Nyx = -rho*v/3.0 +0.5*(Vjn+Vjnkn+Vjnkp-(Vjp+Vjpkn+Vjpkp));
+            double Nzx = -rho*w/3.0 +0.5*(Vkn+Vjnkn+Vjpkn-(Vkp+Vjnkp+Vjpkp));
+            Vinjn = Vipjp +rho*(u+v)/6.0 -Nyx;
+            Vinjp = Vipjn +rho*(u-v)/6.0 +Nyx;
+            Vinkn = Vipkp +rho*(u+w)/6.0 -Nzx;
+            Vinkp = Vipkn +rho*(u-w)/6.0 +Nzx;
         }
         else if(obst.normal == 1)
         {
-            double rho =(Vc+Vjn+Vjp+Vkn+Vkp+Vjnkn+Vjpkp+Vjnkp+Vjpkn +2.0*(Vip+Vipjn+Vipjp+Vipkn+Vipkp))/(1.0+u);
-            Vip   = Vin   -rho*u/3.0;
-            Vipjn = Vinjp -rho*u/6.0 +0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) -rho*v/2.0;
-            Vipjp = Vinjn -rho*u/6.0 -0.5*(Vin+Vinkn+Vinkp -(Vip+Vipkn+Vipkp)) +rho*v/2.0;
-            Vipkn = Vinkp -rho*u/6.0 +0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) -rho*w/2.0;
-            Vipkp = Vinkn -rho*u/6.0 -0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjn+Vipjp)) +rho*w/2.0;
+            double rho =(Vc+Vjn+Vjp+Vkn+Vkp+Vjnkn+Vjpkp+Vjnkp+Vjpkn +2.0*(Vin+Vinjn+Vinjp+Vinkn+Vinkp))/(1.0+u);
+            Vip = Vin -rho*u/3.0;
+            double Nyx = -rho*v/3.0 +0.5*(Vjn+Vjnkn+Vjnkp-(Vjp+Vjpkn+Vjpkp));
+            double Nzx = -rho*w/3.0 +0.5*(Vkn+Vjnkn+Vjpkn-(Vkp+Vjnkp+Vjpkp));
+            Vipjp = Vinjn -rho*(u+v)/6.0 +Nyx;
+            Vipjn = Vinjp -rho*(u-v)/6.0 -Nyx;
+            Vipkp = Vinkn -rho*(u+w)/6.0 +Nzx;
+            Vipkn = Vinkp -rho*(u-w)/6.0 -Nzx;
         }
         else if(obst.normal == -2)
         {
-            double rho = (Vc+Vin+Vip+Vkn+Vkp+Vinkn+Vipkp+Vipkn+Vinkp +2.0*(Vjn+Vinjn+Vipjn+Vjnkn+Vjnkp))/(1.0-v);
-            Vjn   = Vjp   +rho*v/3.0;
-            Vipjn = Vinjp +rho*v/6.0 -0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) +rho*u/2.0;
-            Vinjn = Vipjp +rho*v/6.0 +0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) -rho*u/2.0;
-            Vjnkp = Vjpkn +rho*v/6.0 -0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) +rho*w/2.0;
-            Vjnkn = Vjpkp +rho*v/6.0 +0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) -rho*w/2.0;
+            double rho = (Vc+Vin+Vip+Vkn+Vkp+Vinkn+Vipkp+Vipkn+Vinkp +2.0*(Vjp+Vinjp+Vipjp+Vjpkn+Vjpkp))/(1.0-v);
+            Vjn = Vjp +rho*v/3.0;
+            double Nxy = -rho*u/3.0 +0.5*(Vin+Vinkn+Vinkp-(Vip+Vipkn+Vipkp));
+            double Nzy = -rho*w/3.0 +0.5*(Vkn+Vinkn+Vipkn-(Vkp+Vinkp+Vipkp));
+            Vinjn = Vipjp +rho*(v+u)/6.0 -Nxy;
+            Vipjn = Vinjp +rho*(v-u)/6.0 +Nxy;
+            Vjnkn = Vjpkp +rho*(v+w)/6.0 -Nzy;
+            Vjnkp = Vjpkn +rho*(v-w)/6.0 +Nzy;
         }
         else if(obst.normal == 2)
         {
-            double rho =(Vc+Vin+Vip+Vkn+Vkp+Vinkn+Vipkp+Vipkn+Vinkp +2.0*(Vjp+Vinjp+Vipjp+Vjpkn+Vjpkp))/(1.0+v);
-            Vjp   = Vjn    -rho*v/3.0;
-            Vinjp = Vipjn  -rho*v/6.0 +0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) -rho*u/2.0;
-            Vipjp = Vinjn  -rho*v/6.0 -0.5*(Vip+Vipkn+Vipkp -(Vin+Vinkn+Vinkp)) +rho*u/2.0;
-            Vjpkn = Vjnkp  -rho*v/6.0 +0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) -rho*w/2.0;
-            Vjpkp = Vjnkn  -rho*v/6.0 -0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vinjp+Vipjp)) +rho*w/2.0;
+            double rho =(Vc+Vin+Vip+Vkn+Vkp+Vinkn+Vipkp+Vipkn+Vinkp +2.0*(Vjn+Vinjn+Vipjn+Vjnkn+Vjnkp))/(1.0+v);
+            Vjp = Vjn -rho*v/3.0;
+            double Nxy = -rho*u/3.0 +0.5*(Vin+Vinkn+Vinkp-(Vip+Vipkn+Vipkp));
+            double Nzy = -rho*w/3.0 +0.5*(Vkn+Vinkn+Vipkn-(Vkp+Vinkp+Vipkp));
+            Vipjp = Vinjn  -rho*(v+u)/6.0 +Nxy;
+            Vinjp = Vipjn  -rho*(v-u)/6.0 -Nxy;
+            Vjpkp = Vjnkn  -rho*(v+w)/6.0 +Nzy;
+            Vjpkn = Vjnkp  -rho*(v-w)/6.0 -Nzy;
         }
         else if(obst.normal == -3)
         {
-            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkn+Vipkn+Vinkn+Vjpkn+Vjnkn))/(1.0-w);
-            Vkn   = Vkp    +rho*w/3.0;
-            Vinkn = Vipkp +rho*w/6.0 -0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjp+Vipjn))  +rho*u/2.0;
-            Vipkn = Vinkp +rho*w/6.0 +0.5*(Vin+Vinjn+Vinjp  -(Vip+Vipjp+Vipjn)) -rho*u/2.0;
-            Vjnkn = Vjpkp +rho*w/6.0 -0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vipjp+Vinjp))  +rho*v/2.0;
-            Vjpkn = Vjnkn +rho*w/6.0 +0.5*(Vjn+Vinjn+Vipjn  -(Vjp+Vipjp+Vinjp)) -rho*v/2.0;
+            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkp+Vipkp+Vinkp+Vjpkp+Vjnkp))/(1.0-w);
+            Vkn = Vkp +rho*w/3.0;
+            double Nxz = -rho*u/3.0 +0.5*(Vin+Vinjn+Vinjp-(Vip+Vipjn+Vipjp));
+            double Nyz = -rho*v/3.0 +0.5*(Vjn+Vinjn+Vipjp-(Vjp+Vinjp+Vipjp));
+            Vinkn = Vipkp +rho*(w+u)/6.0 -Nxz;
+            Vipkn = Vinkp +rho*(w-u)/6.0 +Nxz;
+            Vjnkn = Vjpkp +rho*(w+v)/6.0 -Nyz;
+            Vjpkn = Vjnkn +rho*(w-v)/6.0 +Nyz;
         }
         else if(obst.normal == 3)
         {
-            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkp+Vipkp+Vinkp+Vjpkp+Vjnkp))/(1.0+w);
-            Vkp   = Vkn   -rho*w/3.0;
-            Vipkp = Vinkn -rho*w/6.0 +0.5*(Vin+Vinjn+Vinjp -(Vip+Vipjp+Vipjn))  -rho*u/2.0;
-            Vinkp = Vipkn -rho*w/6.0 -0.5*(Vin+Vinjn+Vinjp  -(Vip+Vipjp+Vipjn)) +rho*u/2.0;
-            Vjpkp = Vjnkn -rho*w/6.0 +0.5*(Vjn+Vinjn+Vipjn -(Vjp+Vipjp+Vinjp))  -rho*v/2.0;
-            Vjnkp = Vjpkn -rho*w/6.0 -0.5*(Vjn+Vinjn+Vipjn  -(Vjp+Vipjp+Vinjp)) +rho*v/2.0;
+            double rho = (Vc+Vin+Vip+Vjn+Vjp+Vinjn+Vipjp+Vinjp+Vipjn+2.0*(Vkn+Vipkn+Vinkn+Vjpkn+Vjnkn))/(1.0+w);
+            Vkp = Vkn -rho*w/3.0;
+            double Nxz = -rho*u/3.0 +0.5*(Vin+Vinjn+Vinjp-(Vip+Vipjn+Vipjp));
+            double Nyz = -rho*v/3.0 +0.5*(Vjn+Vinjn+Vipjp-(Vjp+Vinjp+Vipjp));
+            Vipkp = Vinkn -rho*(w+u)/6.0 +Nxz;
+            Vinkp = Vipkn -rho*(w-u)/6.0 -Nxz;
+            Vjpkp = Vjnkn -rho*(w+v)/6.0 +Nyz;
+            Vjnkp = Vjpkn -rho*(w-v)/6.0 -Nyz;
         }
     }
 }
@@ -464,9 +476,9 @@ int main()
 
     // Single Relaxation Time model
 
-    // For cavity flow
-    // double nu = std::abs(u0)*double(nx)/Re;
-    // double dpdx = 0.0;
+    //For cavity flow
+    double nu = std::abs(u0)*double(nx)/Re;
+    double dpdx = 0.0;
 
     //For channel flow
     // double Retau = 10;
@@ -480,16 +492,16 @@ int main()
     // double h = 1.0;
     // double nu = umax*h/Re;
     // double dpdx = umax/(h*h)*8.0*nu/(ny-1);
-    double dpdx = 0.00001;
+    // double dpdx = 0.00001;
 
-    std::cout << "dpdx = " << dpdx << std::endl;
+    // std::cout << "dpdx = " << dpdx << std::endl;
 
     // std::cout << "nu = " << nu << std::endl;
     
     // nu = nu*(ny-1);
 
-    // double omega = 1.0/(3.0*nu +0.5);
-    double omega = 1.0/0.56;
+    double omega = 1.0/(3.0*nu +0.5);
+    // double omega = 1.0/0.56;
 
     std::cout << "tau = " << 1.0/omega << std::endl;
 
@@ -499,14 +511,6 @@ int main()
     const std::vector<double> cx = {0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0};
     const std::vector<double> cy = {0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0};
     const std::vector<double> cz = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0};
-
-    // for(int i = 0; i < 19; i++)
-    // {
-    //     std::cout << cx[i] << ", "
-    //           << cy[i] << ", "
-    //           << cz[i] << ", "
-    //           << std::endl;
-    // }
 
     std::vector<double> f(19*nx*ny*nz);
     std::vector<double> ftmp(19*nx*ny*nz);
@@ -520,8 +524,8 @@ int main()
     
 
     // Setting conditions
-    // #include "boundaryCondition.hpp"
-    #include "boundaryCondition_channelFlow.hpp"
+    #include "boundaryCondition.hpp"
+    // #include "boundaryCondition_channelFlow.hpp"
     if(restart)
     {
         #include "restart.hpp"
