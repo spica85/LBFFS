@@ -6,6 +6,7 @@
 #include <vector>
 #include <stdio.h>
 #include <omp.h>
+#include <chrono>
 
 //D3Q19
 inline int index1d(int i, int j, int k, int nx, int ny)
@@ -535,13 +536,17 @@ int main()
         #include "initialization.hpp"        
     }
 
+    std::chrono::system_clock::time_point start;
+    std::chrono::system_clock::time_point end;
+    start = std::chrono::system_clock::now();
+
     // Time marching
     for(int nt = startTimeStep; nt <= endTimeStep; nt++)
     {
         #include "cal_rho_u_v.hpp"            
         #include "write.hpp"
 
-        #pragma omp parallel for                
+        #pragma omp parallel for
         for(int k = 0; k < nz; k++)
         {            
             for(int j = 0; j < ny; j++)                    
@@ -575,6 +580,10 @@ int main()
             }
         }
     }
+    end = std::chrono::system_clock::now();
+    double time = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
+    std::cout << "Execution time: " << time << " (s)" << std::endl;
+    std::cout << "Speed: " << double(endTimeStep)*double(nx*ny*nz)/time << " (LUPS)" << std::endl;
 
     return EXIT_SUCCESS;
 }
