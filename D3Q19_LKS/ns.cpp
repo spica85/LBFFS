@@ -9,6 +9,21 @@
 #include <chrono>
 
 //D3Q19
+inline int ic2i(int ic, int nx, int ny)
+{
+    return int((ic%(nx*ny))%nx);
+}
+
+inline int ic2j(int ic, int nx, int ny)
+{
+    return int(ic%(nx*ny)/nx);
+}
+
+inline int ic2k(int ic, int nx, int ny)
+{
+    return int(ic/(nx*ny));
+}
+
 inline int index1d(int i, int j, int k, int nx, int ny)
 {
     return nx*ny*k+nx*j+i;
@@ -59,7 +74,7 @@ char* asciiToBinary(char* str, const float x)
 }
 
 
-void boundaryConditions(obstructure& obst, std::vector<double>& p, std::vector<double>& u, std::vector<double>& v, std::vector<double>& w, int i, int j, int k, int nx, int ny, int nz)
+void boundaryConditionsP(obstructure& obst, std::vector<double>& p, int i, int j, int k, int nx, int ny, int nz)
 {
     int ic = index1d(i,j,k,nx,ny);
 
@@ -93,6 +108,11 @@ void boundaryConditions(obstructure& obst, std::vector<double>& p, std::vector<d
         }
         p[ic] = p[innerID];
     }
+}
+
+void boundaryConditionsU(obstructure& obst, std::vector<double>& u, std::vector<double>& v, std::vector<double>& w, int i, int j, int k, int nx, int ny, int nz)
+{
+    int ic = index1d(i,j,k,nx,ny);
 
     // Velocity
     if(obst.boundary == 1) //fixed wall
@@ -107,6 +127,12 @@ void boundaryConditions(obstructure& obst, std::vector<double>& p, std::vector<d
         v[ic] = obst.v0;
         w[ic] = obst.w0;
     }
+}
+
+void boundaryConditions(obstructure& obst, std::vector<double>& p, std::vector<double>& u, std::vector<double>& v, std::vector<double>& w, int i, int j, int k, int nx, int ny, int nz)
+{
+    boundaryConditionsP(obst, p, i, j, k, nx, ny, nz);
+    boundaryConditionsU(obst, u, v, w, i, j, k, nx, ny, nz);
 }
 
 double f_eq_in(const int q, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double p, const double u, const double v, const double w)
@@ -464,14 +490,16 @@ int main()
     // Improved Lattice Kinetic Scheme model
 
     //For cavity flow
-    double nu = std::abs(u0)*double(nx)/Re;
+    double nu = std::abs(u0)*double(nx-1)/Re;
     double dpdx = 0.0;
 
     double Au = 1.0 -6.0*nu;
     int nl = 5;
-    double Ma = 0.1;
+    double Ma = 0.08;
     double Cs = u0/Ma;
     double Ap = 1.0 -3.0*Cs*Cs/double(nl);
+
+    std::cout << "Au: " << Au << ", Ap: " << Ap << std::endl;
         
 
     //For channel flow
@@ -493,6 +521,7 @@ int main()
     // std::cout << "nu = " << nu << std::endl;
     
     // nu = nu*(ny-1);
+
 
     // double omega = 1.0/(3.0*nu +0.5);
     // double omega = 1.0/0.56;
@@ -540,50 +569,53 @@ int main()
         std::vector<double> wTmp = w;
         std::vector<double> pTmp = p;
 
-        #pragma omp parallel for
-        for(int k = 0; k < nz; k++)
-        {            
-            for(int j = 0; j < ny; j++)                    
-            {
-                for(int i = 0; i < nx; i++)                        
-                {
-                    int ic = index1d(i,j,k,nx,ny);
-                    for(int l = 0; l < nl; l++)
-                    {
-                        p[ic] = updateP(i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap);
-                    }
-                }
-            }
-        }
 
-
-        #pragma omp parallel for
-        for(int k = 0; k < nz; k++)
+        
+        for(int l = 0; l < nl; l++)
         {
-            for(int j = 0; j < ny; j++)
+            #pragma omp parallel for                
+            for(int ic = 0; ic < nx*ny*nz; ic++)
             {
-                for(int i = 0; i < nx; i++)
-                {
-                    int ic = index1d(i,j,k,nx,ny);
+                int i = ic2i(ic, nx, ny);
+                int j = ic2j(ic, nx, ny);
+                int k = ic2k(ic, nx, ny);
 
-                    u[ic] = updateU(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au);
-                    v[ic] = updateV(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au);
-                    w[ic] = updateW(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au);
-                }
+                p[ic] = updateP(i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap);
+            }
+            pTmp = p;
+            
+            #pragma omp parallel for                
+            for(int ic = 0; ic < nx*ny*nz; ic++)
+            {
+                int i = ic2i(ic, nx, ny);
+                int j = ic2j(ic, nx, ny);
+                int k = ic2k(ic, nx, ny);
+
+                boundaryConditionsP(obst[ic], p, i, j, k, nx, ny, nz);
             }
         }
 
         #pragma omp parallel for
-        for(int k = 0; k < nz; k++)
+        for(int ic = 0; ic < nx*ny*nz; ic++)
         {
-            for(int j = 0; j < ny; j++)
-            {
-                for(int i = 0; i < nx; i++)
-                {
-                    int ic = index1d(i,j,k,nx,ny);
-                    boundaryConditions(obst[ic], p, u, v, w, i, j, k, nx, ny, nz);
-                }
-            }
+
+            int i = ic2i(ic, nx, ny);
+            int j = ic2j(ic, nx, ny);
+            int k = ic2k(ic, nx, ny);
+            
+            u[ic] = updateU(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au);
+            v[ic] = updateV(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au);
+            w[ic] = updateW(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au);
+        }
+
+        #pragma omp parallel for
+        for(int ic = 0; ic < nx*ny*nz; ic++)                
+        {
+            int i = ic2i(ic, nx, ny);
+            int j = ic2j(ic, nx, ny);
+            int k = ic2k(ic, nx, ny);
+
+            boundaryConditionsU(obst[ic], u, v, w, i, j, k, nx, ny, nz);
         }
     }
     end = std::chrono::system_clock::now();
