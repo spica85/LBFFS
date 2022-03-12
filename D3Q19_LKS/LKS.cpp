@@ -23,33 +23,7 @@ void boundaryConditionsP(obstructure& obst, std::vector<double>& p, int i, int j
     // Pressure
     if(obst.boundary == 1 || obst.boundary == 2) //wall
     {
-        int innerID = 0;
-
-        innerID = index1d(i-obst.normal[0],j-obst.normal[1],k-obst.normal[2],nx,ny);
-        // if(obst.normal == -1) //i=0
-        // {
-        //     innerID = index1d(i+1,j,k,nx,ny);
-        // }
-        // else if(obst.normal == 1) //i=nx-1
-        // {
-        //     innerID = index1d(i-1,j,k,nx,ny);
-        // }
-        // else if(obst.normal == -2) //j=0
-        // {
-        //     innerID = index1d(i,j+1,k,nx,ny);
-        // }
-        // else if(obst.normal == 2) //j=ny-1
-        // {
-        //     innerID = index1d(i,j-1,k,nx,ny);
-        // }
-        // else if(obst.normal == -3) //k=0
-        // {
-        //     innerID = index1d(i,j,k+1,nx,ny);
-        // }
-        // else if(obst.normal == 3) //k=nz-1
-        // {
-        //     innerID = index1d(i,j,k-1,nx,ny);
-        // }
+        int innerID = index1d(i-obst.normal[0],j-obst.normal[1],k-obst.normal[2],nx,ny);
         p[ic] = p[innerID];
     }
 }
@@ -85,11 +59,10 @@ double f_eq_in(const int q, const std::vector<double>& cx, const std::vector<dou
     double uDotC = u*cx[q]+v*cy[q]+w*cz[q];
     double FDotC = Fx*cx[q]+Fy*cy[q]+Fz*cz[q];
 
-    // return wt[q]*3.0*p*(1.0 +3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr);
     return wt[q]*(3.0*p +3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr +3.0*FDotC);
 }
 
-int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+inline int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     if(q == 0)
     {
