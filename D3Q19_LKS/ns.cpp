@@ -8,81 +8,29 @@
 #include <omp.h>
 #include <chrono>
 #include "LKS.hpp"
+#include "input.hpp"
 
 int main()
 {
-    std::string inputFileName("input.txt");
-    std::vector<std::string> lines;
-    std::string line;
-    std::ifstream inputFile(inputFileName);
-
-    if(!inputFile.is_open())
-    {
-        std::cerr << "Could not open the file - '"
-            << inputFileName << "'" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-
-    while(std::getline(inputFile, line))
-    {
-        std::vector<std::string> list_string;
-        boost::split(list_string,line, boost::is_space());
-        for(auto& str: list_string)
-        {
-            lines.push_back(str);
-        }
-    }
-
-    std::string nThreadsStr("nThreads");
-    omp_set_num_threads(lookup<int>(lines, nThreadsStr));
-
-    std::string restartStr("restart");
-    bool restart = lookup<bool>(lines, restartStr);
-
-    std::string FwriteStr("Fwrite");
-    bool Fwrite = lookup<bool>(lines, FwriteStr);
-
-    std::string writeBinaryStr("writeBinary");
-    bool writeBinary = lookup<bool>(lines, writeBinaryStr);
-    
-    std::string startTimeStepStr("startTimeStep");
-    int startTimeStep = lookup<int>(lines, startTimeStepStr);
-    
-    std::string endTimeStepStr("endTimeStep");
-    const int endTimeStep = lookup<int>(lines, endTimeStepStr);
-
-    int nextOutTime = startTimeStep;
-
-    std::string outIntervalStr("outInterval");
-    const int outInterval = lookup<int>(lines, outIntervalStr);
-    std::cout << std::endl;
-
-    std::string nxStr("nx");
-    const int nx = lookup<int>(lines, nxStr);
-
-    std::string nyStr("ny");
-    const int ny = lookup<int>(lines, nyStr);
-
-    std::string nzStr("nz");
-    const int nz = lookup<int>(lines, nzStr);
-    std::cout << std::endl;
-
-    std::string u0Str("u0");
-    const double u0 = lookup<double>(lines, u0Str);
-
-    std::string rho0Str("rho0");
-    const double rho0 = lookup<double>(lines, rho0Str);
-
-    std::string ReStr("Re");
-    const double Re = lookup<double>(lines, ReStr);
-    std::cout << std::endl;
-
-    inputFile.close();
-
     // Improved Lattice Kinetic Scheme model
 
+    bool restart;
+    bool Fwrite;
+    bool writeBinary;
+    int startTimeStep;
+    int endTimeStep;
+    int nextOutTime;
+    int outInterval;
+    int nx;
+    int ny;
+    int nz;
+
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz);
+
     //For cavity flow
+    const double u0 = 0.1;
+    const double rho0 = 1.0;
+    const double Re = 100.0;
     double nu = std::abs(u0)*double(nx-1)/Re;
     double dpdx = 0.0;
 
