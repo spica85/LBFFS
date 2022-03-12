@@ -27,51 +27,9 @@ int main()
 
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz);
 
-    //For cavity flow
-    const double u0 = 0.1;
-    const double rho0 = 1.0;
-    const double Re = 100.0;
-    double nu = std::abs(u0)*double(nx-1)/Re;
-    double dpdx = 0.0;
-
-    double Au = getAu(nu);
-    int nl = 5;
-    double Ma = 0.08;
-    double Cs = u0/Ma;
-    double Ap = getAp(Cs, nl);
-
-    std::cout << "Au: " << Au << ", Ap: " << Ap << std::endl;
-        
-
-    //For channel flow
-    // double Retau = 10;
-    // double Retau = 1;
-    // double utau = 0.005;
-    // double nu = utau*0.5*ny/Retau;
-    // double dpdx = utau*utau/(0.5*ny);
-
-    //For Poiseuille flow
-    // double umax = 0.1;
-    // double h = 1.0;
-    // double nu = umax*h/Re;
-    // double dpdx = umax/(h*h)*8.0*nu/(ny-1);
-    // double dpdx = 0.00001;
-
-    // std::cout << "dpdx = " << dpdx << std::endl;
-
-    // std::cout << "nu = " << nu << std::endl;
-    
-    // nu = nu*(ny-1);
-
-
-    // double omega = 1.0/(3.0*nu +0.5);
-    // double omega = 1.0/0.56;
-
-    // std::cout << "tau = " << 1.0/omega << std::endl;
-
-    const std::vector<double> wt = setWt();
-
     // D3Q19 model
+    const std::vector<double> wt = setWt();
+    
     const std::vector<double> cx = setCx();
     const std::vector<double> cy = setCy();
     const std::vector<double> cz = setCz();
@@ -82,11 +40,31 @@ int main()
     std::vector<double> w(nx*ny*nz);
 
     std::vector<obstructure> obst(nx*ny*nz);
-    
 
-    // Setting conditions
-    #include "boundaryCondition.hpp"
-    // #include "boundaryCondition_channelFlow.hpp"
+    // -- For cavity flow --
+    const double u0 = 0.1;
+    const double rho0 = 1.0;
+    const double Re = 100.0;
+    double nu = std::abs(u0)*double(nx-1)/Re;
+    double dpdx = 0.0;
+    #include "boundaryCondition_cavityFlow.hpp"    
+    // --
+
+    //For channel flow
+    // double Retau = 10;
+    // double Retau = 1;
+    // double utau = 0.005;
+    // double nu = utau*0.5*ny/Retau;
+    // double dpdx = utau*utau/(0.5*ny);
+    // #include "boundaryCondition_channelFlow.hpp"    
+
+    //For Poiseuille flow
+    // double umax = 0.1;
+    // double h = 1.0;
+    // double nu = umax*h/Re;
+    // double dpdx = umax/(h*h)*8.0*nu/(ny-1);
+    // #include "boundaryCondition_poiseuilleFlow.hpp"
+     
     if(restart)
     {
         #include "restart.hpp"
@@ -95,6 +73,14 @@ int main()
     {
         #include "initialization.hpp"        
     }
+
+    double Au = getAu(nu);
+    int nl = 5;
+    double Ma = 0.08;
+    double Cs = u0/Ma;
+    double Ap = getAp(Cs, nl);
+
+    std::cout << "Au: " << Au << ", Ap: " << Ap << std::endl;    
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
