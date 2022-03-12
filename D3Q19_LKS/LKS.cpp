@@ -79,13 +79,14 @@ void boundaryConditions(obstructure& obst, std::vector<double>& p, std::vector<d
     boundaryConditionsU(obst, u, v, w, i, j, k, nx, ny, nz);
 }
 
-double f_eq_in(const int q, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double p, const double u, const double v, const double w)
+double f_eq_in(const int q, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double p, const double u, const double v, const double w, const double Fx, const double Fy, const double Fz)
 {
     double uSqr =u*u+v*v+w*w;
     double uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+    double FDotC = Fx*cx[q]+Fy*cy[q]+Fz*cz[q];
 
     // return wt[q]*3.0*p*(1.0 +3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr);
-    return wt[q]*(3.0*p +3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr);
+    return wt[q]*(3.0*p +3.0*uDotC +4.5*uDotC*uDotC -1.5*uSqr +3.0*FDotC);
 }
 
 int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
@@ -208,7 +209,7 @@ int upwindID(const int q, const int i, const int j, const int k, const int nx, c
     }
 }
 
-double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap)
+double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double pNew = 0.0;
@@ -221,7 +222,7 @@ double updateP(const int i, const int j, const int k,const int nx, const int ny,
         const double vUpwind = v[iUpwind];
         const double wUpwind = w[iUpwind];
 
-        pNew += f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind)
+        pNew += f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
             + 3.0*Ap*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind));
     }
     pNew /= 3.0;
@@ -229,7 +230,7 @@ double updateP(const int i, const int j, const int k,const int nx, const int ny,
     return pNew;
 }
 
-double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au)
+double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double uNew = 0.0;
@@ -244,14 +245,14 @@ double updateU(const int i, const int j, const int k,const int nx, const int ny,
         const double vUpwind = v[iUpwind];
         const double wUpwind = w[iUpwind];
 
-        uNew += cx[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind)
+        uNew += cx[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
             + 3.0*Au*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind)));
     }
 
     return uNew;
 }
 
-double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au)
+double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double vNew = 0.0;
@@ -266,14 +267,14 @@ double updateV(const int i, const int j, const int k,const int nx, const int ny,
         const double vUpwind = v[iUpwind];
         const double wUpwind = w[iUpwind];
 
-        vNew += cy[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind)
+        vNew += cy[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
             + 3.0*Au*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind)));
     }
 
     return vNew;
 }
 
-double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au)
+double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double wNew = 0.0;
@@ -288,7 +289,7 @@ double updateW(const int i, const int j, const int k,const int nx, const int ny,
         const double vUpwind = v[iUpwind];
         const double wUpwind = w[iUpwind];
 
-        wNew += cz[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind)
+        wNew += cz[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
             + 3.0*Au*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind)));
     }
 

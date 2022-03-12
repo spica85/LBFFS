@@ -96,17 +96,17 @@ void boundaryConditionsU(obstructure& obst, std::vector<double>& u, std::vector<
 
 void boundaryConditions(obstructure& obst, std::vector<double>& p, std::vector<double>& u, std::vector<double>& v, std::vector<double>& w, int i, int j, int k, int nx, int ny, int nz);
 
-double f_eq_in(const int q, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double p, const double u, const double v, const double w);
+double f_eq_in(const int q, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double p, const double u, const double v, const double w, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
 int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz);
 
-double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap);
+double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
-double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au);
+double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
-double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au);
+double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
-double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au);
+double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
 void externalForce(const double dpdx, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>& f);
 
