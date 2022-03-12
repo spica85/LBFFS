@@ -81,21 +81,4 @@ double updateW(const int i, const int j, const int k,const int nx, const int ny,
 void externalForce(const double dpdx, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>& f);
 
 
-template <typename Type = std::string>
-Type returnWrapper(std::string arg);
-
-template <>
-int returnWrapper<int>(std::string arg);
-
-template <>
-bool returnWrapper<bool>(std::string arg);
-
-template <>
-float returnWrapper<float>(std::string arg);
-
-template <>
-double returnWrapper<double>(std::string arg);
-
-template<typename Type> Type lookup(std::vector<std::string>& lines, std::string& str);
-
 #endif
