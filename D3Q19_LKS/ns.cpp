@@ -42,12 +42,12 @@ int main()
     std::vector<obstructure> obst(nx*ny*nz);
 
     // // -- For cavity flow --
-    // const double u0 = 0.1;
-    // const double rho0 = 1.0;
-    // const double Re = 100.0;
-    // double nu = std::abs(u0)*double(nx-1)/Re;
-    // double dpdx = 0.0;
-    // #include "boundaryCondition_cavityFlow.hpp"
+    const double u0 = 0.1;
+    const double rho0 = 1.0;
+    const double Re = 100.0;
+    double nu = std::abs(u0)*double(nx-1)/Re;
+    double dpdx = 0.0;
+    #include "boundaryCondition_cavityFlow.hpp"
     // // --
 
     //For channel flow
@@ -59,14 +59,14 @@ int main()
     // #include "boundaryCondition_channelFlow.hpp"
 
     // -- For Poiseuille flow --
-    double rho0 = 1.0;
-    double u0 = 0.005;
-    double h = 1.0;
-    const double Re = 100.0;
-    double nu = u0*h/Re;
-    double dpdx = u0/(h*h)*8.0*nu/(ny-1);
-    nu = nu*(ny-1);
-    #include "boundaryCondition_poiseuilleFlow.hpp"
+    // double rho0 = 1.0;
+    // double u0 = 0.005;
+    // double h = 1.0;
+    // const double Re = 100.0;
+    // double nu = u0*h/Re;
+    // double dpdx = u0/(h*h)*8.0*nu/(ny-1);
+    // nu = nu*(ny-1);
+    // #include "boundaryCondition_poiseuilleFlow.hpp"
     // --
      
     if(restart)
@@ -113,7 +113,6 @@ int main()
 
                 p[ic] = updateP(i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap,dpdx);
             }
-            pTmp = p;
             
             #pragma omp parallel for                
             for(int ic = 0; ic < nx*ny*nz; ic++)
@@ -124,6 +123,7 @@ int main()
 
                 boundaryConditionsP(obst[ic], p, i, j, k, nx, ny, nz);
             }
+            pTmp = p;
         }
 
         #pragma omp parallel for
