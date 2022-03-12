@@ -1,1 +1,9 @@
-*/out/*
+*.vtk
+*.cmake
+*.make
+*.o
+CMakeFiles
+.DS_Store
+.dat
+
+
