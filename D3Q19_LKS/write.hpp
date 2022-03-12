@@ -186,25 +186,66 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile_data.write((char *) &nz,sizeof(int));
     }
 
-    // //f output
-    // {
-    //     for(int q = 0; q < 19; q++)
-    //     {
-    //         for(int k = 0; k < nz; k++)
-    //         {
-    //             for(int j = 0; j < ny; j++)
-    //             {
-    //                 for(int i = 0; i < nx; i++)
-    //                 {
-    //                     int ic = index1d(i,j,k,nx,ny);
-    //                     int qic = idf(q,ic,nx,ny,nz);
-    //                     writeFile_data.write((char *) &f[qic],sizeof(float));
-    //                 }
-    //             }
-    //         }
-    //     }
+    //u output
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    writeFile_data.write((char *) &u[ic],sizeof(double));
+                }
+            }
+        }
+    }
 
-    // }
+    //v output
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    writeFile_data.write((char *) &v[ic],sizeof(double));
+                }
+            }
+        }
+    }
+
+    //w output
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    writeFile_data.write((char *) &w[ic],sizeof(double));
+                }
+            }
+        }
+    }
+
+    //p output
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    writeFile_data.write((char *) &p[ic],sizeof(double));
+                }
+            }
+        }
+    }
+    writeFile_data.close();
 
     nextOutTime += outInterval;
 }
