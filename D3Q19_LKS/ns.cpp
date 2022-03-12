@@ -34,12 +34,11 @@ int main()
     double nu = std::abs(u0)*double(nx-1)/Re;
     double dpdx = 0.0;
 
-    double Au = 1.0 -6.0*nu;
+    double Au = getAu(nu);
     int nl = 5;
     double Ma = 0.08;
     double Cs = u0/Ma;
-    double Ap = 1.0 -3.0*Cs*Cs/double(nl);
-    Ap = 0.0;
+    double Ap = getAp(Cs, nl);
 
     std::cout << "Au: " << Au << ", Ap: " << Ap << std::endl;
         
@@ -70,12 +69,12 @@ int main()
 
     // std::cout << "tau = " << 1.0/omega << std::endl;
 
-    const std::vector<double> wt = {1.0/3.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0};
+    const std::vector<double> wt = setWt();
 
     // D3Q19 model
-    const std::vector<double> cx = {0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0};
-    const std::vector<double> cy = {0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0};
-    const std::vector<double> cz = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0};
+    const std::vector<double> cx = setCx();
+    const std::vector<double> cy = setCy();
+    const std::vector<double> cz = setCz();
     
     std::vector<double> p(nx*ny*nz);
     std::vector<double> u(nx*ny*nz);
@@ -88,14 +87,14 @@ int main()
     // Setting conditions
     #include "boundaryCondition.hpp"
     // #include "boundaryCondition_channelFlow.hpp"
-    // if(restart)
-    // {
-    //     #include "restart.hpp"
-    // }
-    // else
-    // {
+    if(restart)
+    {
+        #include "restart.hpp"
+    }
+    else
+    {
         #include "initialization.hpp"        
-    // }
+    }
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;

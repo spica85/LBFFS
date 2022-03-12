@@ -60,6 +60,36 @@ public:
 
 char* asciiToBinary(char* str, const float x);
 
+inline double getAu(const double nu)
+{
+    return 1.0 -6.0*nu;
+}
+
+inline double getAp(const double Cs, const int nl)
+{
+    return 1.0 -3.0*Cs*Cs/double(nl);
+}
+
+inline const std::vector<double> setWt()
+{
+    return {1.0/3.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0};
+}
+
+inline const std::vector<double> setCx()
+{
+    return {0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0};
+}
+
+inline const std::vector<double> setCy()
+{
+    return {0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0};
+}
+
+inline const std::vector<double> setCz()
+{
+    return {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0};
+}
+
 void boundaryConditionsP(obstructure& obst, std::vector<double>& p, int i, int j, int k, int nx, int ny, int nz);
 
 void boundaryConditionsU(obstructure& obst, std::vector<double>& u, std::vector<double>& v, std::vector<double>& w, int i, int j, int k, int nx, int ny, int nz);
