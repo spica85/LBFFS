@@ -182,7 +182,7 @@ inline int upwindID(const int q, const int i, const int j, const int k, const in
     }
 }
 
-double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const double Fx, const double Fy, const double Fz)
+double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double pNew = 0.0;
@@ -203,7 +203,7 @@ double updateP(const int i, const int j, const int k,const int nx, const int ny,
     return pNew;
 }
 
-double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
+double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double uNew = 0.0;
@@ -225,7 +225,7 @@ double updateU(const int i, const int j, const int k,const int nx, const int ny,
     return uNew;
 }
 
-double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
+double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double vNew = 0.0;
@@ -247,7 +247,7 @@ double updateV(const int i, const int j, const int k,const int nx, const int ny,
     return vNew;
 }
 
-double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double> p, const std::vector<double> u, const std::vector<double> v, const std::vector<double> w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
+double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx, const double Fy, const double Fz)
 {
     int ic = index1d(i,j,k,nx,ny);
     double wNew = 0.0;
@@ -269,18 +269,94 @@ double updateW(const int i, const int j, const int k,const int nx, const int ny,
     return wNew;
 }
 
-void externalForce(const double dpdx, const int ic, const int nx, const int ny, const int nz, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, std::vector<double>& f)
+
+double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const std::vector<int>& upID, const double Fx, const double Fy, const double Fz)
 {
-    double rho = 0.0;
+    int ic = index1d(i,j,k,nx,ny);
+    double pNew = 0.0;
     for(int q = 0; q < 19; q++)
     {
         int qic = idf(q,ic,nx,ny,nz);
-        rho += f[qic];
+        int iUpwind = upID[qic];
+
+        const double pUpwind = p[iUpwind];
+        const double uUpwind = u[iUpwind];
+        const double vUpwind = v[iUpwind];
+        const double wUpwind = w[iUpwind];
+
+        pNew += f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
+            + 3.0*Ap*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind));
     }
-    for(int q = 0; q < 19; q++)
-    {
-        int qic = idf(q,ic,nx,ny,nz);
-        f[qic] += rho*wt[q]*3.0*dpdx*cx[q];
-    }
+    pNew /= 3.0;
+
+    return pNew;
 }
 
+double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx, const double Fy, const double Fz)
+{
+    int ic = index1d(i,j,k,nx,ny);
+    double uNew = 0.0;
+    std::vector<int> qx = {1, 2, 7, 8, 9, 10, 11, 12, 13, 14};
+    for(int qxi = 0; qxi < 10; qxi++)
+    {
+        int q = qx[qxi];
+        int qic = idf(q,ic,nx,ny,nz);
+        int iUpwind = upID[qic];
+
+        const double pUpwind = p[iUpwind];
+        const double uUpwind = u[iUpwind];
+        const double vUpwind = v[iUpwind];
+        const double wUpwind = w[iUpwind];
+
+        uNew += cx[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
+            + 3.0*Au*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind)));
+    }
+
+    return uNew;
+}
+
+double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx, const double Fy, const double Fz)
+{
+    int ic = index1d(i,j,k,nx,ny);
+    double vNew = 0.0;
+    std::vector<int> qy = {3, 4, 7, 8, 9, 10, 15, 16, 17, 18};
+    for(int qyi = 0; qyi < 10; qyi++)
+    {
+        int q = qy[qyi];
+        int qic = idf(q,ic,nx,ny,nz);
+        int iUpwind = upID[qic];
+
+        const double pUpwind = p[iUpwind];
+        const double uUpwind = u[iUpwind];
+        const double vUpwind = v[iUpwind];
+        const double wUpwind = w[iUpwind];
+
+        vNew += cy[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
+            + 3.0*Au*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind)));
+    }
+
+    return vNew;
+}
+
+double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx, const double Fy, const double Fz)
+{
+    int ic = index1d(i,j,k,nx,ny);
+    double wNew = 0.0;
+    std::vector<int> qz = {5, 6, 11, 12, 13, 14, 15, 16, 17, 18};
+    for(int qzi = 0; qzi < 10; qzi++)
+    {
+        int q = qz[qzi];
+        int qic = idf(q,ic,nx,ny,nz);
+        int iUpwind = upID[qic];
+
+        const double pUpwind = p[iUpwind];
+        const double uUpwind = u[iUpwind];
+        const double vUpwind = v[iUpwind];
+        const double wUpwind = w[iUpwind];
+
+        wNew += cz[q]*(f_eq_in(q, cx, cy, cz, wt, pUpwind, uUpwind, vUpwind, wUpwind, Fx, Fy, Fz)
+            + 3.0*Au*wt[q]*(cx[q]*(u[ic]-uUpwind) +cy[q]*(v[ic]-vUpwind) +cz[q]*(w[ic]-wUpwind)));
+    }
+
+    return wNew;
+}

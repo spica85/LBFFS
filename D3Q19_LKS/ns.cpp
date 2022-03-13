@@ -90,6 +90,21 @@ int main()
     std::chrono::system_clock::time_point end;
     start = std::chrono::system_clock::now();
 
+    std::vector<int> upID(19*nx*ny*nz);
+    for(int ic = 0; ic < nx*ny*nz; ic++)
+    {
+        int i = ic2i(ic, nx, ny);
+        int j = ic2j(ic, nx, ny);
+        int k = ic2k(ic, nx, ny);
+
+        for(int q = 0; q < 19; q++)
+        {
+            int qic = idf(q,ic,nx,ny,nz);
+            upID[qic] = upwindID(q,i,j,k,nx,ny,nz);
+        }
+    }
+
+
     // Time marching
     for(int nt = startTimeStep; nt <= endTimeStep; nt++)
     {   
@@ -111,7 +126,7 @@ int main()
                 int j = ic2j(ic, nx, ny);
                 int k = ic2k(ic, nx, ny);
 
-                p[ic] = updateP(i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap,dpdx);
+                p[ic] = updateP(i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap,upID,dpdx);
             }
             
             #pragma omp parallel for                
@@ -134,9 +149,9 @@ int main()
             int j = ic2j(ic, nx, ny);
             int k = ic2k(ic, nx, ny);
             
-            u[ic] = updateU(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,dpdx);
-            v[ic] = updateV(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,dpdx);
-            w[ic] = updateW(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,dpdx);
+            u[ic] = updateU(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
+            v[ic] = updateV(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
+            w[ic] = updateW(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
         }
 
         #pragma omp parallel for
