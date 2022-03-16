@@ -36,8 +36,8 @@ inline int idf(int q, int i, int nx, int ny, int nz)
 
 class obstructure
 {
-private:
-public:
+    private:
+    public:
     int boundary;
     std::vector<int> normal;
     bool inner;
@@ -109,13 +109,19 @@ double updateV(const int i, const int j, const int k,const int nx, const int ny,
 double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
 
-double updateP(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+double updateP(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
-double updateU(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+double updateU(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
-double updateV(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+double updateV(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
-double updateW(const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+double updateW(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+
+void updateUVW(double& uNew, double& vNew, double& wNew, const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+
+void updateUVW(const std::vector<double>& feq, double& uNew, double& vNew, double& wNew, const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Au, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
+
+double updatePfeq(std::vector<double>& feq, const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, const std::vector<double>& p, const std::vector<double>& u, const std::vector<double>& v, const std::vector<double>& w, const std::vector<double>& cx, const std::vector<double>& cy, const std::vector<double>& cz, const std::vector<double>& wt, const double Ap, const std::vector<int>& upID, const double Fx = 0.0, const double Fy = 0.0, const double Fz = 0.0);
 
 
 #endif

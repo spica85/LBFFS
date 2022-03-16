@@ -79,10 +79,11 @@ int main()
     }
 
     double Au = getAu(nu);
-    int nl = 5;
+    int nl = 1;
     double Ma = 0.08;
     double Cs = u0/Ma;
-    double Ap = getAp(Cs, nl);
+    // double Ap = getAp(Cs, nl);
+    double Ap = 0.0;
 
     std::cout << "Au: " << Au << ", Ap: " << Ap << std::endl;    
 
@@ -104,31 +105,33 @@ int main()
         }
     }
 
+    std::vector<double> uTmp;
+    std::vector<double> vTmp;
+    std::vector<double> wTmp;
+    std::vector<double> pTmp;
 
     // Time marching
     for(int nt = startTimeStep; nt <= endTimeStep; nt++)
     {   
         #include "write.hpp"
 
-        std::vector<double> uTmp = u;
-        std::vector<double> vTmp = v;
-        std::vector<double> wTmp = w;
-        std::vector<double> pTmp = p;
-
-
+        uTmp = u;
+        vTmp = v;
+        wTmp = w;
         
         for(int l = 0; l < nl; l++)
         {
-            #pragma omp parallel for                
+            pTmp = p;
+            #pragma omp parallel for
             for(int ic = 0; ic < nx*ny*nz; ic++)
             {
                 int i = ic2i(ic, nx, ny);
                 int j = ic2j(ic, nx, ny);
                 int k = ic2k(ic, nx, ny);
 
-                p[ic] = updateP(i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap,upID,dpdx);
+                p[ic] = updateP(ic,i,j,k,nx,ny,nz,pTmp,uTmp,vTmp,wTmp,cx,cy,cz,wt,Ap,upID,dpdx);
             }
-            
+
             #pragma omp parallel for                
             for(int ic = 0; ic < nx*ny*nz; ic++)
             {
@@ -138,7 +141,6 @@ int main()
 
                 boundaryConditionsP(obst[ic], p, i, j, k, nx, ny, nz);
             }
-            pTmp = p;
         }
 
         #pragma omp parallel for
@@ -149,17 +151,7 @@ int main()
             int j = ic2j(ic, nx, ny);
             int k = ic2k(ic, nx, ny);
             
-            u[ic] = updateU(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
-            v[ic] = updateV(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
-            w[ic] = updateW(i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
-        }
-
-        #pragma omp parallel for
-        for(int ic = 0; ic < nx*ny*nz; ic++)                
-        {
-            int i = ic2i(ic, nx, ny);
-            int j = ic2j(ic, nx, ny);
-            int k = ic2k(ic, nx, ny);
+            updateUVW(u[ic],v[ic],w[ic],ic,i,j,k,nx,ny,nz,p,uTmp,vTmp,wTmp,cx,cy,cz,wt,Au,upID,dpdx);
 
             boundaryConditionsU(obst[ic], u, v, w, i, j, k, nx, ny, nz);
         }
