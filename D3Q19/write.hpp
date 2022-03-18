@@ -14,7 +14,7 @@ if(Fwrite && nextOutTime < nt +1)
     }
     char str[300];// For binary
 
-    std::cout << "Time = " << nt << std::endl;
+    std::cout << "Time = " << nt*deltaT << " (s), " << nt << " steps" << std::endl;
 
     writeFile << "# vtk DataFile Version 3.0\n";
     writeFile << "vtk output\n";
@@ -30,7 +30,7 @@ if(Fwrite && nextOutTime < nt +1)
     writeFile << "DIMENSIONS " << nx << " " << ny << " " << nz << "\n";
 
     writeFile << "ORIGIN " << 0.0 << " " << 0.0 << " " << 0.0 << "\n";
-    writeFile << "SPACING " << 1.0 << " " << 1.0 << " " << 1.0 << "\n\n";
+    writeFile << "SPACING " << L << " " << L << " " << L << "\n\n";
 
 
     writeFile << "POINT_DATA " << nx*ny*nz << "\n";
@@ -48,12 +48,12 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)u[ic]);
+                        asciiToBinary(str,(float)(u[ic]*c));
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << u[ic] << "\n";
+                        writeFile << u[ic]*c << "\n";
                     }
                 }
             }
@@ -74,12 +74,12 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)v[ic]);
+                        asciiToBinary(str,(float)(v[ic]*c));
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << v[ic] << "\n";
+                        writeFile << v[ic]*c << "\n";
                     }
                 }
             }
@@ -100,12 +100,12 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)w[ic]);
+                        asciiToBinary(str,(float)(w[ic]*c));
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << w[ic] << "\n";
+                        writeFile << w[ic]*c << "\n";
                     }
                 }
             }
