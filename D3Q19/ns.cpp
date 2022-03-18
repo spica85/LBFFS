@@ -1035,7 +1035,8 @@ int main()
     
 
     // Setting conditions
-    #include "boundaryConditionCavityFlow2D.hpp"
+    // #include "boundaryCondition_cavityFlow2d.hpp"
+    #include "boundaryCondition_cavityFlow3dDiagonal.hpp"
     // #include "boundaryCondition_channelFlow.hpp"
     if(restart)
     {
