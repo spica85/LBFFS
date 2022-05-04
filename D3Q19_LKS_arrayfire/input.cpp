@@ -89,8 +89,8 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
 
     readToLines(inputFile, lines);
 
-    std::string nThreadsStr("nThreads");
-    omp_set_num_threads(lookup<int>(lines, nThreadsStr));
+    // std::string nThreadsStr("nThreads");
+    // omp_set_num_threads(lookup<int>(lines, nThreadsStr));
 
     std::string restartStr("restart");
     restart = lookup<bool>(lines, restartStr);
