@@ -8,7 +8,7 @@ project(D3Q19_LKS_opencl CXX)
 add_executable(ns.opencl ns.cpp LKS.cpp input.cpp)
 
 # Setting for the option of g++
-# set(CMAKE_CXX_FLAGS "-O3 -march=native -fopenmp -std=c++11")
+set(CMAKE_CXX_FLAGS "-O3 -march=native -fopenmp -std=c++11")
 
 # For OpenCL
 set(OpenCL_LIBRARY /opt/amdgpu-pro/lib/x86_64-linux-gnu/libOpenCL.so)
