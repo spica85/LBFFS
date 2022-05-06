@@ -68,6 +68,26 @@ char* asciiToBinary(char* str, const float x)
     return str;    
 }
 
+inline const std::vector<float> setWt()
+{
+    return {1.0/3.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0};
+}
+
+inline const std::vector<float> setCx()
+{
+    return {0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0};
+}
+
+inline const std::vector<float> setCy()
+{
+    return {0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0};
+}
+
+inline const std::vector<float> setCz()
+{
+    return {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0};
+}
+
 inline int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     if(q == 0)
@@ -849,53 +869,5 @@ void cal_rhoUVW(int ic, int nx, int ny, int nz, const std::vector<float>& f, con
     v /= rho;
     w /= rho;                    
 }
-
-template <typename Type = std::string>
-Type returnWrapper(std::string arg) {
-    return arg;
-}
-
-template <>
-int returnWrapper<int>(std::string arg) {
-  return std::stoi(arg);
-}
-
-template <>
-bool returnWrapper<bool>(std::string arg) {
-  return arg == "true" ? true : false;
-}
-
-template <>
-float returnWrapper<float>(std::string arg) {
-  return std::stof(arg);
-}
-
-template <>
-double returnWrapper<double>(std::string arg) {
-  return std::stod(arg);
-}
-
-
-template<typename Type> Type lookup(std::vector<std::string>& lines, std::string& str)
-{
-    for(auto itr = std::begin(lines); itr != std::end(lines); ++itr)
-    {
-        if(*itr == str)
-        {
-            ++itr;
-            Type i = returnWrapper<Type>(*itr);
-            --itr;
-            ++itr;
-            std::cout <<
-                str << ": " << i << std::endl;
-            --itr;
-            return i;
-        }
-    }
-    std::cerr << "Could not find " << str << std::endl;
-
-    exit(EXIT_FAILURE);
-}
-
 
 #endif

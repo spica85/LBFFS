@@ -10,77 +10,25 @@
 #include <chrono>
 
 #include "D3Q19.hpp"
+#include "input.hpp"
 
 int main()
 {
-    std::string inputFileName("input.txt");
-    std::vector<std::string> lines;
-    std::string line;
-    std::ifstream inputFile(inputFileName);
+    bool restart;
+    bool Fwrite;
+    bool writeBinary;
+    int startTimeStep;
+    int endTimeStep;
+    int nextOutTime;
+    int outInterval;
+    int nx;
+    int ny;
+    int nz;
+    float uMax;
+    float rho0;
+    float Re;
 
-    if(!inputFile.is_open())
-    {
-        std::cerr << "Could not open the file - '"
-            << inputFileName << "'" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-
-
-    while(std::getline(inputFile, line))
-    {
-        std::vector<std::string> list_string;
-        boost::split(list_string,line, boost::is_space());
-        for(auto& str: list_string)
-        {
-            lines.push_back(str);
-        }
-    }
-
-    std::string nThreadsStr("nThreads");
-    omp_set_num_threads(lookup<int>(lines, nThreadsStr));
-
-    std::string restartStr("restart");
-    bool restart = lookup<bool>(lines, restartStr);
-
-    std::string FwriteStr("Fwrite");
-    bool Fwrite = lookup<bool>(lines, FwriteStr);
-
-    std::string writeBinaryStr("writeBinary");
-    bool writeBinary = lookup<bool>(lines, writeBinaryStr);
-    
-    std::string startTimeStepStr("startTimeStep");
-    int startTimeStep = lookup<int>(lines, startTimeStepStr);
-    
-    std::string endTimeStepStr("endTimeStep");
-    const int endTimeStep = lookup<int>(lines, endTimeStepStr);
-
-    int nextOutTime = startTimeStep;
-
-    std::string outIntervalStr("outInterval");
-    const int outInterval = lookup<int>(lines, outIntervalStr);
-    std::cout << std::endl;
-
-    std::string nxStr("nx");
-    const int nx = lookup<int>(lines, nxStr);
-
-    std::string nyStr("ny");
-    const int ny = lookup<int>(lines, nyStr);
-
-    std::string nzStr("nz");
-    const int nz = lookup<int>(lines, nzStr);
-    std::cout << std::endl;
-
-    std::string uMaxStr("uMax");//(m/s)
-    const float uMax = lookup<float>(lines, uMaxStr);
-
-    std::string rho0Str("rho0");
-    const float rho0 = lookup<float>(lines, rho0Str);
-
-    std::string ReStr("Re");
-    const float Re = lookup<float>(lines, ReStr);
-    std::cout << std::endl;
-
-    inputFile.close();
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re);
 
     // Single Relaxation Time model
     // // -- For cavity flow --
@@ -122,12 +70,12 @@ int main()
 
     std::cout << "tau = " << 1.0/omega << std::endl;
 
-    const std::vector<float> wt = {1.0/3.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/18.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0, 1.0/36.0};
+    const std::vector<float> wt = setWt();
 
     // D3Q19 model
-    const std::vector<float> cx = {0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0};
-    const std::vector<float> cy = {0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 1.0, -1.0};
-    const std::vector<float> cz = {0.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0};
+    const std::vector<float> cx = setCx();
+    const std::vector<float> cy = setCy();
+    const std::vector<float> cz = setCz();
 
     std::vector<float> f(19*nx*ny*nz);
     std::vector<float> ftmp(19*nx*ny*nz);
