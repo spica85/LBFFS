@@ -1,5 +1,6 @@
 if(Fwrite && nextOutTime < nt +1)
 {
+    cl::copy(queue, f_d, f.begin(), f.end());
     #pragma omp parallel for
     for(int ic =0; ic <nx*ny*nz; ic++)
     {

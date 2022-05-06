@@ -253,7 +253,7 @@ for(int k = 0; k < nz; k++)
                 obst[ic].boundary = 2;
                 obst[ic].normal = {0,1,0};
                 obst[ic].inner = false;
-                obst[ic].u0 = u0;
+                obst[ic].u0 = uMax/c;
                 obst[ic].v0 = 0.0;
                 obst[ic].w0 = 0.0;
             }

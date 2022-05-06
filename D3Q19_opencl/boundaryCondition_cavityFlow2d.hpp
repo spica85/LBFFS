@@ -53,7 +53,7 @@ for(int k = 0; k < nz; k++)
                 obst[ic].boundary = 2;
                 obst[ic].normal = {0,1,0};
                 obst[ic].inner = false;
-                obst[ic].u0 = u0;
+                obst[ic].u0 = uMax/c;
             }            
 
             if(i == 0 && j == 0)

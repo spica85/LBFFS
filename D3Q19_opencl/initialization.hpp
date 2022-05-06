@@ -19,7 +19,7 @@ for(int k = 0; k < nz; k++)
 
                 int icf = idf(q,ic,nx,ny,nz);
                 f[icf] = feq;
-                ftmp[icf] = f[icf];
+                fTmp[icf] = f[icf];
             }
         }
     }
