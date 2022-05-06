@@ -16,6 +16,11 @@ if(Fwrite && nextOutTime < nt +1)
 
     std::cout << "Time = " << nt*deltaT << " (s), " << nt << " steps" << std::endl;
 
+    end = std::chrono::system_clock::now();
+    float time = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
+    std::cout << "Execution time: " << time << " (s)" << std::endl;
+    std::cout << "Speed: " << float(nt)*float(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
+
     writeFile << "# vtk DataFile Version 3.0\n";
     writeFile << "vtk output\n";
     if(writeBinary)
