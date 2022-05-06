@@ -34,10 +34,11 @@ __kernel void updateP
    for(int q = 0; q < 19; q++)
    {
       int qid = q*elements+i;
-      pUp[q] = p[upID[qid]];
-      uUp[q] = u[upID[qid]];
-      vUp[q] = v[upID[qid]];
-      wUp[q] = w[upID[qid]];
+      int uID = upID[qid];
+      pUp[q] = p[uID];
+      uUp[q] = u[uID];
+      vUp[q] = v[uID];
+      wUp[q] = w[uID];
 
       float UUpDotC = cx[q]*uUp[q] + cy[q]*vUp[q] + cz[q]*wUp[q];
       float uSqr = uUp[q]*uUp[q] + vUp[q]*vUp[q] + wUp[q]*wUp[q];
@@ -101,10 +102,11 @@ __kernel void updateU
    for(int q = 0; q < 19; q++)
    {
       int qid = q*elements+i;
-      pUp[q] = pTmp[upID[qid]];
-      uUp[q] = u[upID[qid]];
-      vUp[q] = v[upID[qid]];
-      wUp[q] = w[upID[qid]];
+      int uID = upID[qid];
+      pUp[q] = pTmp[uID];
+      uUp[q] = u[uID];
+      vUp[q] = v[uID];
+      wUp[q] = w[uID];
 
       float UUpDotC = cx[q]*uUp[q] + cy[q]*vUp[q] + cz[q]*wUp[q];
       float uSqr = uUp[q]*uUp[q] + vUp[q]*vUp[q] + wUp[q]*wUp[q];
