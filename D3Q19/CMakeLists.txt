@@ -1,5 +1,7 @@
 # Setting for the version of CMake
-cmake_minimum_required(VERSION 3.22.1)
+cmake_minimum_required(VERSION 3.16.1)
+# Setting for clang++
+set(CMAKE_CXX_COMPILER /bin/clang++)
 # Setting for the project name and coding language
 project(D3Q19_cmake CXX)
 # Making an execution file named ns.out from ns.cpp
