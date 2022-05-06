@@ -135,11 +135,6 @@ int main()
     // Time marching
     for(int nt = startTimeStep; nt <= endTimeStep; nt++)
     {
-        #pragma omp parallel for
-        for(int ic =0; ic <nx*ny*nz; ic++)
-        {
-            cal_rhoUVW(ic, nx, ny, nz, f, cx, cy, cz, rho[ic], u[ic], v[ic], w[ic]);
-        }
         #include "write.hpp"
 
         #pragma omp parallel for

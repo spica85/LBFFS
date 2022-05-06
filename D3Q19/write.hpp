@@ -1,5 +1,11 @@
 if(Fwrite && nextOutTime < nt +1)
 {
+    #pragma omp parallel for
+    for(int ic =0; ic <nx*ny*nz; ic++)
+    {
+        cal_rhoUVW(ic, nx, ny, nz, f, cx, cy, cz, rho[ic], u[ic], v[ic], w[ic]);
+    }
+
     std::ostringstream ss;
     ss << std::setw(8) << std::setfill('0') << std::to_string(nt);
     std::string filename = ss.str();
