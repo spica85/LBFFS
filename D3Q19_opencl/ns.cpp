@@ -168,6 +168,7 @@ int main()
 
     std::vector<int> upID(19*nx*ny*nz);
     std::vector<unsigned> upQID(19*nx*ny*nz);
+    std::vector<unsigned> downQID(19*nx*ny*nz);
     for(int ic = 0; ic < nx*ny*nz; ic++)
     {
         int i = ic2i(ic,nx,ny);
@@ -178,6 +179,8 @@ int main()
             int qic = idf(q,ic,nx,ny,nz);
             upID[qic] = upwindID(q,i,j,k,nx,ny,nz);
             upQID[qic] = idf(q, upID[qic], nx, ny, nz);
+            int downID = downwindID(q,i,j,k,nx,ny,nz);
+            downQID[qic] = idf(q, downID, nx, ny, nz);
         }
     }
 
@@ -254,6 +257,7 @@ int main()
     // cl::Buffer wTmp_d(context, w.begin(), w.end(), true);
 
     cl::Buffer upQID_d(context, upQID.begin(), upQID.end(), true);
+    cl::Buffer downQID_d(context, downQID.begin(), downQID.end(), true);
     cl::Buffer BBID_d(context, BBID.begin(), BBID.end(), true);
     cl::Buffer BBQID_d(context, BBQID.begin(), BBQID.end(), true);
     cl::Buffer BBmovingWallID_d(context, BBmovingWallID.begin(), BBmovingWallID.end(), true);
@@ -286,6 +290,16 @@ int main()
         cl::Buffer
     > k_streaming(program, "k_streaming");
 
+    // Create the kernel functor of streamingCollision
+    cl::KernelFunctor
+    <
+        cl::Buffer, cl::Buffer,
+        cl::Buffer,
+        const unsigned,
+        const float,
+        const float
+    > k_collisionStreaming(program, "k_collisionStreaming");
+
     // Create the kernel functor of bounceBack
     cl::KernelFunctor
     <
@@ -304,13 +318,6 @@ int main()
         const unsigned
     > k_bounceBackMovingWall(program, "k_bounceBackMovingWall");
 
-    // // {
-    // // cl::Kernel ko_BC_P(program,"BC_P");
-    // // size_t work_group_size = ko_BC_P.getWorkGroupInfo<CL_KERNEL_WORK_GROUP_SIZE>(cl::Device::getDefault());
-    // // std::cout << "work_group_size: " << work_group_size << std::endl;
-    // // }
-
-
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -321,85 +328,68 @@ int main()
     {
         #include "write.hpp"
 
+        // {
+        // util::Timer timer;
+        // k_collision
+        // (
+        //     cl::EnqueueArgs(queue,cl::NDRange(elements)),
+        //     f_d, fTmp_d,
+        //     elements,
+        //     omega
+        // );
+        // k_externalForce
+        // (
+        //     cl::EnqueueArgs(queue,cl::NDRange(elements)),
+        //     f_d, fTmp_d,
+        //     elements,
+        //     dpdx
+        // );
+        // queue.finish();
+        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        // // printf("\nThe kernels of collision and externalForce ran in %lf m seconds\n", rtime);
+        // }
+
+        // {
+        // util::Timer timer;
+        // k_streaming
+        // (
+        //     cl::EnqueueArgs(queue,cl::NDRange(qElements)),
+        //     f_d, fTmp_d,
+        //     upQID_d
+        // );
+        // queue.finish();
+        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        // // printf("\nThe kernel of streaming ran in %lf m seconds\n", rtime);
+        // }
+
         {
         util::Timer timer;
-        k_collision
+        k_collisionStreaming
         (
             cl::EnqueueArgs(queue,cl::NDRange(elements)),
             f_d, fTmp_d,
+            downQID_d,
             elements,
-            omega
-        );
-        k_externalForce
-        (
-            cl::EnqueueArgs(queue,cl::NDRange(elements)),
-            f_d, fTmp_d,
-            elements,
+            omega,
             dpdx
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernels of collision and externalForce ran in %lf m seconds\n", rtime);
         }
-
-        // {
-        // util::Timer timer;
-        // #pragma omp parallel for
-        // for(int ic = 0; ic < nx*ny*nz; ic++)
-        // {
-        //     collision(omega,ic,nx,ny,nz,cx,cy,cz,wt,f);
-        //     externalForce(dpdx,ic,nx,ny,nz,cx,cy,cz,wt,f);
-        //     for(int q = 0; q < 19; q++)
-        //     {
-        //         int qic = idf(q,ic,nx,ny,nz);
-        //         fTmp[qic] = f[qic];
-        //     }
-        // }
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // // printf("\nThe functions of collision and externalForce ran in %lf m seconds\n", rtime);
-        // }
-
-
-        {
-        util::Timer timer;
-        k_streaming
-        (
-            cl::EnqueueArgs(queue,cl::NDRange(qElements)),
-            f_d, fTmp_d,
-            upQID_d
-        );
-        queue.finish();
-        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of streaming ran in %lf m seconds\n", rtime);
-        }
-
-        // {
-        // util::Timer timer;
-        // #pragma omp parallel for
-        // for(int ic = 0; ic < nx*ny*nz; ic++)
-        // {
-        //     int i = ic2i(ic,nx,ny);
-        //     int j = ic2j(ic,nx,ny);
-        //     int k = ic2k(ic,nx,ny);
-
-        //     streaming(ic,i,j,k,nx,ny,nz,fTmp,f,upID);
-        // }
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // // printf("\nThe function of streaming ran in %lf m seconds\n", rtime);
-        // }
 
         {
         util::Timer timer;
         k_bounceBack
         (
             cl::EnqueueArgs(queue,cl::NDRange(nBB)),
-            f_d,
+            fTmp_d,
             BBID_d, BBQID_d,
             elements, nBB
         );
         // queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         // printf("\nThe kernel of bounceBack ran in %lf m seconds\n", rtime);
+        queue.finish();
         }
 
         {
@@ -407,7 +397,7 @@ int main()
         k_bounceBackMovingWall
         (
             cl::EnqueueArgs(queue,cl::NDRange(nBBMW)),
-            f_d,
+            fTmp_d,
             BBmovingWallID_d,
             u0_d, v0_d, w0_d,
             normal_d,
@@ -418,6 +408,7 @@ int main()
         // printf("\nThe kernel of bounceBackMovingWall ran in %lf m seconds\n", rtime);
         }
 
+        std::swap(fTmp_d,f_d);
 
         // cl::copy(queue, f_d, f.begin(), f.end());
         // {

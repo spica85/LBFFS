@@ -81,6 +81,52 @@ __kernel void k_streaming
     f[qi] = fTmp[upQID[qi]];
 }
 
+__kernel void k_collisionStreaming // Push
+(
+   __global float* f, __global float* fTmp,
+   __global unsigned* stlmgQID,
+   const unsigned elements,
+   const float omega,
+   const float dpdx
+)
+{
+    int i = get_global_id(0);
+
+    float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
+    float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    float cy[19] = {0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f};
+    float cz[19] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f};
+
+    float rho = 0.0f;
+    float u = 0.0f;
+    float v = 0.0f;
+    float w = 0.0f;
+    for(int q = 0; q < 19; q++)
+    {
+        int qic = q*elements +i;
+
+        rho += f[qic];
+
+        u += f[qic]*cx[q];
+        v += f[qic]*cy[q];
+        w += f[qic]*cz[q];
+    }
+    u /= rho;
+    v /= rho;
+    w /= rho;
+
+    for(int q = 0; q < 19; q++)
+    {
+        float uSqr =u*u+v*v+w*w;
+        float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+        float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+
+        int qic = q*elements +i;
+
+        fTmp[stlmgQID[qic]] = (1.0f -omega)*f[qic] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Push
+    }
+}
+
 __kernel void k_bounceBack
 (
    __global float* f,

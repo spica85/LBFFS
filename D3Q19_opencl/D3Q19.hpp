@@ -1269,6 +1269,126 @@ inline int upwindID(const int q, const int i, const int j, const int k, const in
     }
 }
 
+inline int downwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+{
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 2)
+    {
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : index1d(nx-1,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : index1d(0,j,k,nx,ny);
+    }
+    else if(q == 4)
+    {
+        return j != 0 ? index1d(i,j-1,k,nx,ny) : index1d(i,ny-1,k,nx,ny);
+    }
+    else if(q == 3)
+    {
+        return j != ny-1 ? index1d(i,j+1,k,nx,ny) : index1d(i,0,k,nx,ny);
+    }
+    else if(q == 6)
+    {
+        return k != 0 ? index1d(i,j,k-1,nx,ny) : index1d(i,j,nz-1,nx,ny);
+    }
+    else if(q == 5)
+    {
+        return k != nz-1 ? index1d(i,j,k+1,nx,ny) : index1d(i,j,0,nx,ny);
+    }
+    else if(q == 8)
+    {
+        return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
+               (i == 0 && j != 0) ? index1d(nx-1, j-1, k, nx, ny) :
+               (i != 0 && j == 0) ? index1d(i-1, ny-1, k, nx, ny) :
+               index1d(nx-1, ny-1, k, nx, ny);
+    }
+    else if(q == 7)
+    {
+        return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
+               (i == nx-1 && j != ny-1) ? index1d(0, j+1, k, nx, ny) :
+               (i != nx-1 && j == ny-1) ? index1d(i+1, 0, k, nx, ny) :
+               index1d(0, 0, k, nx, ny);
+    }
+    else if(q == 10)
+    {
+        return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
+               (i == 0 && j != ny-1) ? index1d(nx-1, j+1, k, nx, ny) :
+               (i != 0 && j == ny-1) ? index1d(i-1, 0, k, nx, ny) :
+               index1d(nx-1, 0, k, nx, ny);
+    }
+    else if(q == 9)
+    {
+        return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
+               (i == nx-1 && j != 0) ? index1d(0, j-1, k, nx, ny) :
+               (i != nx-1 && j == 0) ? index1d(i+1, ny-1, k, nx, ny) :
+               index1d(0, ny-1, k, nx, ny);
+    }
+    else if(q == 12)
+    {
+        return (i != 0 && k != 0) ? index1d(i-1, j, k-1, nx, ny) :
+               (i == 0 && k != 0) ? index1d(nx-1, j, k-1, nx, ny) :
+               (i != 0 && k == 0) ? index1d(i-1, j, nz-1, nx, ny) :
+               index1d(nx-1, j, nz-1, nx, ny);
+    }
+    else if(q == 11)
+    {
+        return (i != nx-1 && k != nz-1) ? index1d(i+1, j, k+1, nx, ny) :
+               (i == nx-1 && k != nz-1) ? index1d(0, j, k+1, nx, ny) :
+               (i != nx-1 && k == nz-1) ? index1d(i+1, j, 0, nx, ny) :
+               index1d(0, j, 0, nx, ny);
+    }
+    else if(q == 14)
+    {
+        return (i != 0 && k != nz-1) ? index1d(i-1, j, k+1, nx, ny) :
+               (i == 0 && k != nz-1) ? index1d(nx-1, j, k+1, nx, ny) :
+               (i != 0 && k == nz-1) ? index1d(i-1, j, 0, nx, ny) :
+               index1d(nx-1, j, 0, nx, ny);
+    }
+    else if(q == 13)
+    {
+        return (i != nx-1 && k != 0) ? index1d(i+1, j, k-1, nx, ny) :
+               (i == nx-1 && k != 0) ? index1d(0, j, k-1, nx, ny) :
+               (i != nx-1 && k == 0) ? index1d(i+1, j, nz-1, nx, ny) :
+               index1d(0, j, nz-1, nx, ny);
+    }
+    else if(q == 16)
+    {
+        return (j != 0 && k != 0) ? index1d(i, j-1, k-1, nx, ny) :
+               (j == 0 && k != 0) ? index1d(i, ny-1, k-1, nx, ny) :
+               (j != 0 && k == 0) ? index1d(i, j-1, nz-1, nx, ny) :
+               index1d(i, ny-1, nz-1, nx, ny);
+    }
+    else if(q == 15)
+    {
+        return (j != ny-1 && k != nz-1) ? index1d(i, j+1, k+1, nx, ny) :
+               (j == ny-1 && k != nz-1) ? index1d(i, 0, k+1, nx, ny) :
+               (j != ny-1 && k == nz-1) ? index1d(i, j+1, 0, nx, ny) :
+               index1d(i, 0, 0, nx, ny);
+    }
+    else if(q == 18)
+    {
+        return (j != 0 && k != nz-1) ? index1d(i, j-1, k+1, nx, ny) :
+               (j == 0 && k != nz-1) ? index1d(i, ny-1, k+1, nx, ny) :
+               (j != 0 && k == nz-1) ? index1d(i, j-1, 0, nx, ny) :
+               index1d(i, ny-1, 0, nx, ny);
+    }
+    else if(q == 17)
+    {
+        return (j != ny-1 && k != 0) ? index1d(i, j+1, k-1, nx, ny) :
+               (j == ny-1 && k != 0) ? index1d(i, 0, k-1, nx, ny) :
+               (j != ny-1 && k == 0) ? index1d(i, j+1, nz-1, nx, ny) :
+               index1d(i, 0, nz-1, nx, ny);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 void collision(const float omega, const int ic, const int nx, const int ny, const int nz, const std::vector<float>& cx, const std::vector<float>& cy, const std::vector<float>& cz, const std::vector<float>& wt, std::vector<float>& f)
 {
     float rho = 0.0;
