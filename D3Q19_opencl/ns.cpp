@@ -294,10 +294,10 @@ int main()
     cl::KernelFunctor
     <
         cl::Buffer, cl::Buffer,
-        cl::Buffer,
         const unsigned,
         const float,
-        const float
+        const float,
+        const int, const int, const int
     > k_collisionStreaming(program, "k_collisionStreaming");
 
     // Create the kernel functor of bounceBack
@@ -368,13 +368,14 @@ int main()
         (
             cl::EnqueueArgs(queue,cl::NDRange(elements)),
             f_d, fTmp_d,
-            downQID_d,
             elements,
             omega,
-            dpdx
+            dpdx,
+            nx, ny, nz
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        // printf("\nThe kernel of collisionStreaming ran in %lf m seconds\n", rtime);
         }
 
         {

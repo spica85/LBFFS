@@ -1,6 +1,159 @@
+// -- D3Q19 functions
+inline int ic2i(int ic, int nx, int ny)
+{
+    return (ic%(nx*ny))%nx;
+}
+
+inline int ic2j(int ic, int nx, int ny)
+{
+    return ic%(nx*ny)/nx;
+}
+
+inline int ic2k(int ic, int nx, int ny)
+{
+    return ic/(nx*ny);
+}
+
+inline int index1d(int i, int j, int k, int nx, int ny)
+{
+    return nx*ny*k+nx*j+i;
+}
+
+inline int index1df(int q, int i, int j, int k, int nx, int ny, int nz)
+{
+    return q*nx*ny*nz+nx*ny*k+nx*j+i;
+}
+
+inline int idf(int q, int i, int nx, int ny, int nz)
+{
+    return q*nx*ny*nz+i;
+}
+
+inline int downwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+{
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 2)
+    {
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : index1d(nx-1,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : index1d(0,j,k,nx,ny);
+    }
+    else if(q == 4)
+    {
+        return j != 0 ? index1d(i,j-1,k,nx,ny) : index1d(i,ny-1,k,nx,ny);
+    }
+    else if(q == 3)
+    {
+        return j != ny-1 ? index1d(i,j+1,k,nx,ny) : index1d(i,0,k,nx,ny);
+    }
+    else if(q == 6)
+    {
+        return k != 0 ? index1d(i,j,k-1,nx,ny) : index1d(i,j,nz-1,nx,ny);
+    }
+    else if(q == 5)
+    {
+        return k != nz-1 ? index1d(i,j,k+1,nx,ny) : index1d(i,j,0,nx,ny);
+    }
+    else if(q == 8)
+    {
+        return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
+               (i == 0 && j != 0) ? index1d(nx-1, j-1, k, nx, ny) :
+               (i != 0 && j == 0) ? index1d(i-1, ny-1, k, nx, ny) :
+               index1d(nx-1, ny-1, k, nx, ny);
+    }
+    else if(q == 7)
+    {
+        return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
+               (i == nx-1 && j != ny-1) ? index1d(0, j+1, k, nx, ny) :
+               (i != nx-1 && j == ny-1) ? index1d(i+1, 0, k, nx, ny) :
+               index1d(0, 0, k, nx, ny);
+    }
+    else if(q == 10)
+    {
+        return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
+               (i == 0 && j != ny-1) ? index1d(nx-1, j+1, k, nx, ny) :
+               (i != 0 && j == ny-1) ? index1d(i-1, 0, k, nx, ny) :
+               index1d(nx-1, 0, k, nx, ny);
+    }
+    else if(q == 9)
+    {
+        return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
+               (i == nx-1 && j != 0) ? index1d(0, j-1, k, nx, ny) :
+               (i != nx-1 && j == 0) ? index1d(i+1, ny-1, k, nx, ny) :
+               index1d(0, ny-1, k, nx, ny);
+    }
+    else if(q == 12)
+    {
+        return (i != 0 && k != 0) ? index1d(i-1, j, k-1, nx, ny) :
+               (i == 0 && k != 0) ? index1d(nx-1, j, k-1, nx, ny) :
+               (i != 0 && k == 0) ? index1d(i-1, j, nz-1, nx, ny) :
+               index1d(nx-1, j, nz-1, nx, ny);
+    }
+    else if(q == 11)
+    {
+        return (i != nx-1 && k != nz-1) ? index1d(i+1, j, k+1, nx, ny) :
+               (i == nx-1 && k != nz-1) ? index1d(0, j, k+1, nx, ny) :
+               (i != nx-1 && k == nz-1) ? index1d(i+1, j, 0, nx, ny) :
+               index1d(0, j, 0, nx, ny);
+    }
+    else if(q == 14)
+    {
+        return (i != 0 && k != nz-1) ? index1d(i-1, j, k+1, nx, ny) :
+               (i == 0 && k != nz-1) ? index1d(nx-1, j, k+1, nx, ny) :
+               (i != 0 && k == nz-1) ? index1d(i-1, j, 0, nx, ny) :
+               index1d(nx-1, j, 0, nx, ny);
+    }
+    else if(q == 13)
+    {
+        return (i != nx-1 && k != 0) ? index1d(i+1, j, k-1, nx, ny) :
+               (i == nx-1 && k != 0) ? index1d(0, j, k-1, nx, ny) :
+               (i != nx-1 && k == 0) ? index1d(i+1, j, nz-1, nx, ny) :
+               index1d(0, j, nz-1, nx, ny);
+    }
+    else if(q == 16)
+    {
+        return (j != 0 && k != 0) ? index1d(i, j-1, k-1, nx, ny) :
+               (j == 0 && k != 0) ? index1d(i, ny-1, k-1, nx, ny) :
+               (j != 0 && k == 0) ? index1d(i, j-1, nz-1, nx, ny) :
+               index1d(i, ny-1, nz-1, nx, ny);
+    }
+    else if(q == 15)
+    {
+        return (j != ny-1 && k != nz-1) ? index1d(i, j+1, k+1, nx, ny) :
+               (j == ny-1 && k != nz-1) ? index1d(i, 0, k+1, nx, ny) :
+               (j != ny-1 && k == nz-1) ? index1d(i, j+1, 0, nx, ny) :
+               index1d(i, 0, 0, nx, ny);
+    }
+    else if(q == 18)
+    {
+        return (j != 0 && k != nz-1) ? index1d(i, j-1, k+1, nx, ny) :
+               (j == 0 && k != nz-1) ? index1d(i, ny-1, k+1, nx, ny) :
+               (j != 0 && k == nz-1) ? index1d(i, j-1, 0, nx, ny) :
+               index1d(i, ny-1, 0, nx, ny);
+    }
+    else if(q == 17)
+    {
+        return (j != ny-1 && k != 0) ? index1d(i, j+1, k-1, nx, ny) :
+               (j == ny-1 && k != 0) ? index1d(i, 0, k-1, nx, ny) :
+               (j != ny-1 && k == 0) ? index1d(i, j+1, nz-1, nx, ny) :
+               index1d(i, 0, nz-1, nx, ny);
+    }
+    else
+    {
+        return 0;
+    }
+}
+// ---
+
 __kernel void k_collision
 (
    __global float* f, __global float* fTmp,
+
    const unsigned elements,
    const float omega
 )
@@ -84,13 +237,13 @@ __kernel void k_streaming
 __kernel void k_collisionStreaming // Push
 (
    __global float* f, __global float* fTmp,
-   __global unsigned* stlmgQID,
    const unsigned elements,
    const float omega,
-   const float dpdx
+   const float dpdx,
+   const int nx, const int ny, const int nz
 )
 {
-    int i = get_global_id(0);
+    int ic = get_global_id(0);
 
     float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
     float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
@@ -103,7 +256,7 @@ __kernel void k_collisionStreaming // Push
     float w = 0.0f;
     for(int q = 0; q < 19; q++)
     {
-        int qic = q*elements +i;
+        int qic = q*elements +ic;
 
         rho += f[qic];
 
@@ -121,9 +274,15 @@ __kernel void k_collisionStreaming // Push
         float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
         float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
 
-        int qic = q*elements +i;
+        int qic = q*elements +ic;
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
 
-        fTmp[stlmgQID[qic]] = (1.0f -omega)*f[qic] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Push
+        int downID = downwindID(q,i,j,k,nx,ny,nz);
+        int downQID = idf(q, downID, nx, ny, nz);
+
+        fTmp[downQID] = (1.0f -omega)*f[qic] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Push
     }
 }
 
