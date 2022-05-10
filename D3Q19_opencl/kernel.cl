@@ -29,6 +29,329 @@ inline int idf(int q, int i, int nx, int ny, int nz)
     return q*nx*ny*nz+i;
 }
 
+inline int reflectQ(const int q)
+{
+    if(q == 0)
+    {
+        return 0;
+    }
+    else if(q == 1)
+    {
+        return 2;
+    }
+    else if(q == 2)
+    {
+        return 1;
+    }
+    else if(q == 3)
+    {
+        return 4;
+    }
+    else if(q == 4)
+    {
+        return 3;
+    }
+    else if(q == 5)
+    {
+        return 6;
+    }
+    else if(q == 6)
+    {
+        return 5;
+    }
+    else if(q == 7)
+    {
+        return 8;
+    }
+    else if(q == 8)
+    {
+        return 7;
+    }
+    else if(q == 9)
+    {
+        return 10;
+    }
+    else if(q == 10)
+    {
+        return 9;
+    }
+    else if(q == 11)
+    {
+        return 12;
+    }
+    else if(q == 12)
+    {
+        return 11;
+    }
+    else if(q == 13)
+    {
+        return 14;
+    }
+    else if(q == 14)
+    {
+        return 13;
+    }
+    else if(q == 15)
+    {
+        return 16;
+    }
+    else if(q == 16)
+    {
+        return 15;
+    }
+    else if(q == 17)
+    {
+        return 18;
+    }
+    else if(q == 18)
+    {
+        return 17;
+    }
+    // std::cerr << "Error q = [0:18], q = " << q << std::endl;
+    // exit(EXIT_FAILURE);    
+}
+
+inline int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+{
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : index1d(nx-1,j,k,nx,ny);
+    }
+    else if(q == 2)
+    {
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : index1d(0,j,k,nx,ny);
+    }
+    else if(q == 3)
+    {
+        return j != 0 ? index1d(i,j-1,k,nx,ny) : index1d(i,ny-1,k,nx,ny);
+    }
+    else if(q == 4)
+    {
+        return j != ny-1 ? index1d(i,j+1,k,nx,ny) : index1d(i,0,k,nx,ny);
+    }
+    else if(q == 5)
+    {
+        return k != 0 ? index1d(i,j,k-1,nx,ny) : index1d(i,j,nz-1,nx,ny);
+    }
+    else if(q == 6)
+    {
+        return k != nz-1 ? index1d(i,j,k+1,nx,ny) : index1d(i,j,0,nx,ny);
+    }
+    else if(q == 7)
+    {
+        return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
+               (i == 0 && j != 0) ? index1d(nx-1, j-1, k, nx, ny) :
+               (i != 0 && j == 0) ? index1d(i-1, ny-1, k, nx, ny) :
+               index1d(nx-1, ny-1, k, nx, ny);
+    }
+    else if(q == 8)
+    {
+        return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
+               (i == nx-1 && j != ny-1) ? index1d(0, j+1, k, nx, ny) :
+               (i != nx-1 && j == ny-1) ? index1d(i+1, 0, k, nx, ny) :
+               index1d(0, 0, k, nx, ny);
+    }
+    else if(q == 9)
+    {
+        return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
+               (i == 0 && j != ny-1) ? index1d(nx-1, j+1, k, nx, ny) :
+               (i != 0 && j == ny-1) ? index1d(i-1, 0, k, nx, ny) :
+               index1d(nx-1, 0, k, nx, ny);
+    }
+    else if(q == 10)
+    {
+        return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
+               (i == nx-1 && j != 0) ? index1d(0, j-1, k, nx, ny) :
+               (i != nx-1 && j == 0) ? index1d(i+1, ny-1, k, nx, ny) :
+               index1d(0, ny-1, k, nx, ny);
+    }
+    else if(q == 11)
+    {
+        return (i != 0 && k != 0) ? index1d(i-1, j, k-1, nx, ny) :
+               (i == 0 && k != 0) ? index1d(nx-1, j, k-1, nx, ny) :
+               (i != 0 && k == 0) ? index1d(i-1, j, nz-1, nx, ny) :
+               index1d(nx-1, j, nz-1, nx, ny);
+    }
+    else if(q == 12)
+    {
+        return (i != nx-1 && k != nz-1) ? index1d(i+1, j, k+1, nx, ny) :
+               (i == nx-1 && k != nz-1) ? index1d(0, j, k+1, nx, ny) :
+               (i != nx-1 && k == nz-1) ? index1d(i+1, j, 0, nx, ny) :
+               index1d(0, j, 0, nx, ny);
+    }
+    else if(q == 13)
+    {
+        return (i != 0 && k != nz-1) ? index1d(i-1, j, k+1, nx, ny) :
+               (i == 0 && k != nz-1) ? index1d(nx-1, j, k+1, nx, ny) :
+               (i != 0 && k == nz-1) ? index1d(i-1, j, 0, nx, ny) :
+               index1d(nx-1, j, 0, nx, ny);
+    }
+    else if(q == 14)
+    {
+        return (i != nx-1 && k != 0) ? index1d(i+1, j, k-1, nx, ny) :
+               (i == nx-1 && k != 0) ? index1d(0, j, k-1, nx, ny) :
+               (i != nx-1 && k == 0) ? index1d(i+1, j, nz-1, nx, ny) :
+               index1d(0, j, nz-1, nx, ny);
+    }
+    else if(q == 15)
+    {
+        return (j != 0 && k != 0) ? index1d(i, j-1, k-1, nx, ny) :
+               (j == 0 && k != 0) ? index1d(i, ny-1, k-1, nx, ny) :
+               (j != 0 && k == 0) ? index1d(i, j-1, nz-1, nx, ny) :
+               index1d(i, ny-1, nz-1, nx, ny);
+    }
+    else if(q == 16)
+    {
+        return (j != ny-1 && k != nz-1) ? index1d(i, j+1, k+1, nx, ny) :
+               (j == ny-1 && k != nz-1) ? index1d(i, 0, k+1, nx, ny) :
+               (j != ny-1 && k == nz-1) ? index1d(i, j+1, 0, nx, ny) :
+               index1d(i, 0, 0, nx, ny);
+    }
+    else if(q == 17)
+    {
+        return (j != 0 && k != nz-1) ? index1d(i, j-1, k+1, nx, ny) :
+               (j == 0 && k != nz-1) ? index1d(i, ny-1, k+1, nx, ny) :
+               (j != 0 && k == nz-1) ? index1d(i, j-1, 0, nx, ny) :
+               index1d(i, ny-1, 0, nx, ny);
+    }
+    else if(q == 18)
+    {
+        return (j != ny-1 && k != 0) ? index1d(i, j+1, k-1, nx, ny) :
+               (j == ny-1 && k != 0) ? index1d(i, 0, k-1, nx, ny) :
+               (j != ny-1 && k == 0) ? index1d(i, j+1, nz-1, nx, ny) :
+               index1d(i, 0, nz-1, nx, ny);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+inline int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int* normal)
+{
+    int ic = index1d(i, j, k, nx, ny);
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : (normal[ic] == 0 ? index1d(nx-1,j,k,nx,ny) : -1);
+    }
+    else if(q == 2)
+    {
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : (normal[ic] == 0 ? index1d(0,j,k,nx,ny) : -1);
+    }
+    else if(q == 3)
+    {
+        return j != 0 ? index1d(i,j-1,k,nx,ny) : (normal[ic] == 0 ? index1d(i,ny-1,k,nx,ny) : -1);
+    }
+    else if(q == 4)
+    {
+        return j != ny-1 ? index1d(i,j+1,k,nx,ny) : (normal[ic] == 0 ? index1d(i,0,k,nx,ny) : -1);
+    }
+    else if(q == 5)
+    {
+        return k != 0 ? index1d(i,j,k-1,nx,ny) : (normal[ic] == 0 ? index1d(i,j,nz-1,nx,ny) : -1);
+    }
+    else if(q == 6)
+    {
+        return k != nz-1 ? index1d(i,j,k+1,nx,ny) : (normal[ic] == 0 ? index1d(i,j,0,nx,ny) : -1);
+    }
+    else if(q == 7)
+    {
+        return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
+               (i == 0 && j != 0) ? (normal[ic] == 0 ? index1d(nx-1, j-1, k, nx, ny) : -1) :
+               (i != 0 && j == 0) ? (normal[ic] == 0 ? index1d(i-1, ny-1, k, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(nx-1, ny-1, k, nx, ny) : -1);
+    }
+    else if(q == 8)
+    {
+        return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
+               (i == nx-1 && j != ny-1) ? (normal[ic] == 0 ? index1d(0, j+1, k, nx, ny) : -1) :
+               (i != nx-1 && j == ny-1) ? (normal[ic] == 0 ? index1d(i+1, 0, k, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(0, 0, k, nx, ny) : -1);
+    }
+    else if(q == 9)
+    {
+        return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
+               (i == 0 && j != ny-1) ? (normal[ic] == 0 ? index1d(nx-1, j+1, k, nx, ny) : -1):
+               (i != 0 && j == ny-1) ? (normal[ic] == 0 ? index1d(i-1, 0, k, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(nx-1, 0, k, nx, ny) : -1);
+    }
+    else if(q == 10)
+    {
+        return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
+               (i == nx-1 && j != 0) ? (normal[ic] == 0 ? index1d(0, j-1, k, nx, ny) : -1) :
+               (i != nx-1 && j == 0) ? (normal[ic] == 0 ? index1d(i+1, ny-1, k, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(0, ny-1, k, nx, ny) : -1);
+    }
+    else if(q == 11)
+    {
+        return (i != 0 && k != 0) ? index1d(i-1, j, k-1, nx, ny) :
+               (i == 0 && k != 0) ? (normal[ic] == 0 ? index1d(nx-1, j, k-1, nx, ny) : -1) :
+               (i != 0 && k == 0) ? (normal[ic] == 0 ? index1d(i-1, j, nz-1, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(nx-1, j, nz-1, nx, ny) : -1);
+    }
+    else if(q == 12)
+    {
+        return (i != nx-1 && k != nz-1) ? index1d(i+1, j, k+1, nx, ny) :
+               (i == nx-1 && k != nz-1) ? (normal[ic] == 0 ? index1d(0, j, k+1, nx, ny) : -1) :
+               (i != nx-1 && k == nz-1) ? (normal[ic] == 0 ? index1d(i+1, j, 0, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(0, j, 0, nx, ny) : -1);
+    }
+    else if(q == 13)
+    {
+        return (i != 0 && k != nz-1) ? index1d(i-1, j, k+1, nx, ny) :
+               (i == 0 && k != nz-1) ? (normal[ic] == 0 ? index1d(nx-1, j, k+1, nx, ny) : -1) :
+               (i != 0 && k == nz-1) ? (normal[ic] == 0 ? index1d(i-1, j, 0, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(nx-1, j, 0, nx, ny) : -1);
+    }
+    else if(q == 14)
+    {
+        return (i != nx-1 && k != 0) ? index1d(i+1, j, k-1, nx, ny) :
+               (i == nx-1 && k != 0) ? (normal[ic] == 0 ? index1d(0, j, k-1, nx, ny) : -1) :
+               (i != nx-1 && k == 0) ? (normal[ic] == 0 ? index1d(i+1, j, nz-1, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(0, j, nz-1, nx, ny) : -1);
+    }
+    else if(q == 15)
+    {
+        return (j != 0 && k != 0) ? index1d(i, j-1, k-1, nx, ny) :
+               (j == 0 && k != 0) ? (normal[ic] == 0 ? index1d(i, ny-1, k-1, nx, ny) : -1) :
+               (j != 0 && k == 0) ? (normal[ic] == 0 ? index1d(i, j-1, nz-1, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(i, ny-1, nz-1, nx, ny) : -1);
+    }
+    else if(q == 16)
+    {
+        return (j != ny-1 && k != nz-1) ? index1d(i, j+1, k+1, nx, ny) :
+               (j == ny-1 && k != nz-1) ? (normal[ic] == 0 ? index1d(i, 0, k+1, nx, ny) : -1) :
+               (j != ny-1 && k == nz-1) ? (normal[ic] == 0 ? index1d(i, j+1, 0, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(i, 0, 0, nx, ny) : -1);
+    }
+    else if(q == 17)
+    {
+        return (j != 0 && k != nz-1) ? index1d(i, j-1, k+1, nx, ny) :
+               (j == 0 && k != nz-1) ? (normal[ic] == 0 ? index1d(i, ny-1, k+1, nx, ny) : -1) :
+               (j != 0 && k == nz-1) ? (normal[ic] == 0 ? index1d(i, j-1, 0, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(i, ny-1, 0, nx, ny) : -1);
+    }
+    else if(q == 18)
+    {
+        return (j != ny-1 && k != 0) ? index1d(i, j+1, k-1, nx, ny) :
+               (j == ny-1 && k != 0) ? (normal[ic] == 0 ? index1d(i, 0, k-1, nx, ny) : -1) :
+               (j != ny-1 && k == 0) ? (normal[ic] == 0 ? index1d(i, j+1, nz-1, nx, ny) : -1) :
+               (normal[ic] == 0 ? index1d(i, 0, nz-1, nx, ny) : -1);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 inline int downwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     if(q == 0)
@@ -410,5 +733,150 @@ __kernel void k_bounceBackMovingWall
         (*Vinkp) = (*Vipkn) -rho*(w-u)/ 6.0f -Nxz;
         (*Vjpkp) = (*Vjnkn) -rho*(w+v)/ 6.0f +Nyz;
         (*Vjnkp) = (*Vjpkn) -rho*(w-v)/ 6.0f -Nyz;
+    }
+}
+
+
+__kernel void k_streamingCollision // Pull
+(
+   __global float* f, __global float* fTmp,
+   __global int* normal,
+   __global float* u0, __global float* v0, __global float* w0,
+   const unsigned elements,
+   const float omega,
+   const float dpdx,
+   const int nx, const int ny, const int nz
+)
+{
+    int ic = get_global_id(0);
+
+    float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
+    float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+    float cy[19] = {0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f};
+    float cz[19] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f};
+
+    float ft[19];
+    for(int q = 0; q < 19; q++)
+    {
+        int qic = q*elements +ic;
+
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+
+        int upID = upwindID_B(q,i,j,k,nx,ny,nz,normal);
+        if(upID != -1)
+        {
+            int upQID = idf(q, upID, nx, ny, nz);
+            ft[q] = f[upQID];
+        }
+        else
+        {
+            int qbb = reflectQ(q);
+            int bbQID = idf(qbb, ic, nx, ny, nz);
+            float rhow = 1.0f;
+            if(q == 1)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*u0[ic]/18.0f;
+            }
+            else if(q == 2)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*u0[ic]/18.0f;
+            }
+            else if(q == 3)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
+            }
+            else if(q == 4)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
+            }
+            else if(q == 5)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*w0[ic]/18.0f;
+            }
+            else if(q == 6)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*w0[ic]/18.0f;
+            }
+            else if(q == 7)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+            }
+            else if(q == 8)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+            }
+            else if(q == 9)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+            }
+            else if(q == 10)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+            }
+            else if(q == 11)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
+            }
+            else if(q == 12)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
+            }
+            else if(q == 13)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
+            }
+            else if(q == 14)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
+            }
+            else if(q == 15)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+            }
+            else if(q == 16)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+            }
+            else if(q == 17)
+            {
+                ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+            }
+            else if(q == 18)
+            {
+                ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+            }
+            // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
+        }
+    }
+    
+    float rho = 0.0f;
+    float u = 0.0f;
+    float v = 0.0f;
+    float w = 0.0f;
+    for(int q = 0; q < 19; q++)
+    {
+        rho += ft[q];
+
+        u += ft[q]*cx[q];
+        v += ft[q]*cy[q];
+        w += ft[q]*cz[q];
+
+        int qic = q*elements +ic;
+    }
+    u /= rho;
+    v /= rho;
+    w /= rho;
+
+    for(int q = 0; q < 19; q++)
+    {
+        float uSqr =u*u+v*v+w*w;
+        float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+        float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+
+        int qic = q*elements +ic;
+
+        fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
     }
 }
