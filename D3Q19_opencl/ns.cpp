@@ -140,6 +140,28 @@ int main()
         const std::vector<int> normal_kn = {0,0,-1};
         const std::vector<int> normal_kp = {0,0,1};
 
+        const std::vector<int> normal_injn = {-1,-1,0};
+        const std::vector<int> normal_injp = {-1,1,0};
+        const std::vector<int> normal_ipjn = {1,-1,0};
+        const std::vector<int> normal_ipjp = {1,1,0};
+        const std::vector<int> normal_inkn = {-1,0,-1};
+        const std::vector<int> normal_inkp = {-1,0,1};
+        const std::vector<int> normal_ipkn = {1,0,-1};
+        const std::vector<int> normal_ipkp = {1,0,1};
+        const std::vector<int> normal_jnkn = {0,-1,-1};
+        const std::vector<int> normal_jnkp = {0,-1,1};
+        const std::vector<int> normal_jpkn = {0,1,-1};
+        const std::vector<int> normal_jpkp = {0,1,1};
+
+        const std::vector<int> normal_injnkn = {-1,-1,-1};
+        const std::vector<int> normal_injpkn = {-1,1,-1};
+        const std::vector<int> normal_injnkp = {-1,-1,1};
+        const std::vector<int> normal_injpkp = {-1,1,1};
+        const std::vector<int> normal_ipjnkn = {1,-1,-1};
+        const std::vector<int> normal_ipjpkn = {1,1,-1};
+        const std::vector<int> normal_ipjnkp = {1,-1,1};
+        const std::vector<int> normal_ipjpkp = {1,1,1};
+
         if(obst[ic].normal == normal_in)
         {
             normal[ic] = -1;
@@ -163,6 +185,86 @@ int main()
         else if(obst[ic].normal == normal_kp)
         {
             normal[ic] = 3;
+        }
+        else if(obst[ic].normal == normal_injn)
+        {
+            normal[ic] = -4;
+        }
+        else if(obst[ic].normal == normal_ipjp)
+        {
+            normal[ic] = 4;
+        }
+        else if(obst[ic].normal == normal_ipjn)
+        {
+            normal[ic] = -5;
+        }
+        else if(obst[ic].normal == normal_injp)
+        {
+            normal[ic] = 5;
+        }
+        else if(obst[ic].normal == normal_inkn)
+        {
+            normal[ic] = -6;
+        }
+        else if(obst[ic].normal == normal_ipkp)
+        {
+            normal[ic] = 6;
+        }
+        else if(obst[ic].normal == normal_ipkn)
+        {
+            normal[ic] = -7;
+        }
+        else if(obst[ic].normal == normal_inkp)
+        {
+            normal[ic] = 7;
+        }
+        else if(obst[ic].normal == normal_jnkn)
+        {
+            normal[ic] = -8;
+        }
+        else if(obst[ic].normal == normal_jpkp)
+        {
+            normal[ic] = 8;
+        }
+        else if(obst[ic].normal == normal_jpkn)
+        {
+            normal[ic] = -9;
+        }
+        else if(obst[ic].normal == normal_jnkp)
+        {
+            normal[ic] = 9;
+        }
+        else if(obst[ic].normal == normal_injnkn)
+        {
+            normal[ic] = -10;
+        }
+        else if(obst[ic].normal == normal_ipjpkp)
+        {
+            normal[ic] = 10;
+        }
+        else if(obst[ic].normal == normal_ipjnkn)
+        {
+            normal[ic] = -11;
+        }
+        else if(obst[ic].normal == normal_injpkp)
+        {
+            normal[ic] = 11;
+        }
+        else if(obst[ic].normal == normal_injpkn)
+        {
+            normal[ic] = -12;
+        }
+        else if(obst[ic].normal == normal_ipjnkp)
+        {
+            normal[ic] = 12;
+        }
+        else if(obst[ic].normal == normal_injnkp)
+        {
+            normal[ic] = -13;
+        }
+        else if(obst[ic].normal == normal_ipjpkn)
+        {
+            normal[ic] = 13;
         }
         else
         {
