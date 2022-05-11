@@ -1,11 +1,14 @@
 if(Fwrite && nextOutTime < nt +1)
 {
     cl::copy(queue, f_d, f.begin(), f.end());
+    rho_av = 0.0;
     #pragma omp parallel for
     for(int ic =0; ic <nx*ny*nz; ic++)
     {
         cal_rhoUVW(ic, nx, ny, nz, f, cx, cy, cz, rho[ic], u[ic], v[ic], w[ic]);
+        rho_av += rho[ic];
     }
+    rho_av /= float(elements);
 
     std::ostringstream ss;
     ss << std::setw(8) << std::setfill('0') << std::to_string(nt);

@@ -55,7 +55,7 @@ int main()
     const float a = 1.0; //(m)
     const float L = a/float(nx-1);
 
-    const float U0 = 0.1;
+    const float U0 = 0.05;
     const float c = uMax/U0;
 
     const float deltaT = L/c;
@@ -104,11 +104,12 @@ int main()
     std::vector<float> u(nx*ny*nz);
     std::vector<float> v(nx*ny*nz);
     std::vector<float> w(nx*ny*nz);
+    float rho_av = 1.0;
 
     std::vector<obstructure> obst(nx*ny*nz);
-    std::vector<float> u0(nx*ny*nz);
-    std::vector<float> v0(nx*ny*nz);
-    std::vector<float> w0(nx*ny*nz);
+    std::vector<float> u0(nx*ny*nz,0.0f);
+    std::vector<float> v0(nx*ny*nz,0.0f);
+    std::vector<float> w0(nx*ny*nz,0.0f);
     std::vector<int> normal(nx*ny*nz,0);
 
     const unsigned elements = nx*ny*nz;
@@ -162,109 +163,116 @@ int main()
         const std::vector<int> normal_ipjnkp = {1,-1,1};
         const std::vector<int> normal_ipjpkp = {1,1,1};
 
-        if(obst[ic].normal == normal_in)
+        if(obst[ic].boundary > 0)
         {
-            normal[ic] = -1;
-        }
-        else if(obst[ic].normal == normal_ip)
-        {
-            normal[ic] = 1;
-        }
-        else if(obst[ic].normal == normal_jn)
-        {
-            normal[ic] = -2;
-        }
-        else if(obst[ic].normal == normal_jp)
-        {
-            normal[ic] = 2;
-        }
-        else if(obst[ic].normal == normal_kn)
-        {
-            normal[ic] = -3;
-        }
-        else if(obst[ic].normal == normal_kp)
-        {
-            normal[ic] = 3;
-        }
-        else if(obst[ic].normal == normal_injn)
-        {
-            normal[ic] = -4;
-        }
-        else if(obst[ic].normal == normal_ipjp)
-        {
-            normal[ic] = 4;
-        }
-        else if(obst[ic].normal == normal_ipjn)
-        {
-            normal[ic] = -5;
-        }
-        else if(obst[ic].normal == normal_injp)
-        {
-            normal[ic] = 5;
-        }
-        else if(obst[ic].normal == normal_inkn)
-        {
-            normal[ic] = -6;
-        }
-        else if(obst[ic].normal == normal_ipkp)
-        {
-            normal[ic] = 6;
-        }
-        else if(obst[ic].normal == normal_ipkn)
-        {
-            normal[ic] = -7;
-        }
-        else if(obst[ic].normal == normal_inkp)
-        {
-            normal[ic] = 7;
-        }
-        else if(obst[ic].normal == normal_jnkn)
-        {
-            normal[ic] = -8;
-        }
-        else if(obst[ic].normal == normal_jpkp)
-        {
-            normal[ic] = 8;
-        }
-        else if(obst[ic].normal == normal_jpkn)
-        {
-            normal[ic] = -9;
-        }
-        else if(obst[ic].normal == normal_jnkp)
-        {
-            normal[ic] = 9;
-        }
-        else if(obst[ic].normal == normal_injnkn)
-        {
-            normal[ic] = -10;
-        }
-        else if(obst[ic].normal == normal_ipjpkp)
-        {
-            normal[ic] = 10;
-        }
-        else if(obst[ic].normal == normal_ipjnkn)
-        {
-            normal[ic] = -11;
-        }
-        else if(obst[ic].normal == normal_injpkp)
-        {
-            normal[ic] = 11;
-        }
-        else if(obst[ic].normal == normal_injpkn)
-        {
-            normal[ic] = -12;
-        }
-        else if(obst[ic].normal == normal_ipjnkp)
-        {
-            normal[ic] = 12;
-        }
-        else if(obst[ic].normal == normal_injnkp)
-        {
-            normal[ic] = -13;
-        }
-        else if(obst[ic].normal == normal_ipjpkn)
-        {
-            normal[ic] = 13;
+            if(obst[ic].normal == normal_in)
+            {
+                normal[ic] = -1;
+            }
+            else if(obst[ic].normal == normal_ip)
+            {
+                normal[ic] = 1;
+            }
+            else if(obst[ic].normal == normal_jn)
+            {
+                normal[ic] = -2;
+            }
+            else if(obst[ic].normal == normal_jp)
+            {
+                normal[ic] = 2;
+            }
+            else if(obst[ic].normal == normal_kn)
+            {
+                normal[ic] = -3;
+            }
+            else if(obst[ic].normal == normal_kp)
+            {
+                normal[ic] = 3;
+            }
+            else if(obst[ic].normal == normal_injn)
+            {
+                normal[ic] = -4;
+            }
+            else if(obst[ic].normal == normal_ipjp)
+            {
+                normal[ic] = 4;
+            }
+            else if(obst[ic].normal == normal_ipjn)
+            {
+                normal[ic] = -5;
+            }
+            else if(obst[ic].normal == normal_injp)
+            {
+                normal[ic] = 5;
+            }
+            else if(obst[ic].normal == normal_inkn)
+            {
+                normal[ic] = -6;
+            }
+            else if(obst[ic].normal == normal_ipkp)
+            {
+                normal[ic] = 6;
+            }
+            else if(obst[ic].normal == normal_ipkn)
+            {
+                normal[ic] = -7;
+            }
+            else if(obst[ic].normal == normal_inkp)
+            {
+                normal[ic] = 7;
+            }
+            else if(obst[ic].normal == normal_jnkn)
+            {
+                normal[ic] = -8;
+            }
+            else if(obst[ic].normal == normal_jpkp)
+            {
+                normal[ic] = 8;
+            }
+            else if(obst[ic].normal == normal_jpkn)
+            {
+                normal[ic] = -9;
+            }
+            else if(obst[ic].normal == normal_jnkp)
+            {
+                normal[ic] = 9;
+            }
+            else if(obst[ic].normal == normal_injnkn)
+            {
+                normal[ic] = -10;
+            }
+            else if(obst[ic].normal == normal_ipjpkp)
+            {
+                normal[ic] = 10;
+            }
+            else if(obst[ic].normal == normal_ipjnkn)
+            {
+                normal[ic] = -11;
+            }
+            else if(obst[ic].normal == normal_injpkp)
+            {
+                normal[ic] = 11;
+            }
+            else if(obst[ic].normal == normal_injpkn)
+            {
+                normal[ic] = -12;
+            }
+            else if(obst[ic].normal == normal_ipjnkp)
+            {
+                normal[ic] = 12;
+            }
+            else if(obst[ic].normal == normal_injnkp)
+            {
+                normal[ic] = -13;
+            }
+            else if(obst[ic].normal == normal_ipjpkn)
+            {
+                normal[ic] = 13;
+            }
+            else
+            {
+                normal[ic] = 0;
+            }
         }
         else
         {
@@ -343,7 +351,9 @@ int main()
     cl::Device device = context.getInfo<CL_CONTEXT_DEVICES>()[0];
 
     std::cout << std::endl << "Using OpenCL device: "
-                << device.getInfo<CL_DEVICE_NAME>() << std::endl;
+                << device.getInfo<CL_DEVICE_NAME>() << std::endl
+                << device.getInfo<CL_DEVICE_VERSION>() << std::endl
+                << device.getInfo<CL_DEVICE_OPENCL_C_VERSION>() << std::endl << std::endl;
     
 
     // Load in kernel source, creating and building a program object for the context
@@ -371,6 +381,7 @@ int main()
     cl::Buffer v0_d(context, v0.begin(), v0.end(), true);
     cl::Buffer w0_d(context, w0.begin(), w0.end(), true);
     cl::Buffer normal_d(context, normal.begin(), normal.end(), true);
+    cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
     
 
     // Create the kernel functor of collision
@@ -433,8 +444,9 @@ int main()
         const unsigned,
         const float,
         const float,
+        const float,
         const int, const int, const int
-    > k_streamingCollision(program, "k_streamingCollision");
+    > k_streamingCollision(program, "k_streamingCollision");  
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -537,6 +549,7 @@ int main()
             elements,
             omega,
             dpdx,
+            rho_av,
             nx, ny, nz
         );
         queue.finish();
@@ -544,6 +557,19 @@ int main()
         // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
         }
 
+        // {
+        // util::Timer timer;
+        // rho_av = 0.0;
+        // cl::copy(queue, rho_d, rho.begin(), rho.end());
+        // for(int ic = 0; ic < elements; ic++)
+        // {
+        //     rho_av += rho[¯ic];
+        // }
+        // rho_av /= float(elements);
+        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        // // printf("\nThe kernel of rhoAve ran in %lf m seconds\n", rtime);
+        // }
+        
         std::swap(fTmp_d,f_d);
 
         // cl::copy(queue, f_d, f.begin(), f.end());

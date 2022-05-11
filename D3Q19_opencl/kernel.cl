@@ -745,6 +745,7 @@ __kernel void k_streamingCollision // Pull
    const unsigned elements,
    const float omega,
    const float dpdx,
+   const float rho_av,
    const int nx, const int ny, const int nz
 )
 {
@@ -774,10 +775,10 @@ __kernel void k_streamingCollision // Pull
         {
             int qbb = reflectQ(q);
             int bbQID = idf(qbb, ic, nx, ny, nz);
-            float rhow = 1.0f;
+            const float rhow = rho_av;
             if(q == 1)
             {
-                ft[q] = f[bbQID] -6.0f*rhow*u0[ic]/18.0f;
+                ft[q] = f[bbQID] +6.0f*rhow*u0[ic]/18.0f;
             }
             else if(q == 2)
             {
