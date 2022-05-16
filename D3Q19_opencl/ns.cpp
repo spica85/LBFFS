@@ -51,18 +51,18 @@ int main()
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re);
 
     // Single Relaxation Time model
-    // // -- For cavity flow --
-    const float a = 1.0; //(m)
-    const float L = a/float(nx-1);
+    const float U0 = 0.05; //Dimensionless maximum velocity
 
-    const float U0 = 0.05;
-    const float c = uMax/U0;
 
-    const float deltaT = L/c;
+    // -- For cavity flow --
+    // const float a = 1.0; //Dimensional length of system (m)
+    // const float L = a/float(nx); //Representative length (-)
+    // const float c = uMax/U0; //Representative velocity (m/s)
+    
 
-    float nu = uMax*a/Re;
-    nu = nu/(L*c);
-    float dpdx = 0.0;
+    // float nu = uMax*a/Re; //Dimensional kinematic viscosity
+    // nu = nu/(L*c); //Dimensionless kinematic viscosity
+    // float dpdx = 0.0;//Dimensionless external force
 
 
     //For channel flow
@@ -73,19 +73,23 @@ int main()
     // float dpdx = utau*utau/(0.5*ny);
 
     //For Poiseuille flow
-    // float umax = 0.1;
-    // float h = 1.0;
-    // float nu = umax*h/Re;
-    // float dpdx = umax/(h*h)*8.0*nu/(ny-1);
-    // float dpdx = 0.00001;
+    float h = 1.f;
+    float nu = uMax*h/Re;
+    const float c = uMax/U0;
+    const float L = h/float(ny);
+    nu = nu/(L*c);
+    // const float dpdx = uMax/(h*h)*8.0*nu/(ny-1);
+    float dpdx = 8.0*(nu*(L*c))*uMax/(h*h);
+    // float dpdx = 1.f-5;
+    dpdx *= L/(c*c);
 
-    // std::cout << "dpdx = " << dpdx << std::endl;
+    std::cout << "dpdx = " << dpdx << std::endl;
 
-    // std::cout << "nu = " << nu << std::endl;
-    
-    // nu = nu*(ny-1);
+    std::cout << "nu = " << nu << std::endl;
 
-    float omega = 1.0/(3.0*nu +0.5);
+
+    const float deltaT = L/c; //Dimensional time step (s)
+    const float omega = 1.0/(3.0*nu +0.5);
     // float omega = 1.0/0.56;
 
     std::cout << "tau = " << 1.0/omega << std::endl;
@@ -116,9 +120,9 @@ int main()
     const unsigned qElements = 19*elements;
 
     // Setting conditions
-    #include "boundaryCondition_cavityFlow2d.hpp"
+    // #include "boundaryCondition_cavityFlow2d.hpp"
     // #include "boundaryCondition_cavityFlow3dDiagonal.hpp"
-    // #include "boundaryCondition_channelFlow.hpp"
+    #include "boundaryCondition_channelFlow.hpp"
     if(restart)
     {
         #include "restart.hpp"
@@ -312,39 +316,41 @@ int main()
         }
     }
 
-    std::vector<int> BBID;
-    std::vector<int> BBmovingWallID;
-    for(int bID = 0; bID < boundaryID.size(); bID++)
+    // std::vector<int> BBID;
+    // std::vector<int> BBmovingWallID;
+    // for(int bID = 0; bID < boundaryID.size(); bID++)
+    // {
+    //     int ic = boundaryID[bID];
+    //     if(obst[ic].boundary == 1)
+    //     {
+    //         BBID.push_back(ic);
+    //     }
+    //     else if(obst[ic].boundary == 2)
+    //     {
+    //         BBmovingWallID.push_back(ic);
+    //     }
+    // }
+    // const unsigned nBB = BBID.size();
+    // const unsigned nBBMW = BBmovingWallID.size();
+
+    // std::vector<int> BBQID(19*BBID.size());
+    // for(int bID = 0; bID < BBID.size(); bID++)
+    // {
+    //     int ic = BBID[bID];
+
+    //     int i = ic2i(ic,nx,ny);
+    //     int j = ic2j(ic,nx,ny);
+    //     int k = ic2k(ic,nx,ny);
+    //     for(int q = 0; q < 19; q++)
+    //     {
+    //         int qic = q*BBID.size()+bID;
+    //         BBQID[qic] = bounceBackQID(obst[ic],q,i,j,k,nx,ny,nz);
+    //     }
+    // }
+
+
+    try
     {
-        int ic = boundaryID[bID];
-        if(obst[ic].boundary == 1)
-        {
-            BBID.push_back(ic);
-        }
-        else if(obst[ic].boundary == 2)
-        {
-            BBmovingWallID.push_back(ic);
-        }
-    }
-    const unsigned nBB = BBID.size();
-    const unsigned nBBMW = BBmovingWallID.size();
-
-    std::vector<int> BBQID(19*BBID.size());
-    for(int bID = 0; bID < BBID.size(); bID++)
-    {
-        int ic = BBID[bID];
-
-        int i = ic2i(ic,nx,ny);
-        int j = ic2j(ic,nx,ny);
-        int k = ic2k(ic,nx,ny);
-        for(int q = 0; q < 19; q++)
-        {
-            int qic = q*BBID.size()+bID;
-            BBQID[qic] = bounceBackQID(obst[ic],q,i,j,k,nx,ny,nz);
-        }
-    }
-
-
     // Create a context
     cl::Context context(DEVICE);
 
@@ -374,9 +380,9 @@ int main()
 
     cl::Buffer upQID_d(context, upQID.begin(), upQID.end(), true);
     cl::Buffer downQID_d(context, downQID.begin(), downQID.end(), true);
-    cl::Buffer BBID_d(context, BBID.begin(), BBID.end(), true);
-    cl::Buffer BBQID_d(context, BBQID.begin(), BBQID.end(), true);
-    cl::Buffer BBmovingWallID_d(context, BBmovingWallID.begin(), BBmovingWallID.end(), true);
+    // cl::Buffer BBID_d(context, BBID.begin(), BBID.end(), true);
+    // cl::Buffer BBQID_d(context, BBQID.begin(), BBQID.end(), true);
+    // cl::Buffer BBmovingWallID_d(context, BBmovingWallID.begin(), BBmovingWallID.end(), true);
     cl::Buffer u0_d(context, u0.begin(), u0.end(), true);
     cl::Buffer v0_d(context, v0.begin(), v0.end(), true);
     cl::Buffer w0_d(context, w0.begin(), w0.end(), true);
@@ -456,88 +462,6 @@ int main()
     for(int nt = startTimeStep; nt <= endTimeStep; nt++)
     {
         #include "write.hpp"
-
-        // {
-        // util::Timer timer;
-        // k_collision
-        // (
-        //     cl::EnqueueArgs(queue,cl::NDRange(elements)),
-        //     f_d, fTmp_d,
-        //     elements,
-        //     omega
-        // );
-        // k_externalForce
-        // (
-        //     cl::EnqueueArgs(queue,cl::NDRange(elements)),
-        //     f_d, fTmp_d,
-        //     elements,
-        //     dpdx
-        // );
-        // queue.finish();
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // // printf("\nThe kernels of collision and externalForce ran in %lf m seconds\n", rtime);
-        // }
-
-        // {
-        // util::Timer timer;
-        // k_streaming
-        // (
-        //     cl::EnqueueArgs(queue,cl::NDRange(qElements)),
-        //     f_d, fTmp_d,
-        //     upQID_d
-        // );
-        // queue.finish();
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // // printf("\nThe kernel of streaming ran in %lf m seconds\n", rtime);
-        // }
-
-        // {
-        // util::Timer timer;
-        // k_collisionStreaming
-        // (
-        //     cl::EnqueueArgs(queue,cl::NDRange(elements)),
-        //     f_d, fTmp_d,
-        //     elements,
-        //     omega,
-        //     dpdx,
-        //     nx, ny, nz
-        // );
-        // queue.finish();
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of collisionStreaming ran in %lf m seconds\n", rtime);
-        // }
-
-        // {
-        // util::Timer timer;
-        // k_bounceBack
-        // (
-        //     cl::EnqueueArgs(queue,cl::NDRange(nBB)),
-        //     fTmp_d,
-        //     BBID_d, BBQID_d,
-        //     elements, nBB
-        // );
-        // queue.finish();
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of bounceBack ran in %lf m seconds\n", rtime);
-        // queue.finish();
-        // }
-
-        // {
-        // util::Timer timer;
-        // k_bounceBackMovingWall
-        // (
-        //     cl::EnqueueArgs(queue,cl::NDRange(nBBMW)),
-        //     fTmp_d,
-        //     BBmovingWallID_d,
-        //     u0_d, v0_d, w0_d,
-        //     normal_d,
-        //     elements
-        // );
-        // queue.finish();
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of bounceBackMovingWall ran in %lf m seconds\n", rtime);
-        // }
-
         {
         util::Timer timer;
         k_streamingCollision
@@ -556,40 +480,29 @@ int main()
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
         }
-
-        // {
-        // util::Timer timer;
-        // rho_av = 0.0;
-        // cl::copy(queue, rho_d, rho.begin(), rho.end());
-        // for(int ic = 0; ic < elements; ic++)
-        // {
-        //     rho_av += rho[¯ic];
-        // }
-        // rho_av /= float(elements);
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // // printf("\nThe kernel of rhoAve ran in %lf m seconds\n", rtime);
-        // }
         
         std::swap(fTmp_d,f_d);
-
-        // cl::copy(queue, f_d, f.begin(), f.end());
-        // {
-        // util::Timer timer;
-        // #pragma omp parallel for
-        // for(int bID = 0; bID < boundaryID.size(); bID++)
-        // {
-        //     int ic = boundaryID[bID];
-        //     boundaryConditions(obst[ic],f,ic,nx,ny,nz);
-        // }
-        // double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // // printf("\nThe function of boundaryConditions ran in %lf m seconds\n", rtime);
-        // }
-        // cl::copy(queue, f.begin(), f.end(), f_d);
     }
     end = std::chrono::system_clock::now();
     double time = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
     std::cout << "Execution time: " << time << " (s)" << std::endl;
     std::cout << "Speed: " << double(endTimeStep)*double(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
+    }
+    catch (cl::BuildError error)
+    {
+      std::string log = error.getBuildLog()[0].second;
+      std::cerr << std::endl << "Build failed:" << std::endl << log << std::endl;
+    }
+    catch (cl::Error err) {
+        std::cout << "Exception\n";
+        std::cerr
+            << "ERROR: "
+            << err.what()
+            << "("
+            << err_code(err.err())
+           << ")"
+           << std::endl;
+    }
 
     return EXIT_SUCCESS;
 }
