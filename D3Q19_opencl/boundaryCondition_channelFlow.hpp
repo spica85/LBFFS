@@ -95,6 +95,21 @@ for(int k = 0; k < nz; k++)
             obst[ic].normal = {0,0,0};
             obst[ic].inner = false;
 
+            if(i == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,0,0};
+                obst[ic].inner = false;
+                obst[ic].v0 = 0.0;
+            }
+            else if(i == nx-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,0,0};
+                obst[ic].inner = false;                                  
+                obst[ic].v0 = 0.0;
+            }
+
             if(k == 0)
             {
                 obst[ic].boundary = 0;
@@ -125,49 +140,121 @@ for(int k = 0; k < nz; k++)
                 obst[ic].u0 = 0.0;
             }
 
-            if(i == 0)
+            if(k == 0 && j == 0)
             {
                 obst[ic].boundary = 0;
-                obst[ic].normal = {-1,0,0};
+                obst[ic].normal = {0,-1,-1};
                 obst[ic].inner = false;
-                obst[ic].v0 = 0.0;
+                obst[ic].u0 = 0.0;
             }
-            else if(i == nx-1)
+            if(k == 0 && j == ny-1)
             {
                 obst[ic].boundary = 0;
-                obst[ic].normal = {1,0,0};
-                obst[ic].inner = false;                                  
-                obst[ic].v0 = 0.0;
+                obst[ic].normal = {0,1,-1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(k == nz-1 && j == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {0,-1,1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(k == nz-1 && j == ny-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {0,1,1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
             }            
 
-            // if(i == 0 && j == 0)
-            // {
-            //     obst[ic].boundary = 1;
-            //     obst[ic].normal = {-1,-1,0};
-            //     obst[ic].inner = false;
-            //     obst[ic].u0 = 0.0;
-            // }
-            // if(i == 0 && j == ny-1)
-            // {
-            //     obst[ic].boundary = 1;
-            //     obst[ic].normal = {-1,1,0};
-            //     obst[ic].inner = false;
-            //     obst[ic].u0 = 0.0;
-            // }
-            // if(i == nx-1 && j == 0)
-            // {
-            //     obst[ic].boundary = 1;
-            //     obst[ic].normal = {1,-1,0};
-            //     obst[ic].inner = false;
-            //     obst[ic].u0 = 0.0;
-            // }
-            // if(i == nx-1 && j == ny-1)
-            // {
-            //     obst[ic].boundary = 1;
-            //     obst[ic].normal = {1,1,0};
-            //     obst[ic].inner = false;
-            //     obst[ic].u0 = 0.0;
-            // }
+
+            if(i == 0 && j == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,-1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == 0 && j == ny-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == nx-1 && j == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,-1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == nx-1 && j == ny-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+
+            if(i == 0 && j == 0 && k == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,-1,-1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == nx-1 && j == 0 && k == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,-1,-1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == 0 && j == ny-1 && k == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,1,-1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == 0 && j == 0 && k == nz-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,-1,1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == nx-1 && j == ny-1 && k == 0)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,1,-1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == 0 && j == ny-1 && k == nz-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {-1,1,1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == nx-1 && j == 0 && k == nz-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,-1,1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
+            if(i == nx-1 && j == ny-1 && k == nz-1)
+            {
+                obst[ic].boundary = 0;
+                obst[ic].normal = {1,1,1};
+                obst[ic].inner = false;
+                obst[ic].u0 = 0.0;
+            }
 
         }
     }
