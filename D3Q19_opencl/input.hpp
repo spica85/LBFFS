@@ -140,4 +140,56 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
 
     inputFile.close();
 }
+
+void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2)
+{
+    std::ifstream STLfile(STLname);
+    std::vector<std::string> lines;
+    readToLines(STLfile, lines);
+
+    for(int i = 0; i < lines.size(); i++)
+    {
+        // std::cout << i << " " << lines[i] << std::endl;
+        if(lines[i] == "facet")
+        {
+            STLnormal[0].push_back(std::stof(lines[i+2]));
+            STLnormal[1].push_back(std::stof(lines[i+3]));
+            STLnormal[2].push_back(std::stof(lines[i+4]));
+            i += 4;
+        }
+        else if(lines[i] == "vertex")
+        {
+            // std::cout << i << " " 
+            //     << lines[i+1] << " " 
+            //     << lines[i+2] << " " 
+            //     << lines[i+3] << " " 
+            //     << std::endl;
+            STLv0[0].push_back(std::stof(lines[i+1]));
+            STLv0[1].push_back(std::stof(lines[i+2]));
+            STLv0[2].push_back(std::stof(lines[i+3]));
+            i += 7;
+
+            // std::cout << i << " " 
+            //     << lines[i+1] << " " 
+            //     << lines[i+2] << " " 
+            //     << lines[i+3] << " " 
+            //     << std::endl;
+            STLv1[0].push_back(std::stof(lines[i+1]));
+            STLv1[1].push_back(std::stof(lines[i+2]));
+            STLv1[2].push_back(std::stof(lines[i+3]));
+            i += 7;
+
+            // std::cout << i << " " 
+            //     << lines[i+1] << " " 
+            //     << lines[i+2] << " " 
+            //     << lines[i+3] << " " 
+            //     << std::endl;
+            STLv2[0].push_back(std::stof(lines[i+1]));
+            STLv2[1].push_back(std::stof(lines[i+2]));
+            STLv2[2].push_back(std::stof(lines[i+3]));
+            i += 3;
+        }
+    }
+
+}
 #endif

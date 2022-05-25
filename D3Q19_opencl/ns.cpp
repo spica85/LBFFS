@@ -50,6 +50,45 @@ int main()
 
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re);
 
+    const std::string STLname("box.stl");
+    std::vector<std::vector<float> > STLnormal(3);
+    std::vector<std::vector<float> > STLv0(3);
+    std::vector<std::vector<float> > STLv1(3);
+    std::vector<std::vector<float> > STLv2(3);
+
+    readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
+
+    // for(int i = 0; i < STLnormal[0].size(); i++)
+    // {
+    //     std::cout << i << " "
+    //         << "normal: " 
+    //         << STLnormal[0][i] << ", "
+    //         << STLnormal[1][i] << ", "
+    //         << STLnormal[2][i] 
+    //         << std::endl;
+
+    //     std::cout << "  "
+    //         << "v0: " 
+    //         << STLv0[0][i] << ", "
+    //         << STLv0[1][i] << ", "
+    //         << STLv0[2][i] 
+    //         << std::endl;
+
+    //     std::cout << "  "
+    //         << "v1: " 
+    //         << STLv1[0][i] << ", "
+    //         << STLv1[1][i] << ", "
+    //         << STLv1[2][i] 
+    //         << std::endl;
+
+    //     std::cout << "  "
+    //         << "v2: " 
+    //         << STLv2[0][i] << ", "
+    //         << STLv2[1][i] << ", "
+    //         << STLv2[2][i] 
+    //         << std::endl;
+    // }
+
     // Single Relaxation Time model
     const float U0 = 0.05; //Dimensionless maximum velocity
 
@@ -82,6 +121,7 @@ int main()
     float dpdx = 8.0*(nu*(L*c))*uMax/(h*h);
     // float dpdx = 1.f-5;
     dpdx *= L/(c*c);
+    
 
     std::cout << "dpdx = " << dpdx << std::endl;
 
