@@ -770,45 +770,48 @@ __kernel void k_streamingCollision // Pull
         {
             int upQID = idf(q, upID, nx, ny, nz);
             ft[q] = f[upQID];
-            // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
-            if(j == 0  && k == 0)
-            {
-                int qbb = reflectQ(q);
-                int bbQID = idf(qbb, ic, nx, ny, nz);
-                if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                {
-                    // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-                    ft[q] = f[bbQID];
-                }
-            }
-            if(j == ny-1  && k == 0)
-            {
-                int qbb = reflectQ(q);
-                int bbQID = idf(qbb, ic, nx, ny, nz);
-                if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                {
-                    ft[q] = f[bbQID];
-                }
-            }
-            if(j == 0  && k == nz-1)
-            {
-                int qbb = reflectQ(q);
-                int bbQID = idf(qbb, ic, nx, ny, nz);
-                if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                {
-                    ft[q] = f[bbQID];
-                }
-            }
-            if(j == ny-1  && k == nz-1)
-            {
-                int qbb = reflectQ(q);
-                int bbQID = idf(qbb, ic, nx, ny, nz);
-                if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                {
-                    ft[q] = f[bbQID];
-                }
-            }
-            // --
+            // // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
+            // if(j == 0  && k == 0)
+            // {
+            //     int qbb = reflectQ(q);
+            //     int bbQID = idf(qbb, ic, nx, ny, nz);
+            //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+            //     {
+            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+            //         ft[q] = f[bbQID];
+            //     }
+            // }
+            // if(j == ny-1  && k == 0)
+            // {
+            //     int qbb = reflectQ(q);
+            //     int bbQID = idf(qbb, ic, nx, ny, nz);
+            //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+            //     {
+            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+            //         ft[q] = f[bbQID];
+            //     }
+            // }
+            // if(j == 0  && k == nz-1)
+            // {
+            //     int qbb = reflectQ(q);
+            //     int bbQID = idf(qbb, ic, nx, ny, nz);
+            //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+            //     {
+            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+            //         ft[q] = f[bbQID];
+            //     }
+            // }
+            // if(j == ny-1  && k == nz-1)
+            // {
+            //     int qbb = reflectQ(q);
+            //     int bbQID = idf(qbb, ic, nx, ny, nz);
+            //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+            //     {
+            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+            //         ft[q] = f[bbQID];
+            //     }
+            // }
+            // // --
         }
         else
         {
