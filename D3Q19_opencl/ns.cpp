@@ -58,8 +58,12 @@ int main()
 
     readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
 
-    // for(int i = 0; i < STLnormal[0].size(); i++)
-    // {
+    std::vector<std::vector<float> > STLc(3, std::vector<float>(STLnormal[0].size()));
+    for(int i = 0; i < STLnormal[0].size(); i++)
+    {
+        STLc[0][i] = (STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.0;
+        STLc[1][i] = (STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.0;
+        STLc[2][i] = (STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.0;
     //     std::cout << i << " "
     //         << "normal: " 
     //         << STLnormal[0][i] << ", "
@@ -87,7 +91,7 @@ int main()
     //         << STLv2[1][i] << ", "
     //         << STLv2[2][i] 
     //         << std::endl;
-    // }
+    }
 
     // Single Relaxation Time model
     const float U0 = 0.05; //Dimensionless maximum velocity
