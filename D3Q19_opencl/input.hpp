@@ -75,7 +75,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
     while(std::getline(inputFile, line))
     {
         std::vector<std::string> list_string;
-        boost::split(list_string,line, boost::is_space());
+        boost::split(list_string,line, boost::is_space(), boost::algorithm::token_compress_on);
         for(auto& str: list_string)
         {
             lines.push_back(str);
@@ -155,6 +155,11 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
             STLnormal[0].push_back(std::stof(lines[i+2]));
             STLnormal[1].push_back(std::stof(lines[i+3]));
             STLnormal[2].push_back(std::stof(lines[i+4]));
+            // std::cout << i << " " 
+            //     << lines[i+2] << " " 
+            //     << lines[i+3] << " " 
+            //     << lines[i+4] << " " 
+            //     << std::endl;
             i += 4;
         }
         else if(lines[i] == "vertex")
@@ -167,7 +172,7 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
             STLv0[0].push_back(std::stof(lines[i+1]));
             STLv0[1].push_back(std::stof(lines[i+2]));
             STLv0[2].push_back(std::stof(lines[i+3]));
-            i += 7;
+            i += 5;
 
             // std::cout << i << " " 
             //     << lines[i+1] << " " 
@@ -177,7 +182,7 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
             STLv1[0].push_back(std::stof(lines[i+1]));
             STLv1[1].push_back(std::stof(lines[i+2]));
             STLv1[2].push_back(std::stof(lines[i+3]));
-            i += 7;
+            i += 5;
 
             // std::cout << i << " " 
             //     << lines[i+1] << " " 

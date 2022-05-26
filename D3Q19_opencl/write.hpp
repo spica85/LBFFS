@@ -183,6 +183,32 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }                    
 
+    // sdf output
+    {
+        writeFile << "SCALARS sdf float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(sdf[ic]*L));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << sdf[ic]*L << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
     writeFile.close();
 
     // Writing for restart

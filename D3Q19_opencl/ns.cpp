@@ -49,50 +49,7 @@ int main()
     float Re;
 
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re);
-
-    const std::string STLname("box.stl");
-    std::vector<std::vector<float> > STLnormal(3);
-    std::vector<std::vector<float> > STLv0(3);
-    std::vector<std::vector<float> > STLv1(3);
-    std::vector<std::vector<float> > STLv2(3);
-
-    readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
-
-    std::vector<std::vector<float> > STLc(3, std::vector<float>(STLnormal[0].size()));
-    for(int i = 0; i < STLnormal[0].size(); i++)
-    {
-        STLc[0][i] = (STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.0;
-        STLc[1][i] = (STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.0;
-        STLc[2][i] = (STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.0;
-    //     std::cout << i << " "
-    //         << "normal: " 
-    //         << STLnormal[0][i] << ", "
-    //         << STLnormal[1][i] << ", "
-    //         << STLnormal[2][i] 
-    //         << std::endl;
-
-    //     std::cout << "  "
-    //         << "v0: " 
-    //         << STLv0[0][i] << ", "
-    //         << STLv0[1][i] << ", "
-    //         << STLv0[2][i] 
-    //         << std::endl;
-
-    //     std::cout << "  "
-    //         << "v1: " 
-    //         << STLv1[0][i] << ", "
-    //         << STLv1[1][i] << ", "
-    //         << STLv1[2][i] 
-    //         << std::endl;
-
-    //     std::cout << "  "
-    //         << "v2: " 
-    //         << STLv2[0][i] << ", "
-    //         << STLv2[1][i] << ", "
-    //         << STLv2[2][i] 
-    //         << std::endl;
-    }
-
+   
     // Single Relaxation Time model
     const float U0 = 0.05; //Dimensionless maximum velocity
 
@@ -391,6 +348,92 @@ int main()
     //         BBQID[qic] = bounceBackQID(obst[ic],q,i,j,k,nx,ny,nz);
     //     }
     // }
+
+    const std::string STLname("boxRefine.ast");
+    std::vector<std::vector<float> > STLnormal(3);
+    std::vector<std::vector<float> > STLv0(3);
+    std::vector<std::vector<float> > STLv1(3);
+    std::vector<std::vector<float> > STLv2(3);
+
+    readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
+    const int nSTL = STLnormal[0].size();
+    std::cout << "Number of elements of STL: " << nSTL << std::endl;
+
+    std::vector<std::vector<float> > STLc(3, std::vector<float>(nSTL));
+    for(int i = 0; i < nSTL; i++)
+    {
+        STLv0[0][i] = STLv0[0][i]/L -0.5;
+        STLv0[1][i] = STLv0[1][i]/L -0.5;
+        STLv0[2][i] = STLv0[2][i]/L -0.5;
+        STLv1[0][i] = STLv1[0][i]/L -0.5;
+        STLv1[1][i] = STLv1[1][i]/L -0.5;
+        STLv1[2][i] = STLv1[2][i]/L -0.5;
+        STLv2[0][i] = STLv2[0][i]/L -0.5;
+        STLv2[1][i] = STLv2[1][i]/L -0.5;
+        STLv2[2][i] = STLv2[2][i]/L -0.5;
+
+        STLc[0][i] = (STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.f;
+        STLc[1][i] = (STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.f;
+        STLc[2][i] = (STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f;
+        // std::cout << i << " "
+        //     << "normal: " 
+        //     << STLnormal[0][i] << ", "
+        //     << STLnormal[1][i] << ", "
+        //     << STLnormal[2][i] 
+        //     << std::endl;
+
+        // std::cout << "  "
+        //     << "v0: " 
+        //     << STLv0[0][i] << ", "
+        //     << STLv0[1][i] << ", "
+        //     << STLv0[2][i] 
+        //     << std::endl;
+
+        // std::cout << "  "
+        //     << "v1: " 
+        //     << STLv1[0][i] << ", "
+        //     << STLv1[1][i] << ", "
+        //     << STLv1[2][i] 
+        //     << std::endl;
+
+        // std::cout << "  "
+        //     << "v2: " 
+        //     << STLv2[0][i] << ", "
+        //     << STLv2[1][i] << ", "
+        //     << STLv2[2][i] 
+        //     << std::endl;
+    }
+
+    std::vector<float> sdf(nx*ny*nz,0.f);
+    const float dr = 3.f;
+    const float p = 7.f;
+
+    for(int ic = 0; ic < nx*ny*nz; ic++)
+    {
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+        
+        float sumD = 0.f;
+        for(int iSTL = 0; iSTL < nSTL; iSTL++)
+        {
+            const float r = sqrt
+                            (
+                                pow(float(i) -STLc[0][iSTL],2.f)
+                                +pow(float(j) -STLc[1][iSTL],2.f)
+                                +pow(float(k) -STLc[2][iSTL],2.f)
+                            );
+            if(r < dr)
+            {
+                const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
+                                +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
+                                +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
+                sumD += pow(r,-p);
+                sdf[ic] += sd*pow(r,-p);
+            }
+        }
+        sdf[ic] /= sumD;
+    }
 
 
     try
