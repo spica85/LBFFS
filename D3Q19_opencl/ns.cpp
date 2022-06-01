@@ -51,7 +51,8 @@ int main()
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re);
    
     // Single Relaxation Time model
-    const float U0 = 0.05; //Dimensionless maximum velocity
+    const float alpha = 1.0;
+    const float U0 = 0.05*alpha; //Dimensionless maximum velocity
 
 
     // -- For cavity flow --
@@ -349,7 +350,7 @@ int main()
     //     }
     // }
 
-    const std::string STLname("boxRefine.ast");
+    const std::string STLname("boxRefine_half.ast");
     std::vector<std::vector<float> > STLnormal(3);
     std::vector<std::vector<float> > STLv0(3);
     std::vector<std::vector<float> > STLv1(3);
@@ -405,7 +406,9 @@ int main()
     }
 
     std::vector<float> sdf(nx*ny*nz,0.f);
-    const float dr = 3.f;
+    std::vector<float> qf(19*nx*ny*nz,-1.f);
+    std::vector<char> solid(nx*ny*nz,'f');
+    // const float dr = 3.f;
     const float p = 7.f;
 
     for(int ic = 0; ic < nx*ny*nz; ic++)
@@ -423,16 +426,43 @@ int main()
                                 +pow(float(j) -STLc[1][iSTL],2.f)
                                 +pow(float(k) -STLc[2][iSTL],2.f)
                             );
-            if(r < dr)
-            {
+            // if(r < dr)
+            // {
                 const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
                                 +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
                                 +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
                 sumD += pow(r,-p);
                 sdf[ic] += sd*pow(r,-p);
+            // }
+        }
+        // sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : 100000.f;
+        sdf[ic] = sdf[ic]/sumD;
+        if(sdf[ic] < 0.f)
+        {
+            solid[ic] = 't';
+        }
+    }
+
+    for(int ic = 0; ic < nx*ny*nz; ic++)
+    {
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+        
+        for(int q = 0; q < 19; q++)
+        {
+            int qic = q*elements +ic;
+            const float sdf0 = sdf[ic];
+            const float sdf1 = sdf[downwindID(q,i,j,k,nx,ny,nz)];
+
+            // if(sdf0 != 100000.f && sdf1 != 100000.f && sdf0*sdf1 <= 0.f)
+            if(sdf0 != 1.f && sdf0*sdf1 <= 0.f)
+            {
+                qf[qic] = abs(sdf0)/(abs(sdf0)+abs(sdf1));
+                // std::cout << q << " " << ic << " " << qf[qic] << std::endl;
+                // qf[qic] = 0.5f;
             }
         }
-        sdf[ic] /= sumD;
     }
 
 
@@ -475,6 +505,8 @@ int main()
     cl::Buffer w0_d(context, w0.begin(), w0.end(), true);
     cl::Buffer normal_d(context, normal.begin(), normal.end(), true);
     cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
+    cl::Buffer sdf_d(context, sdf.begin(), sdf.end(), true);
+    cl::Buffer solid_d(context, solid.begin(), solid.end(), true);
     
 
     // Create the kernel functor of collision
@@ -533,6 +565,7 @@ int main()
     <
         cl::Buffer, cl::Buffer,
         cl::Buffer,
+        cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
         const float,
@@ -556,6 +589,7 @@ int main()
             cl::EnqueueArgs(queue,cl::NDRange(elements)),
             f_d, fTmp_d,
             normal_d,
+            sdf_d, solid_d,
             u0_d, v0_d, w0_d,
             elements,
             omega,

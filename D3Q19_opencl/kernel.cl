@@ -741,6 +741,7 @@ __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
    __global int* normal,
+   __global float* sdf, __global char* solid, 
    __global float* u0, __global float* v0, __global float* w0,
    const unsigned elements,
    const float omega,
@@ -750,176 +751,198 @@ __kernel void k_streamingCollision // Pull
 )
 {
     int ic = get_global_id(0);
-
-    float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
-    float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-    float cy[19] = {0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f};
-    float cz[19] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f};
-
-    float ft[19];
-    for(int q = 0; q < 19; q++)
+    if(solid[ic] == 'f')
     {
-        int qic = q*elements +ic;
-
         int i = ic2i(ic,nx,ny);
         int j = ic2j(ic,nx,ny);
         int k = ic2k(ic,nx,ny);
 
-        int upID = upwindID_B(q,i,j,k,nx,ny,nz,normal);
-        if(upID != -1)
+        float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
+        float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f};
+        float cy[19] = {0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 1.0f, -1.0f};
+        float cz[19] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f};
+
+        float ft[19];
+        int upID[19];
+        for(int q = 0; q < 19; q++)
         {
-            int upQID = idf(q, upID, nx, ny, nz);
-            ft[q] = f[upQID];
-            // // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
-            // if(j == 0  && k == 0)
-            // {
-            //     int qbb = reflectQ(q);
-            //     int bbQID = idf(qbb, ic, nx, ny, nz);
-            //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-            //     {
-            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-            //         ft[q] = f[bbQID];
-            //     }
-            // }
-            // if(j == ny-1  && k == 0)
-            // {
-            //     int qbb = reflectQ(q);
-            //     int bbQID = idf(qbb, ic, nx, ny, nz);
-            //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-            //     {
-            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-            //         ft[q] = f[bbQID];
-            //     }
-            // }
-            // if(j == 0  && k == nz-1)
-            // {
-            //     int qbb = reflectQ(q);
-            //     int bbQID = idf(qbb, ic, nx, ny, nz);
-            //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-            //     {
-            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-            //         ft[q] = f[bbQID];
-            //     }
-            // }
-            // if(j == ny-1  && k == nz-1)
-            // {
-            //     int qbb = reflectQ(q);
-            //     int bbQID = idf(qbb, ic, nx, ny, nz);
-            //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-            //     {
-            //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-            //         ft[q] = f[bbQID];
-            //     }
-            // }
-            // // --
+            int qic = q*elements +ic;
+
+            // int upID = upwindID_B(q,i,j,k,nx,ny,nz,normal);
+            upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,normal);
+            if(upID[q] != -1)
+            {   
+                int upQID = idf(q, upID[q], nx, ny, nz);
+                ft[q] = f[upQID];
+                // // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
+                // if(j == 0  && k == 0)
+                // {
+                //     int qbb = reflectQ(q);
+                //     int bbQID = idf(qbb, ic, nx, ny, nz);
+                //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                //     {
+                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+                //         ft[q] = f[bbQID];
+                //     }
+                // }
+                // if(j == ny-1  && k == 0)
+                // {
+                //     int qbb = reflectQ(q);
+                //     int bbQID = idf(qbb, ic, nx, ny, nz);
+                //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                //     {
+                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+                //         ft[q] = f[bbQID];
+                //     }
+                // }
+                // if(j == 0  && k == nz-1)
+                // {
+                //     int qbb = reflectQ(q);
+                //     int bbQID = idf(qbb, ic, nx, ny, nz);
+                //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                //     {
+                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+                //         ft[q] = f[bbQID];
+                //     }
+                // }
+                // if(j == ny-1  && k == nz-1)
+                // {
+                //     int qbb = reflectQ(q);
+                //     int bbQID = idf(qbb, ic, nx, ny, nz);
+                //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                //     {
+                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
+                //         ft[q] = f[bbQID];
+                //     }
+                // }
+                // // --
+            }
+            else
+            {
+                int qbb = reflectQ(q);
+                int bbQID = idf(qbb, ic, nx, ny, nz);
+                const float rhow = rho_av;
+                if(q == 1)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*u0[ic]/18.0f;
+                }
+                else if(q == 2)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*u0[ic]/18.0f;
+                }
+                else if(q == 3)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
+                }
+                else if(q == 4)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
+                }
+                else if(q == 5)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*w0[ic]/18.0f;
+                }
+                else if(q == 6)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*w0[ic]/18.0f;
+                }
+                else if(q == 7)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                }
+                else if(q == 8)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                }
+                else if(q == 9)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                }
+                else if(q == 10)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                }
+                else if(q == 11)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
+                }
+                else if(q == 12)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
+                }
+                else if(q == 13)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
+                }
+                else if(q == 14)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
+                }
+                else if(q == 15)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                }
+                else if(q == 16)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                }
+                else if(q == 17)
+                {
+                    ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                }
+                else if(q == 18)
+                {
+                    ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                }
+                // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
+            }
         }
-        else
+        
+        float rho = 0.0f;
+        float u = 0.0f;
+        float v = 0.0f;
+        float w = 0.0f;
+        for(int q = 0; q < 19; q++)
         {
-            int qbb = reflectQ(q);
-            int bbQID = idf(qbb, ic, nx, ny, nz);
-            const float rhow = rho_av;
-            if(q == 1)
+            if(solid[upID[q]] == 't')
             {
-                ft[q] = f[bbQID] +6.0f*rhow*u0[ic]/18.0f;
+                // const float sdf0 = sdf[ic];
+                // const float sdf1 = sdf[upID[q]];
+                // const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+                int qbb = reflectQ(q);
+                int bbQID = idf(qbb, ic, nx, ny, nz);
+                
+                // if(qf < 0.5f)
+                // {
+                    // ft[q] = (1.f -2.f*qf)*ftqbb +(qf*f[bbQID])*2.f;
+                    // ft[q] = f[bbQID];
+                // }
+                // else
+                // {
+                    // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID];
+                    ft[q] = f[bbQID];        
+                // }
             }
-            else if(q == 2)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*u0[ic]/18.0f;
-            }
-            else if(q == 3)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
-            }
-            else if(q == 4)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
-            }
-            else if(q == 5)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*w0[ic]/18.0f;
-            }
-            else if(q == 6)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*w0[ic]/18.0f;
-            }
-            else if(q == 7)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
-            }
-            else if(q == 8)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
-            }
-            else if(q == 9)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
-            }
-            else if(q == 10)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
-            }
-            else if(q == 11)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
-            }
-            else if(q == 12)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
-            }
-            else if(q == 13)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
-            }
-            else if(q == 14)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
-            }
-            else if(q == 15)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
-            }
-            else if(q == 16)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
-            }
-            else if(q == 17)
-            {
-                ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
-            }
-            else if(q == 18)
-            {
-                ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
-            }
-            // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
+
+            rho += ft[q];
+
+            u += ft[q]*cx[q];
+            v += ft[q]*cy[q];
+            w += ft[q]*cz[q];
         }
-    }
-    
-    float rho = 0.0f;
-    float u = 0.0f;
-    float v = 0.0f;
-    float w = 0.0f;
-    for(int q = 0; q < 19; q++)
-    {
-        rho += ft[q];
+        u /= rho;
+        v /= rho;
+        w /= rho;
 
-        u += ft[q]*cx[q];
-        v += ft[q]*cy[q];
-        w += ft[q]*cz[q];
+        for(int q = 0; q < 19; q++)
+        {
+            float uSqr =u*u+v*v+w*w;
+            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+            float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
 
-        int qic = q*elements +ic;
-    }
-    u /= rho;
-    v /= rho;
-    w /= rho;
+            int qic = q*elements +ic;
 
-    for(int q = 0; q < 19; q++)
-    {
-        float uSqr =u*u+v*v+w*w;
-        float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-        float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
-
-        int qic = q*elements +ic;
-
-        fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
+            fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
+        }
     }
 }
