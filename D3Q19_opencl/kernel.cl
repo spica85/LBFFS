@@ -741,7 +741,7 @@ __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
    __global int* normal,
-   __global float* sdf, __global char* solid, 
+   __global float* sdf, __global unsigned char* solid, __global unsigned char* neiSolid, 
    __global float* u0, __global float* v0, __global float* w0,
    const unsigned elements,
    const float omega,
@@ -751,7 +751,7 @@ __kernel void k_streamingCollision // Pull
 )
 {
     int ic = get_global_id(0);
-    if(solid[ic] == 'f')
+    if(solid[ic] == 0)
     {
         int i = ic2i(ic,nx,ny);
         int j = ic2j(ic,nx,ny);
@@ -768,11 +768,11 @@ __kernel void k_streamingCollision // Pull
         {
             int qic = q*elements +ic;
 
-            // int upID = upwindID_B(q,i,j,k,nx,ny,nz,normal);
             upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,normal);
             if(upID[q] != -1)
             {   
                 int upQID = idf(q, upID[q], nx, ny, nz);
+
                 ft[q] = f[upQID];
                 // // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
                 // if(j == 0  && k == 0)
@@ -897,6 +897,32 @@ __kernel void k_streamingCollision // Pull
                 // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
             }
         }
+
+        for(int q = 1; q < 19; q++)
+        {
+            if(neiSolid[ic] == 1)
+            {
+                if(solid[upID[q]] == 1)
+                {
+                    // const float sdf0 = sdf[ic];
+                    // const float sdf1 = sdf[upID[q]];
+                    // const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+                    int qbb = reflectQ(q);
+                    int bbQID = idf(qbb, ic, nx, ny, nz);
+                    
+                    // if(qf < 0.5f)
+                    // {
+                    //     ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f;
+                    //     // ft[q] = f[bbQID];
+                    // }
+                    // else
+                    // {
+                        // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID];
+                        ft[q] = f[bbQID];        
+                    // }
+                }
+            }
+        }
         
         float rho = 0.0f;
         float u = 0.0f;
@@ -904,26 +930,6 @@ __kernel void k_streamingCollision // Pull
         float w = 0.0f;
         for(int q = 0; q < 19; q++)
         {
-            if(solid[upID[q]] == 't')
-            {
-                // const float sdf0 = sdf[ic];
-                // const float sdf1 = sdf[upID[q]];
-                // const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
-                int qbb = reflectQ(q);
-                int bbQID = idf(qbb, ic, nx, ny, nz);
-                
-                // if(qf < 0.5f)
-                // {
-                    // ft[q] = (1.f -2.f*qf)*ftqbb +(qf*f[bbQID])*2.f;
-                    // ft[q] = f[bbQID];
-                // }
-                // else
-                // {
-                    // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID];
-                    ft[q] = f[bbQID];        
-                // }
-            }
-
             rho += ft[q];
 
             u += ft[q]*cx[q];

@@ -407,7 +407,8 @@ int main()
 
     std::vector<float> sdf(nx*ny*nz,0.f);
     std::vector<float> qf(19*nx*ny*nz,-1.f);
-    std::vector<char> solid(nx*ny*nz,'f');
+    std::vector<unsigned char> solid(nx*ny*nz,0);
+    std::vector<unsigned char> neiSolid(nx*ny*nz,0);
     // const float dr = 3.f;
     const float p = 7.f;
 
@@ -439,7 +440,7 @@ int main()
         sdf[ic] = sdf[ic]/sumD;
         if(sdf[ic] < 0.f)
         {
-            solid[ic] = 't';
+            solid[ic] = 1;
         }
     }
 
@@ -454,7 +455,10 @@ int main()
             int qic = q*elements +ic;
             const float sdf0 = sdf[ic];
             const float sdf1 = sdf[downwindID(q,i,j,k,nx,ny,nz)];
-
+            if(solid[upwindID(q,i,j,k,nx,ny,nz)] == 1)
+            {
+                neiSolid[ic] = 1;
+            }
             // if(sdf0 != 100000.f && sdf1 != 100000.f && sdf0*sdf1 <= 0.f)
             if(sdf0 != 1.f && sdf0*sdf1 <= 0.f)
             {
@@ -507,6 +511,7 @@ int main()
     cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
     cl::Buffer sdf_d(context, sdf.begin(), sdf.end(), true);
     cl::Buffer solid_d(context, solid.begin(), solid.end(), true);
+    cl::Buffer neiSolid_d(context, neiSolid.begin(), neiSolid.end(), true);
     
 
     // Create the kernel functor of collision
@@ -565,7 +570,7 @@ int main()
     <
         cl::Buffer, cl::Buffer,
         cl::Buffer,
-        cl::Buffer, cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
         const float,
@@ -589,7 +594,7 @@ int main()
             cl::EnqueueArgs(queue,cl::NDRange(elements)),
             f_d, fTmp_d,
             normal_d,
-            sdf_d, solid_d,
+            sdf_d, solid_d, neiSolid_d,
             u0_d, v0_d, w0_d,
             elements,
             omega,
