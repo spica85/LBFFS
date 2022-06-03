@@ -454,21 +454,15 @@ int main()
         {
             int qic = q*elements +ic;
             const float sdf0 = sdf[ic];
-            const float sdf1 = sdf[downwindID(q,i,j,k,nx,ny,nz)];
-            if(solid[upwindID(q,i,j,k,nx,ny,nz)] == 1)
+            const float sdf1 = sdf[upwindID(q,i,j,k,nx,ny,nz)];
+            if(solid[ic] == 0 && solid[upwindID(q,i,j,k,nx,ny,nz)] == 1)
             {
                 neiSolid[ic] = 1;
-            }
-            // if(sdf0 != 100000.f && sdf1 != 100000.f && sdf0*sdf1 <= 0.f)
-            if(sdf0 != 1.f && sdf0*sdf1 <= 0.f)
-            {
                 qf[qic] = abs(sdf0)/(abs(sdf0)+abs(sdf1));
-                // std::cout << q << " " << ic << " " << qf[qic] << std::endl;
-                // qf[qic] = 0.5f;
+                    // std::cout << qf[qic] << std::endl;
             }
         }
     }
-
 
     try
     {
