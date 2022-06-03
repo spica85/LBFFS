@@ -764,12 +764,13 @@ __kernel void k_streamingCollision // Pull
 
         float ft[19];
         int upID[19];
-        for(int q = 0; q < 19; q++)
+        ft[0] = f[ic];
+        for(int q = 1; q < 19; q++)
         {
             int qic = q*elements +ic;
 
             upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,normal);
-            if(upID[q] != -1)
+            if(upID[q] != -1) // Streaming
             {   
                 int upQID = idf(q, upID[q], nx, ny, nz);
 
@@ -817,7 +818,7 @@ __kernel void k_streamingCollision // Pull
                 // }
                 // // --
             }
-            else
+            else // Bounce-Back for boundary wall
             {
                 int qbb = reflectQ(q);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
@@ -898,57 +899,98 @@ __kernel void k_streamingCollision // Pull
             }
         }
 
-        for(int q = 1; q < 19; q++)
+        // Bounce-Back for internal walls
         {
-            if(neiSolid[ic] == 1)
+            float rho = 0.0f;
+            float u = 0.0f;
+            float v = 0.0f;
+            float w = 0.0f;
+            for(int q = 0; q < 19; q++)
             {
-                if(solid[upID[q]] == 1)
+                int qic = q*elements +ic;
+                rho += f[qic];
+
+                u += f[qic]*cx[q];
+                v += f[qic]*cy[q];
+                w += f[qic]*cz[q];
+            }
+            u /= rho;
+            v /= rho;
+            w /= rho;
+            float p = rho/3.f;
+
+            for(int q = 1; q < 19; q++)
+            {
+                if(neiSolid[ic] == 1)
                 {
-                    // const float sdf0 = sdf[ic];
-                    // const float sdf1 = sdf[upID[q]];
-                    // const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
-                    int qbb = reflectQ(q);
-                    int bbQID = idf(qbb, ic, nx, ny, nz);
-                    
-                    // if(qf < 0.5f)
-                    // {
-                    //     ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f;
-                    //     // ft[q] = f[bbQID];
-                    // }
-                    // else
-                    // {
-                        // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID];
-                        ft[q] = f[bbQID];        
-                    // }
+                    if(solid[upID[q]] == 1)
+                    {
+                        const float sdf0 = sdf[ic];
+                        const float sdf1 = sdf[upID[q]];
+                        const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+
+                        int qbb = reflectQ(q);
+                        int bbQID = idf(qbb, ic, nx, ny, nz);
+                        int upQID = idf(q, upID[qbb], nx, ny, nz);
+                        int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
+
+                        float uSqr =u*u+v*v+w*w;
+                        float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                        float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                        
+                        if(qf <= 0.5f)
+                        {
+                            // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
+                            // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
+                            // ft[q] = f[bbQID]; // Simple Bounce-Back
+
+                            float kai = omega*(2.f*qf -1.f)/(1.f-omega);
+                            ft[q] = (1.f -kai)*f[bbQID] +kai*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                        }
+                        else
+                        {
+                            // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
+                            // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
+                            // ft[q] = f[bbQID]; // Simple Bounce-Back
+
+                            uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
+                            uDotC *= (1.f -1.f/qf);
+                            float kai = omega*(2.f*qf -1.f);
+                            ft[q] = (1.f -kai)*f[bbQID] +kai*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                        }
+                    }
                 }
             }
         }
         
-        float rho = 0.0f;
-        float u = 0.0f;
-        float v = 0.0f;
-        float w = 0.0f;
-        for(int q = 0; q < 19; q++)
+        // Collision
         {
-            rho += ft[q];
+            float rho = 0.0f;
+            float u = 0.0f;
+            float v = 0.0f;
+            float w = 0.0f;
+            for(int q = 0; q < 19; q++)
+            {
+                rho += ft[q];
 
-            u += ft[q]*cx[q];
-            v += ft[q]*cy[q];
-            w += ft[q]*cz[q];
-        }
-        u /= rho;
-        v /= rho;
-        w /= rho;
+                u += ft[q]*cx[q];
+                v += ft[q]*cy[q];
+                w += ft[q]*cz[q];
+            }
+            u /= rho;
+            v /= rho;
+            w /= rho;
 
-        for(int q = 0; q < 19; q++)
-        {
-            float uSqr =u*u+v*v+w*w;
-            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-            float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+            for(int q = 0; q < 19; q++)
+            {
+                float uSqr =u*u+v*v+w*w;
+                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+                float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
 
-            int qic = q*elements +ic;
+                int qic = q*elements +ic;
 
-            fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
+                fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
+            }
         }
     }
 }
