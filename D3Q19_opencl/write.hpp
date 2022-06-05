@@ -209,6 +209,33 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }
 
+    // solid output
+    {
+        writeFile << "SCALARS solid float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(solid[ic]));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << (float)(solid[ic]) << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+
     // neiSolid output
     {
         writeFile << "SCALARS neiSolid float\n";
