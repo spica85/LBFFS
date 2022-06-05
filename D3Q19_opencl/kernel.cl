@@ -775,48 +775,116 @@ __kernel void k_streamingCollision // Pull
                 int upQID = idf(q, upID[q], nx, ny, nz);
 
                 ft[q] = f[upQID];
-                // // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
-                // if(j == 0  && k == 0)
-                // {
-                //     int qbb = reflectQ(q);
-                //     int bbQID = idf(qbb, ic, nx, ny, nz);
-                //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                //     {
-                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-                //         ft[q] = f[bbQID];
-                //     }
-                // }
-                // if(j == ny-1  && k == 0)
-                // {
-                //     int qbb = reflectQ(q);
-                //     int bbQID = idf(qbb, ic, nx, ny, nz);
-                //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                //     {
-                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-                //         ft[q] = f[bbQID];
-                //     }
-                // }
-                // if(j == 0  && k == nz-1)
-                // {
-                //     int qbb = reflectQ(q);
-                //     int bbQID = idf(qbb, ic, nx, ny, nz);
-                //     if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                //     {
-                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-                //         ft[q] = f[bbQID];
-                //     }
-                // }
-                // if(j == ny-1  && k == nz-1)
-                // {
-                //     int qbb = reflectQ(q);
-                //     int bbQID = idf(qbb, ic, nx, ny, nz);
-                //     if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                //     {
-                //         // printf("i: %d, j: %d, k: %d, q: %d, upID: %d", i, j, k, q, upID);
-                //         ft[q] = f[bbQID];
-                //     }
-                // }
-                // // --
+                // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
+                if(j == 0  && k == 0)
+                {
+                    int qbb = reflectQ(q);
+                    int bbQID = idf(qbb, ic, nx, ny, nz);
+                    const float rhow = rho_av;
+                    // if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                    if(q == 3)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
+                    }
+                    else if(q == 7)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                    }
+                    else if(q == 10)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                    }   
+                    else if(q == 15)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                    }
+                    else if(q == 17)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                    }
+                }
+                if(j == ny-1  && k == 0)
+                {
+                    int qbb = reflectQ(q);
+                    int bbQID = idf(qbb, ic, nx, ny, nz);
+                    const float rhow = rho_av;
+                    // if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                    if(q == 4)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
+                    }
+                    else if(q == 8)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                    }
+                    else if(q == 9)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                    }
+                    else if(q == 16)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                    }
+                    else if(q == 18)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                    }
+                }
+                if(j == 0  && k == nz-1)
+                {
+                    int qbb = reflectQ(q);
+                    int bbQID = idf(qbb, ic, nx, ny, nz);
+                    const float rhow = rho_av;
+                    // if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                    if(q == 3)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
+                    }
+                    else if(q == 7)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                    }
+                    else if(q == 10)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                    }   
+                    else if(q == 15)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                    }
+                    else if(q == 17)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                    }
+                }
+                if(j == ny-1  && k == nz-1)
+                {
+                    int qbb = reflectQ(q);
+                    int bbQID = idf(qbb, ic, nx, ny, nz);
+                    const float rhow = rho_av;
+                    // if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                    if(q == 4)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
+                    }
+                    else if(q == 8)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                    }
+                    else if(q == 9)
+                    {
+                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                    }
+                    else if(q == 16)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                    }
+                    else if(q == 18)
+                    {
+                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                    }
+                }
+                // --
             }
             else // Bounce-Back for boundary wall
             {
@@ -990,6 +1058,22 @@ __kernel void k_streamingCollision // Pull
                 int qic = q*elements +ic;
 
                 fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
+
+                int i = ic2i(ic,nx,ny);
+                if(i == nx-1)
+                {
+                    if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
+                    {
+                        int qbb = reflectQ(q);
+                        int bbQID = idf(qbb, ic, nx, ny, nz);
+                        const float rhow = rho_av;
+
+                        float uSqr = u0[ic]*u0[ic] +v0[ic]*v0[ic] +w0[ic]*w0[ic];
+                        float uDotC = u0[ic]*cx[q]+v0[ic]*cy[q]+w0[ic]*cz[q];
+
+                        ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                    }
+                }
             }
         }
     }

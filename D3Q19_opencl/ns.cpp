@@ -47,13 +47,11 @@ int main()
     float uMax;
     float rho0;
     float Re;
+    float U0;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re, U0);
    
     // Single Relaxation Time model
-    const float alpha = 1.0;
-    const float U0 = 0.05*alpha; //Dimensionless maximum velocity
-
 
     // -- For cavity flow --
     // const float a = 1.0; //Dimensional length of system (m)
@@ -74,15 +72,25 @@ int main()
     // float dpdx = utau*utau/(0.5*ny);
 
     //For Poiseuille flow
-    float h = 1.f;
-    float nu = uMax*h/Re;
+    // float h = 1.f;
+    // float nu = uMax*h/Re;
+    // const float c = uMax/U0;
+    // const float L = h/float(ny);
+    // nu = nu/(L*c);
+    // // const float dpdx = uMax/(h*h)*8.0*nu/(ny-1);
+    // float dpdx = 8.0*(nu*(L*c))*uMax/(h*h);
+    // // float dpdx = 1.f-5;
+    // dpdx *= L/(c*c);
+
+    //For flow around cylinder
+    float h = 2.f;
+    float d = 0.1f;
+    float nu = uMax*d/Re;
     const float c = uMax/U0;
     const float L = h/float(ny);
     nu = nu/(L*c);
     // const float dpdx = uMax/(h*h)*8.0*nu/(ny-1);
-    float dpdx = 8.0*(nu*(L*c))*uMax/(h*h);
-    // float dpdx = 1.f-5;
-    dpdx *= L/(c*c);
+    float dpdx = 0.f;
     
 
     std::cout << "dpdx = " << dpdx << std::endl;
@@ -124,7 +132,8 @@ int main()
     // Setting conditions
     // #include "boundaryCondition_cavityFlow2d.hpp"
     // #include "boundaryCondition_cavityFlow3dDiagonal.hpp"
-    #include "boundaryCondition_channelFlow.hpp"
+    // #include "boundaryCondition_channelFlow.hpp"
+    #include "boundaryCondition_flowAroundCylinder.hpp"
     if(restart)
     {
         #include "restart.hpp"
@@ -350,7 +359,7 @@ int main()
     //     }
     // }
 
-    const std::string STLname("boxRefine_half.ast");
+    const std::string STLname("cylinder.ast");
     std::vector<std::vector<float> > STLnormal(3);
     std::vector<std::vector<float> > STLv0(3);
     std::vector<std::vector<float> > STLv1(3);
@@ -409,7 +418,7 @@ int main()
     std::vector<float> qf(19*nx*ny*nz,-1.f);
     std::vector<unsigned char> solid(nx*ny*nz,0);
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
-    // const float dr = 3.f;
+    const float dr = 3.f;
     const float p = 7.f;
 
     for(int ic = 0; ic < nx*ny*nz; ic++)
@@ -427,17 +436,16 @@ int main()
                                 +pow(float(j) -STLc[1][iSTL],2.f)
                                 +pow(float(k) -STLc[2][iSTL],2.f)
                             );
-            // if(r < dr)
-            // {
+            if(r < dr)
+            {
                 const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
                                 +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
                                 +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
                 sumD += pow(r,-p);
                 sdf[ic] += sd*pow(r,-p);
-            // }
+            }
         }
-        // sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : 100000.f;
-        sdf[ic] = sdf[ic]/sumD;
+        sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : 0.f;
         if(sdf[ic] < 0.f)
         {
             solid[ic] = 1;

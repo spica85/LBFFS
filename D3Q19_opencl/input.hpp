@@ -86,7 +86,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& uMax, float& rho0, float& Re)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& uMax, float& rho0, float& Re, float& U0)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -136,6 +136,10 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
 
     std::string ReStr("Re");
     Re = lookup<float>(lines, ReStr);
+    std::cout << std::endl;
+
+    std::string U0Str("U0"); //Dimensionless maximum velocity
+    U0 = lookup<float>(lines, U0Str);
     std::cout << std::endl;
 
     inputFile.close();
