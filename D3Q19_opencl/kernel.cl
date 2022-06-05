@@ -231,7 +231,7 @@ inline int upwindID(const int q, const int i, const int j, const int k, const in
     }
 }
 
-inline int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int* normal)
+inline int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int boundary1, const int boundary2, const int boundary3)
 {
     int ic = index1d(i, j, k, nx, ny);
     if(q == 0)
@@ -240,111 +240,436 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
     }
     else if(q == 1)
     {
-        return i != 0 ? index1d(i-1,j,k,nx,ny) : (normal[ic] == 0 ? index1d(nx-1,j,k,nx,ny) : -1);
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : (boundary1 != 1 ? index1d(nx-1,j,k,nx,ny) : -1);
     }
     else if(q == 2)
     {
-        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : (normal[ic] == 0 ? index1d(0,j,k,nx,ny) : -1);
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : (boundary1 != 1 ? index1d(0,j,k,nx,ny) : -1);
     }
     else if(q == 3)
     {
-        return j != 0 ? index1d(i,j-1,k,nx,ny) : (normal[ic] == 0 ? index1d(i,ny-1,k,nx,ny) : -1);
+        if(j != 0)
+        {
+            return index1d(i,j-1,k,nx,ny);
+        }
+        else if(i != 0 && i != nx-1)
+        {
+            return boundary1 != 1 ? index1d(i,ny-1,k,nx,ny) : -1;
+        }
+        else
+        {
+            return boundary2 != 1 ? index1d(i,ny-1,k,nx,ny) : -1;
+        }
+        // return j != 0 ? index1d(i,j-1,k,nx,ny) : 
+        // (i != 0 && i != nx-1) ? (boundary1 != 1 ? index1d(i,ny-1,k,nx,ny) : -1) : 
+        // (boundary2 != 1 ? index1d(i,ny-1,k,nx,ny) : -1);
+        // return j != 0 ? index1d(i,j-1,k,nx,ny) : (boundary1 != 1 ? index1d(i,ny-1,k,nx,ny) : -1);
     }
     else if(q == 4)
     {
-        return j != ny-1 ? index1d(i,j+1,k,nx,ny) : (normal[ic] == 0 ? index1d(i,0,k,nx,ny) : -1);
+        if(j != ny-1)
+        {
+            return index1d(i,j+1,k,nx,ny);
+        }
+        else if(i != 0 && i != nx-1)
+        {
+            return boundary1 != 1 ? index1d(i,0,k,nx,ny) : -1;
+        }
+        else
+        {
+            return boundary2 != 1 ? index1d(i,0,k,nx,ny) : -1;
+        }
+        // return j != ny-1 ? index1d(i,j+1,k,nx,ny) : 
+        // (i != 0 && i != nx-1) ? (boundary1 != 1 ? index1d(i,0,k,nx,ny) : -1) : 
+        // (boundary2 != 1 ? index1d(i,0,k,nx,ny) : -1);
+        // return j != ny-1 ? index1d(i,j+1,k,nx,ny) : (boundary1 != 1 ? index1d(i,0,k,nx,ny) : -1);
     }
     else if(q == 5)
     {
-        return k != 0 ? index1d(i,j,k-1,nx,ny) : (normal[ic] == 0 ? index1d(i,j,nz-1,nx,ny) : -1);
+        if(k != 0)
+        {
+            return index1d(i,j,k-1,nx,ny);
+        }
+        else if(i != 0 && i != nx-1)
+        {
+            if(j != 0 && j != ny-1)
+            {
+                return boundary1 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
+            }
+            else
+            {
+                return boundary2 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
+            }
+        }
+        else
+        {
+            if(j != 0 && j != ny-1)
+            {
+                return boundary2 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
+            }
+            else
+            {
+                return boundary3 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
+            }
+        }
+        // return k != 0 ? index1d(i,j,k-1,nx,ny) : 
+        // (i != 0 && i != nx-1) ? ((j != 0 && j != ny-1) ? (boundary1 != 1 ? index1d(i,j,nz-1,nx,ny) : -1) : (boundary2 != 1 ? index1d(i,j,nz-1,nx,ny) : -1)) :
+        // ((j != 0 && j != ny-1) ? (boundary2 != 1 ? index1d(i,j,nz-1,nx,ny) : -1) : (boundary3 != 1 ? index1d(i,j,nz-1,nx,ny) : -1));
+        // return k != 0 ? index1d(i,j,k-1,nx,ny) : (boundary1 != 1 ? index1d(i,j,nz-1,nx,ny) : -1);
     }
     else if(q == 6)
     {
-        return k != nz-1 ? index1d(i,j,k+1,nx,ny) : (normal[ic] == 0 ? index1d(i,j,0,nx,ny) : -1);
+        if(k != nz-1)
+        {
+            return index1d(i,j,k+1,nx,ny);
+        }
+        else if(i != 0 && i != nx-1)
+        {
+            if(j != 0 && j != ny-1)
+            {
+                return boundary1 != 1 ? index1d(i,j,0,nx,ny) : -1;
+            }
+            else
+            {
+                return boundary2 != 1 ? index1d(i,j,0,nx,ny) : -1;
+            }
+        }
+        else
+        {
+            if(j != 0 && j != ny-1)
+            {
+                return boundary2 != 1 ? index1d(i,j,0,nx,ny) : -1;
+            }
+            else
+            {
+                return boundary3 != 1 ? index1d(i,j,0,nx,ny) : -1;
+            }
+        }
+        // return k != nz-1 ? index1d(i,j,k+1,nx,ny) : (boundary1 != 1 ? index1d(i,j,0,nx,ny) : -1);
     }
     else if(q == 7)
     {
         return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
-               (i == 0 && j != 0) ? (normal[ic] == 0 ? index1d(nx-1, j-1, k, nx, ny) : -1) :
-               (i != 0 && j == 0) ? (normal[ic] == 0 ? index1d(i-1, ny-1, k, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(nx-1, ny-1, k, nx, ny) : -1);
+               (i == 0 && j != 0) ? (boundary1 != 1 ? index1d(nx-1, j-1, k, nx, ny) : -1) :
+               (i != 0 && j == 0) ? (boundary2 != 1 ? index1d(i-1, ny-1, k, nx, ny) : -1) :
+               ((boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, ny-1, k, nx, ny) : -1);
     }
     else if(q == 8)
     {
         return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
-               (i == nx-1 && j != ny-1) ? (normal[ic] == 0 ? index1d(0, j+1, k, nx, ny) : -1) :
-               (i != nx-1 && j == ny-1) ? (normal[ic] == 0 ? index1d(i+1, 0, k, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(0, 0, k, nx, ny) : -1);
+               (i == nx-1 && j != ny-1) ? (boundary1 != 1 ? index1d(0, j+1, k, nx, ny) : -1) :
+               (i != nx-1 && j == ny-1) ? (boundary2 != 1 ? index1d(i+1, 0, k, nx, ny) : -1) :
+               ((boundary1 != 1 && boundary2 != 1) ? index1d(0, 0, k, nx, ny) : -1);
     }
     else if(q == 9)
     {
         return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
-               (i == 0 && j != ny-1) ? (normal[ic] == 0 ? index1d(nx-1, j+1, k, nx, ny) : -1):
-               (i != 0 && j == ny-1) ? (normal[ic] == 0 ? index1d(i-1, 0, k, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(nx-1, 0, k, nx, ny) : -1);
+               (i == 0 && j != ny-1) ? (boundary1 != 1 ? index1d(nx-1, j+1, k, nx, ny) : -1):
+               (i != 0 && j == ny-1) ? (boundary2 != 1 ? index1d(i-1, 0, k, nx, ny) : -1) :
+               ((boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, 0, k, nx, ny) : -1);
     }
     else if(q == 10)
     {
         return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
-               (i == nx-1 && j != 0) ? (normal[ic] == 0 ? index1d(0, j-1, k, nx, ny) : -1) :
-               (i != nx-1 && j == 0) ? (normal[ic] == 0 ? index1d(i+1, ny-1, k, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(0, ny-1, k, nx, ny) : -1);
+               (i == nx-1 && j != 0) ? (boundary1 != 1 ? index1d(0, j-1, k, nx, ny) : -1) :
+               (i != nx-1 && j == 0) ? (boundary2 != 1 ? index1d(i+1, ny-1, k, nx, ny) : -1) :
+               ((boundary1 != 1 && boundary2 != 1) ? index1d(0, ny-1, k, nx, ny) : -1);
     }
     else if(q == 11)
     {
-        return (i != 0 && k != 0) ? index1d(i-1, j, k-1, nx, ny) :
-               (i == 0 && k != 0) ? (normal[ic] == 0 ? index1d(nx-1, j, k-1, nx, ny) : -1) :
-               (i != 0 && k == 0) ? (normal[ic] == 0 ? index1d(i-1, j, nz-1, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(nx-1, j, nz-1, nx, ny) : -1);
+        if(i != 0 && k != 0)
+        {
+            return index1d(i-1, j, k-1, nx, ny);
+        }
+        else if(i == 0 && k != 0)
+        {
+            return boundary1 != 1 ? index1d(nx-1, j, k-1, nx, ny) : -1;
+        }
+        else if(i != 0 && k == 0)
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return boundary1 != 1 ? index1d(i-1, j, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i-1, j, nz-1, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
+            }
+        }
+        // return (i != 0 && k != 0) ? index1d(i-1, j, k-1, nx, ny) :
+        //        (i == 0 && k != 0) ? (boundary1 != 1 ? index1d(nx-1, j, k-1, nx, ny) : -1) :
+        //        (i != 0 && k == 0) ? (boundary1 != 1 ? index1d(i-1, j, nz-1, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1);
     }
     else if(q == 12)
     {
-        return (i != nx-1 && k != nz-1) ? index1d(i+1, j, k+1, nx, ny) :
-               (i == nx-1 && k != nz-1) ? (normal[ic] == 0 ? index1d(0, j, k+1, nx, ny) : -1) :
-               (i != nx-1 && k == nz-1) ? (normal[ic] == 0 ? index1d(i+1, j, 0, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(0, j, 0, nx, ny) : -1);
+        if(i != nx-1 && k != nz-1)
+        {
+            return index1d(i+1, j, k+1, nx, ny);
+        }
+        else if(i == nx-1 && k != nz-1)
+        {
+            return boundary1 != 1 ? index1d(0, j, k+1, nx, ny) : -1;
+        }
+        else if(i != nx-1 && k == nz-1)
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return boundary1 != 1 ? index1d(i+1, j, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i+1, j, 0, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(0, j, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(0, j, 0, nx, ny) : -1;
+            }
+        }
+        // return (i != nx-1 && k != nz-1) ? index1d(i+1, j, k+1, nx, ny) :
+        //        (i == nx-1 && k != nz-1) ? (boundary1 != 1 ? index1d(0, j, k+1, nx, ny) : -1) :
+        //        (i != nx-1 && k == nz-1) ? (boundary1 != 1 ? index1d(i+1, j, 0, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(0, j, 0, nx, ny) : -1);
     }
     else if(q == 13)
     {
-        return (i != 0 && k != nz-1) ? index1d(i-1, j, k+1, nx, ny) :
-               (i == 0 && k != nz-1) ? (normal[ic] == 0 ? index1d(nx-1, j, k+1, nx, ny) : -1) :
-               (i != 0 && k == nz-1) ? (normal[ic] == 0 ? index1d(i-1, j, 0, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(nx-1, j, 0, nx, ny) : -1);
+        if(i != 0 && k != nz-1)
+        {
+            return index1d(i-1, j, k+1, nx, ny);
+        }
+        else if(i == 0 && k != nz-1)
+        {
+            return boundary1 != 1 ? index1d(nx-1, j, k+1, nx, ny) : -1;
+        }
+        else if(i != 0 && k == nz-1)
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return boundary1 != 1 ? index1d(i-1, j, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i-1, j, 0, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1;
+            }
+        }
+        // return (i != 0 && k != nz-1) ? index1d(i-1, j, k+1, nx, ny) :
+        //        (i == 0 && k != nz-1) ? (boundary1 != 1 ? index1d(nx-1, j, k+1, nx, ny) : -1) :
+        //        (i != 0 && k == nz-1) ? (boundary1 != 1 ? index1d(i-1, j, 0, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1);
     }
     else if(q == 14)
     {
-        return (i != nx-1 && k != 0) ? index1d(i+1, j, k-1, nx, ny) :
-               (i == nx-1 && k != 0) ? (normal[ic] == 0 ? index1d(0, j, k-1, nx, ny) : -1) :
-               (i != nx-1 && k == 0) ? (normal[ic] == 0 ? index1d(i+1, j, nz-1, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(0, j, nz-1, nx, ny) : -1);
+        if(i != nx-1 && k != 0)
+        {
+            return index1d(i+1, j, k-1, nx, ny);
+        }
+        else if(i == nx-1 && k != 0)
+        {
+            return boundary1 != 1 ? index1d(0, j, k-1, nx, ny) : -1;
+        }
+        else if(i != nx-1 && k == 0)
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return boundary1 != 1 ? index1d(i+1, j, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i+1, j, nz-1, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(j != 0  && j != ny-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(0, j, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(0, j, nz-1, nx, ny) : -1;
+            }
+        }
+        // return (i != nx-1 && k != 0) ? index1d(i+1, j, k-1, nx, ny) :
+        //        (i == nx-1 && k != 0) ? (boundary1 != 1 ? index1d(0, j, k-1, nx, ny) : -1) :
+        //        (i != nx-1 && k == 0) ? (boundary1 != 1 ? index1d(i+1, j, nz-1, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(0, j, nz-1, nx, ny) : -1);
     }
     else if(q == 15)
     {
-        return (j != 0 && k != 0) ? index1d(i, j-1, k-1, nx, ny) :
-               (j == 0 && k != 0) ? (normal[ic] == 0 ? index1d(i, ny-1, k-1, nx, ny) : -1) :
-               (j != 0 && k == 0) ? (normal[ic] == 0 ? index1d(i, j-1, nz-1, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(i, ny-1, nz-1, nx, ny) : -1);
+        if(j != 0 && k != 0)
+        {
+            return index1d(i, j-1, k-1, nx, ny);
+        }
+        else if(j == 0 && k != 0)
+        {
+            return boundary1 != 1 ? index1d(i, ny-1, k-1, nx, ny) : -1;
+        }
+        else if(j != 0 && k == 0)
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return boundary1 != 1 ? index1d(i, j-1, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j-1, nz-1, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
+            }
+        }
+        // return (j != 0 && k != 0) ? index1d(i, j-1, k-1, nx, ny) :
+        //        (j == 0 && k != 0) ? (boundary1 != 1 ? index1d(i, ny-1, k-1, nx, ny) : -1) :
+        //        (j != 0 && k == 0) ? (boundary1 != 1 ? index1d(i, j-1, nz-1, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1);
     }
     else if(q == 16)
     {
-        return (j != ny-1 && k != nz-1) ? index1d(i, j+1, k+1, nx, ny) :
-               (j == ny-1 && k != nz-1) ? (normal[ic] == 0 ? index1d(i, 0, k+1, nx, ny) : -1) :
-               (j != ny-1 && k == nz-1) ? (normal[ic] == 0 ? index1d(i, j+1, 0, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(i, 0, 0, nx, ny) : -1);
+        if(j != ny-1 && k != nz-1)
+        {
+            return index1d(i, j+1, k+1, nx, ny);
+        }
+        else if(j == ny-1 && k != nz-1)
+        {
+            return boundary1 != 1 ? index1d(i, 0, k+1, nx, ny) : -1;
+        }
+        else if(j != ny-1 && k == nz-1)
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return boundary1 != 1 ? index1d(i, j+1, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j+1, 0, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, 0, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, 0, nx, ny) : -1;
+            }
+        }
+        // return (j != ny-1 && k != nz-1) ? index1d(i, j+1, k+1, nx, ny) :
+        //        (j == ny-1 && k != nz-1) ? (boundary1 != 1 ? index1d(i, 0, k+1, nx, ny) : -1) :
+        //        (j != ny-1 && k == nz-1) ? (boundary1 != 1 ? index1d(i, j+1, 0, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(i, 0, 0, nx, ny) : -1);
     }
     else if(q == 17)
     {
-        return (j != 0 && k != nz-1) ? index1d(i, j-1, k+1, nx, ny) :
-               (j == 0 && k != nz-1) ? (normal[ic] == 0 ? index1d(i, ny-1, k+1, nx, ny) : -1) :
-               (j != 0 && k == nz-1) ? (normal[ic] == 0 ? index1d(i, j-1, 0, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(i, ny-1, 0, nx, ny) : -1);
+        if(j != 0 && k != nz-1)
+        {
+            return index1d(i, j-1, k+1, nx, ny);
+        }
+        else if(j == 0 && k != nz-1)
+        {
+            return boundary1 != 1 ? index1d(i, ny-1, k+1, nx, ny) : -1;
+        }
+        else if(j != 0 && k == nz-1)
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return boundary1 != 1 ? index1d(i, j-1, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j-1, 0, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1;
+            }
+        }
+        // return (j != 0 && k != nz-1) ? index1d(i, j-1, k+1, nx, ny) :
+        //        (j == 0 && k != nz-1) ? (boundary1 != 1 ? index1d(i, ny-1, k+1, nx, ny) : -1) :
+        //        (j != 0 && k == nz-1) ? (boundary1 != 1 ? index1d(i, j-1, 0, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1);
     }
     else if(q == 18)
     {
-        return (j != ny-1 && k != 0) ? index1d(i, j+1, k-1, nx, ny) :
-               (j == ny-1 && k != 0) ? (normal[ic] == 0 ? index1d(i, 0, k-1, nx, ny) : -1) :
-               (j != ny-1 && k == 0) ? (normal[ic] == 0 ? index1d(i, j+1, nz-1, nx, ny) : -1) :
-               (normal[ic] == 0 ? index1d(i, 0, nz-1, nx, ny) : -1);
+        if(j != ny-1 && k != 0)
+        {
+            return index1d(i, j+1, k-1, nx, ny);
+        }
+        else if(j == ny-1 && k != 0)
+        {
+            return boundary1 != 1 ? index1d(i, 0, k-1, nx, ny) : -1;
+        }
+        else if(j != ny-1 && k == 0)
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return boundary1 != 1 ? index1d(i, j+1, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j+1, nz-1, nx, ny) : -1;
+            }
+        }
+        else
+        {
+            if(i != 0 && i != nx-1)
+            {
+                return (boundary1 != 1 && boundary2 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1;
+            }
+            else
+            {
+                return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1;
+            }
+        }
+        // return (j != ny-1 && k != 0) ? index1d(i, j+1, k-1, nx, ny) :
+        //        (j == ny-1 && k != 0) ? (boundary1 != 1 ? index1d(i, 0, k-1, nx, ny) : -1) :
+        //        (j != ny-1 && k == 0) ? (boundary1 != 1 ? index1d(i, j+1, nz-1, nx, ny) : -1) :
+        //        ((boundary1 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1);
     }
     else
     {
@@ -740,7 +1065,7 @@ __kernel void k_bounceBackMovingWall
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
-   __global int* normal,
+   __global int* boundary1, __global int* boundary2, __global int* boundary3,
    __global float* sdf, __global unsigned char* solid, __global unsigned char* neiSolid, 
    __global float* u0, __global float* v0, __global float* w0,
    const unsigned elements,
@@ -769,122 +1094,11 @@ __kernel void k_streamingCollision // Pull
         {
             int qic = q*elements +ic;
 
-            upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,normal);
+            upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,boundary1[ic],boundary2[ic],boundary3[ic]);
             if(upID[q] != -1) // Streaming
             {   
                 int upQID = idf(q, upID[q], nx, ny, nz);
-
                 ft[q] = f[upQID];
-                // -- For Poiseuille flow (j == 0 and j == ny-1 are wall)
-                if(j == 0  && k == 0)
-                {
-                    int qbb = reflectQ(q);
-                    int bbQID = idf(qbb, ic, nx, ny, nz);
-                    const float rhow = rho_av;
-                    // if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                    if(q == 3)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
-                    }
-                    else if(q == 7)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
-                    }
-                    else if(q == 10)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
-                    }   
-                    else if(q == 15)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
-                    }
-                    else if(q == 17)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
-                    }
-                }
-                if(j == ny-1  && k == 0)
-                {
-                    int qbb = reflectQ(q);
-                    int bbQID = idf(qbb, ic, nx, ny, nz);
-                    const float rhow = rho_av;
-                    // if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                    if(q == 4)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
-                    }
-                    else if(q == 8)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
-                    }
-                    else if(q == 9)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
-                    }
-                    else if(q == 16)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
-                    }
-                    else if(q == 18)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
-                    }
-                }
-                if(j == 0  && k == nz-1)
-                {
-                    int qbb = reflectQ(q);
-                    int bbQID = idf(qbb, ic, nx, ny, nz);
-                    const float rhow = rho_av;
-                    // if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                    if(q == 3)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
-                    }
-                    else if(q == 7)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
-                    }
-                    else if(q == 10)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
-                    }   
-                    else if(q == 15)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
-                    }
-                    else if(q == 17)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
-                    }
-                }
-                if(j == ny-1  && k == nz-1)
-                {
-                    int qbb = reflectQ(q);
-                    int bbQID = idf(qbb, ic, nx, ny, nz);
-                    const float rhow = rho_av;
-                    // if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                    if(q == 4)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
-                    }
-                    else if(q == 8)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
-                    }
-                    else if(q == 9)
-                    {
-                        ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
-                    }
-                    else if(q == 16)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
-                    }
-                    else if(q == 18)
-                    {
-                        ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
-                    }
-                }
-                // --
             }
             else // Bounce-Back for boundary wall
             {
@@ -1059,19 +1273,89 @@ __kernel void k_streamingCollision // Pull
 
                 fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
 
-                int i = ic2i(ic,nx,ny);
-                if(i == nx-1)
+                // Equilibrium Boundary
+                if(boundary1[ic] == 2 || boundary2[ic] == 2 || boundary3[ic] == 2)
                 {
-                    if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
+                    int i = ic2i(ic,nx,ny);
+                    int j = ic2j(ic,nx,ny);
+                    int k = ic2k(ic,nx,ny);
+
+                    const float rhow = rho_av;
+                    const float u = u0[ic];
+                    const float v = v0[ic];
+                    const float w = w0[ic];
+
+                    if(i == 0)
                     {
-                        int qbb = reflectQ(q);
-                        int bbQID = idf(qbb, ic, nx, ny, nz);
-                        const float rhow = rho_av;
+                        if(boundary1[ic] == 2)
+                        {
+                            if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
+                            {                            
+                                float uSqr = u*u +v*v +w*w;
+                                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
 
-                        float uSqr = u0[ic]*u0[ic] +v0[ic]*v0[ic] +w0[ic]*w0[ic];
-                        float uDotC = u0[ic]*cx[q]+v0[ic]*cy[q]+w0[ic]*cz[q];
+                                ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                            }
+                        }
+                    }
+                    if(i == nx-1)
+                    {
+                        if(boundary1[ic] == 2)
+                        {
+                            if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
+                            {
+                                float uSqr = u*u +v*v +w*w;
+                                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
 
-                        ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                                ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                            }
+                        }
+                    }
+                    if(j == 0)
+                    {
+                        if(boundary1[ic] == 2 || boundary2[ic] == 2)
+                        {
+                            if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                            {
+                                float uSqr = u*u +v*v +w*w;
+                                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+
+                                ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                            }
+                        }
+                    }
+                    if(j == ny-1)
+                    {
+                        if(boundary1[ic] == 2 || boundary2[ic] == 2)
+                        {
+                            if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                            {
+                                float uSqr = u*u +v*v +w*w;
+                                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+
+                                ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                            }
+                        }
+                    }
+                    if(k == 0)
+                    {                        
+                        if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
+                        {
+                            float uSqr = u*u +v*v +w*w;
+                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+
+                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                        }
+                    }
+                    if(k == nz-1)
+                    {
+                        if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17)
+                        {
+                            float uSqr = u*u +v*v +w*w;
+                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+
+                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
+                        }
                     }
                 }
             }

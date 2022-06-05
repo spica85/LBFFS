@@ -159,7 +159,7 @@ if(Fwrite && nextOutTime < nt +1)
 
     // obst output
     {
-        writeFile << "SCALARS obst float\n";
+        writeFile << "SCALARS boundary1 float\n";
         writeFile << "LOOKUP_TABLE default\n";
         for(int k = 0; k < nz; k++)
         {
@@ -170,12 +170,64 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)obst[ic].boundary);
+                        asciiToBinary(str,(float)obst[ic].boundary1);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << obst[ic].boundary << "\n";
+                        writeFile << obst[ic].boundary1 << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }                    
+
+    // obst output
+    {
+        writeFile << "SCALARS boundary2 float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)obst[ic].boundary2);
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << obst[ic].boundary2 << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }                    
+
+    // obst output
+    {
+        writeFile << "SCALARS boundary3 float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)obst[ic].boundary3);
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << obst[ic].boundary3 << "\n";
                     }
                 }
             }

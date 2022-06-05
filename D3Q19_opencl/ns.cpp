@@ -124,7 +124,9 @@ int main()
     std::vector<float> u0(nx*ny*nz,0.0f);
     std::vector<float> v0(nx*ny*nz,0.0f);
     std::vector<float> w0(nx*ny*nz,0.0f);
-    std::vector<int> normal(nx*ny*nz,0);
+    std::vector<int> boundary1(nx*ny*nz,0);
+    std::vector<int> boundary2(nx*ny*nz,0);
+    std::vector<int> boundary3(nx*ny*nz,0);
 
     const unsigned elements = nx*ny*nz;
     const unsigned qElements = 19*elements;
@@ -149,150 +151,153 @@ int main()
         v0[ic] = obst[ic].v0;
         w0[ic] = obst[ic].w0;
 
-        const std::vector<int> normal_in = {-1,0,0};
-        const std::vector<int> normal_ip = {1,0,0};
-        const std::vector<int> normal_jn = {0,-1,0};
-        const std::vector<int> normal_jp = {0,1,0};
-        const std::vector<int> normal_kn = {0,0,-1};
-        const std::vector<int> normal_kp = {0,0,1};
+        // const std::vector<int> normal_in = {-1,0,0};
+        // const std::vector<int> normal_ip = {1,0,0};
+        // const std::vector<int> normal_jn = {0,-1,0};
+        // const std::vector<int> normal_jp = {0,1,0};
+        // const std::vector<int> normal_kn = {0,0,-1};
+        // const std::vector<int> normal_kp = {0,0,1};
 
-        const std::vector<int> normal_injn = {-1,-1,0};
-        const std::vector<int> normal_injp = {-1,1,0};
-        const std::vector<int> normal_ipjn = {1,-1,0};
-        const std::vector<int> normal_ipjp = {1,1,0};
-        const std::vector<int> normal_inkn = {-1,0,-1};
-        const std::vector<int> normal_inkp = {-1,0,1};
-        const std::vector<int> normal_ipkn = {1,0,-1};
-        const std::vector<int> normal_ipkp = {1,0,1};
-        const std::vector<int> normal_jnkn = {0,-1,-1};
-        const std::vector<int> normal_jnkp = {0,-1,1};
-        const std::vector<int> normal_jpkn = {0,1,-1};
-        const std::vector<int> normal_jpkp = {0,1,1};
+        // const std::vector<int> normal_injn = {-1,-1,0};
+        // const std::vector<int> normal_injp = {-1,1,0};
+        // const std::vector<int> normal_ipjn = {1,-1,0};
+        // const std::vector<int> normal_ipjp = {1,1,0};
+        // const std::vector<int> normal_inkn = {-1,0,-1};
+        // const std::vector<int> normal_inkp = {-1,0,1};
+        // const std::vector<int> normal_ipkn = {1,0,-1};
+        // const std::vector<int> normal_ipkp = {1,0,1};
+        // const std::vector<int> normal_jnkn = {0,-1,-1};
+        // const std::vector<int> normal_jnkp = {0,-1,1};
+        // const std::vector<int> normal_jpkn = {0,1,-1};
+        // const std::vector<int> normal_jpkp = {0,1,1};
 
-        const std::vector<int> normal_injnkn = {-1,-1,-1};
-        const std::vector<int> normal_injpkn = {-1,1,-1};
-        const std::vector<int> normal_injnkp = {-1,-1,1};
-        const std::vector<int> normal_injpkp = {-1,1,1};
-        const std::vector<int> normal_ipjnkn = {1,-1,-1};
-        const std::vector<int> normal_ipjpkn = {1,1,-1};
-        const std::vector<int> normal_ipjnkp = {1,-1,1};
-        const std::vector<int> normal_ipjpkp = {1,1,1};
+        // const std::vector<int> normal_injnkn = {-1,-1,-1};
+        // const std::vector<int> normal_injpkn = {-1,1,-1};
+        // const std::vector<int> normal_injnkp = {-1,-1,1};
+        // const std::vector<int> normal_injpkp = {-1,1,1};
+        // const std::vector<int> normal_ipjnkn = {1,-1,-1};
+        // const std::vector<int> normal_ipjpkn = {1,1,-1};
+        // const std::vector<int> normal_ipjnkp = {1,-1,1};
+        // const std::vector<int> normal_ipjpkp = {1,1,1};
 
-        if(obst[ic].boundary > 0)
-        {
-            if(obst[ic].normal == normal_in)
-            {
-                normal[ic] = -1;
-            }
-            else if(obst[ic].normal == normal_ip)
-            {
-                normal[ic] = 1;
-            }
-            else if(obst[ic].normal == normal_jn)
-            {
-                normal[ic] = -2;
-            }
-            else if(obst[ic].normal == normal_jp)
-            {
-                normal[ic] = 2;
-            }
-            else if(obst[ic].normal == normal_kn)
-            {
-                normal[ic] = -3;
-            }
-            else if(obst[ic].normal == normal_kp)
-            {
-                normal[ic] = 3;
-            }
-            else if(obst[ic].normal == normal_injn)
-            {
-                normal[ic] = -4;
-            }
-            else if(obst[ic].normal == normal_ipjp)
-            {
-                normal[ic] = 4;
-            }
-            else if(obst[ic].normal == normal_ipjn)
-            {
-                normal[ic] = -5;
-            }
-            else if(obst[ic].normal == normal_injp)
-            {
-                normal[ic] = 5;
-            }
-            else if(obst[ic].normal == normal_inkn)
-            {
-                normal[ic] = -6;
-            }
-            else if(obst[ic].normal == normal_ipkp)
-            {
-                normal[ic] = 6;
-            }
-            else if(obst[ic].normal == normal_ipkn)
-            {
-                normal[ic] = -7;
-            }
-            else if(obst[ic].normal == normal_inkp)
-            {
-                normal[ic] = 7;
-            }
-            else if(obst[ic].normal == normal_jnkn)
-            {
-                normal[ic] = -8;
-            }
-            else if(obst[ic].normal == normal_jpkp)
-            {
-                normal[ic] = 8;
-            }
-            else if(obst[ic].normal == normal_jpkn)
-            {
-                normal[ic] = -9;
-            }
-            else if(obst[ic].normal == normal_jnkp)
-            {
-                normal[ic] = 9;
-            }
-            else if(obst[ic].normal == normal_injnkn)
-            {
-                normal[ic] = -10;
-            }
-            else if(obst[ic].normal == normal_ipjpkp)
-            {
-                normal[ic] = 10;
-            }
-            else if(obst[ic].normal == normal_ipjnkn)
-            {
-                normal[ic] = -11;
-            }
-            else if(obst[ic].normal == normal_injpkp)
-            {
-                normal[ic] = 11;
-            }
-            else if(obst[ic].normal == normal_injpkn)
-            {
-                normal[ic] = -12;
-            }
-            else if(obst[ic].normal == normal_ipjnkp)
-            {
-                normal[ic] = 12;
-            }
-            else if(obst[ic].normal == normal_injnkp)
-            {
-                normal[ic] = -13;
-            }
-            else if(obst[ic].normal == normal_ipjpkn)
-            {
-                normal[ic] = 13;
-            }
-            else
-            {
-                normal[ic] = 0;
-            }
-        }
-        else
-        {
-            normal[ic] = 0;
-        }
+        // if(obst[ic].boundary > 0)
+        // {
+        //     if(obst[ic].normal == normal_in)
+        //     {
+        //         normal[ic] = -1;
+        //     }
+        //     else if(obst[ic].normal == normal_ip)
+        //     {
+        //         normal[ic] = 1;
+        //     }
+        //     else if(obst[ic].normal == normal_jn)
+        //     {
+        //         normal[ic] = -2;
+        //     }
+        //     else if(obst[ic].normal == normal_jp)
+        //     {
+        //         normal[ic] = 2;
+        //     }
+        //     else if(obst[ic].normal == normal_kn)
+        //     {
+        //         normal[ic] = -3;
+        //     }
+        //     else if(obst[ic].normal == normal_kp)
+        //     {
+        //         normal[ic] = 3;
+        //     }
+        //     else if(obst[ic].normal == normal_injn)
+        //     {
+        //         normal[ic] = -4;
+        //     }
+        //     else if(obst[ic].normal == normal_ipjp)
+        //     {
+        //         normal[ic] = 4;
+        //     }
+        //     else if(obst[ic].normal == normal_ipjn)
+        //     {
+        //         normal[ic] = -5;
+        //     }
+        //     else if(obst[ic].normal == normal_injp)
+        //     {
+        //         normal[ic] = 5;
+        //     }
+        //     else if(obst[ic].normal == normal_inkn)
+        //     {
+        //         normal[ic] = -6;
+        //     }
+        //     else if(obst[ic].normal == normal_ipkp)
+        //     {
+        //         normal[ic] = 6;
+        //     }
+        //     else if(obst[ic].normal == normal_ipkn)
+        //     {
+        //         normal[ic] = -7;
+        //     }
+        //     else if(obst[ic].normal == normal_inkp)
+        //     {
+        //         normal[ic] = 7;
+        //     }
+        //     else if(obst[ic].normal == normal_jnkn)
+        //     {
+        //         normal[ic] = -8;
+        //     }
+        //     else if(obst[ic].normal == normal_jpkp)
+        //     {
+        //         normal[ic] = 8;
+        //     }
+        //     else if(obst[ic].normal == normal_jpkn)
+        //     {
+        //         normal[ic] = -9;
+        //     }
+        //     else if(obst[ic].normal == normal_jnkp)
+        //     {
+        //         normal[ic] = 9;
+        //     }
+        //     else if(obst[ic].normal == normal_injnkn)
+        //     {
+        //         normal[ic] = -10;
+        //     }
+        //     else if(obst[ic].normal == normal_ipjpkp)
+        //     {
+        //         normal[ic] = 10;
+        //     }
+        //     else if(obst[ic].normal == normal_ipjnkn)
+        //     {
+        //         normal[ic] = -11;
+        //     }
+        //     else if(obst[ic].normal == normal_injpkp)
+        //     {
+        //         normal[ic] = 11;
+        //     }
+        //     else if(obst[ic].normal == normal_injpkn)
+        //     {
+        //         normal[ic] = -12;
+        //     }
+        //     else if(obst[ic].normal == normal_ipjnkp)
+        //     {
+        //         normal[ic] = 12;
+        //     }
+        //     else if(obst[ic].normal == normal_injnkp)
+        //     {
+        //         normal[ic] = -13;
+        //     }
+        //     else if(obst[ic].normal == normal_ipjpkn)
+        //     {
+        //         normal[ic] = 13;
+        //     }
+        //     else
+        //     {
+        //         normal[ic] = 0;
+        //     }
+        // }
+        // else
+        // {
+        //     normal[ic] = 0;
+        // }
+        boundary1[ic] = obst[ic].boundary1;
+        boundary2[ic] = obst[ic].boundary2;
+        boundary3[ic] = obst[ic].boundary3;
     }
 
     std::vector<int> upID(19*nx*ny*nz);
@@ -313,19 +318,19 @@ int main()
         }
     }
 
-    std::vector<int> internalID;
-    std::vector<int> boundaryID;
-    for(int ic = 0; ic < nx*ny*nz; ic++)
-    {
-        if(obst[ic].boundary == 0)
-        {
-            internalID.push_back(ic);
-        }
-        else
-        {
-            boundaryID.push_back(ic);
-        }
-    }
+    // std::vector<int> internalID;
+    // std::vector<int> boundaryID;
+    // for(int ic = 0; ic < nx*ny*nz; ic++)
+    // {
+    //     if(obst[ic].boundary == 0)
+    //     {
+    //         internalID.push_back(ic);
+    //     }
+    //     else
+    //     {
+    //         boundaryID.push_back(ic);
+    //     }
+    // }
 
     // std::vector<int> BBID;
     // std::vector<int> BBmovingWallID;
@@ -509,7 +514,9 @@ int main()
     cl::Buffer u0_d(context, u0.begin(), u0.end(), true);
     cl::Buffer v0_d(context, v0.begin(), v0.end(), true);
     cl::Buffer w0_d(context, w0.begin(), w0.end(), true);
-    cl::Buffer normal_d(context, normal.begin(), normal.end(), true);
+    cl::Buffer boundary1_d(context, boundary1.begin(), boundary1.end(), true);
+    cl::Buffer boundary2_d(context, boundary2.begin(), boundary2.end(), true);
+    cl::Buffer boundary3_d(context, boundary3.begin(), boundary3.end(), true);
     cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
     cl::Buffer sdf_d(context, sdf.begin(), sdf.end(), true);
     cl::Buffer solid_d(context, solid.begin(), solid.end(), true);
@@ -571,7 +578,7 @@ int main()
     cl::KernelFunctor
     <
         cl::Buffer, cl::Buffer,
-        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
@@ -595,7 +602,7 @@ int main()
         (
             cl::EnqueueArgs(queue,cl::NDRange(elements)),
             f_d, fTmp_d,
-            normal_d,
+            boundary1_d, boundary2_d, boundary3_d,
             sdf_d, solid_d, neiSolid_d,
             u0_d, v0_d, w0_d,
             elements,
