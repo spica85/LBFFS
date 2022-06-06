@@ -1068,6 +1068,7 @@ __kernel void k_streamingCollision // Pull
    __global int* boundary1, __global int* boundary2, __global int* boundary3,
    __global float* sdf, __global unsigned char* solid, __global unsigned char* neiSolid, 
    __global float* u0, __global float* v0, __global float* w0,
+   __global float* Fwx, __global float* Fwy, __global float* Fwz,
    const unsigned elements,
    const float omega,
    const float dpdx,
@@ -1201,6 +1202,10 @@ __kernel void k_streamingCollision // Pull
             w /= rho;
             float p = rho/3.f;
 
+            Fwx[ic] = 0.f;
+            Fwy[ic] = 0.f;
+            Fwz[ic] = 0.f;
+
             for(int q = 1; q < 19; q++)
             {
                 if(neiSolid[ic] == 1)
@@ -1240,6 +1245,9 @@ __kernel void k_streamingCollision // Pull
                             float kai = omega*(2.f*qf -1.f);
                             ft[q] = (1.f -kai)*f[bbQID] +kai*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
                         }
+                        Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
+                        Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
+                        Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
                     }
                 }
             }

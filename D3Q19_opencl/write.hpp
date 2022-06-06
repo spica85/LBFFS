@@ -1,12 +1,21 @@
 if(Fwrite && nextOutTime < nt +1)
 {
     cl::copy(queue, f_d, f.begin(), f.end());
+    cl::copy(queue, Fwx_d, Fwx.begin(), Fwx.end());
+    cl::copy(queue, Fwy_d, Fwy.begin(), Fwy.end());
+    cl::copy(queue, Fwz_d, Fwz.begin(), Fwz.end());
     rho_av = 0.0;
+    float SumFwx = 0.f;
+    float SumFwy = 0.f;
+    float SumFwz = 0.f;
     #pragma omp parallel for
     for(int ic =0; ic <nx*ny*nz; ic++)
     {
         cal_rhoUVW(ic, nx, ny, nz, f, cx, cy, cz, rho[ic], u[ic], v[ic], w[ic]);
         rho_av += rho[ic];
+        SumFwx += Fwx[ic];
+        SumFwy += Fwy[ic];
+        SumFwz += Fwz[ic];
     }
     rho_av /= float(elements);
 
@@ -30,6 +39,8 @@ if(Fwrite && nextOutTime < nt +1)
     float time = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
     std::cout << "Execution time: " << time << " (s)" << std::endl;
     std::cout << "Speed: " << float(nt)*float(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
+
+    std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << std::endl;
 
     writeFile << "# vtk DataFile Version 3.0\n";
     writeFile << "vtk output\n";

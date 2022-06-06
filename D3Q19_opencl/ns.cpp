@@ -370,6 +370,10 @@ int main()
     std::vector<std::vector<float> > STLv1(3);
     std::vector<std::vector<float> > STLv2(3);
 
+    std::vector<float> Fwx(nx*ny*nz,0.0f);
+    std::vector<float> Fwy(nx*ny*nz,0.0f);
+    std::vector<float> Fwz(nx*ny*nz,0.0f);
+
     readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
     const int nSTL = STLnormal[0].size();
     std::cout << "Number of elements of STL: " << nSTL << std::endl;
@@ -514,6 +518,9 @@ int main()
     cl::Buffer u0_d(context, u0.begin(), u0.end(), true);
     cl::Buffer v0_d(context, v0.begin(), v0.end(), true);
     cl::Buffer w0_d(context, w0.begin(), w0.end(), true);
+    cl::Buffer Fwx_d(context, Fwx.begin(), Fwx.end(), true);
+    cl::Buffer Fwy_d(context, Fwy.begin(), Fwy.end(), true);
+    cl::Buffer Fwz_d(context, Fwz.begin(), Fwz.end(), true);
     cl::Buffer boundary1_d(context, boundary1.begin(), boundary1.end(), true);
     cl::Buffer boundary2_d(context, boundary2.begin(), boundary2.end(), true);
     cl::Buffer boundary3_d(context, boundary3.begin(), boundary3.end(), true);
@@ -581,6 +588,7 @@ int main()
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
         const float,
         const float,
@@ -605,6 +613,7 @@ int main()
             boundary1_d, boundary2_d, boundary3_d,
             sdf_d, solid_d, neiSolid_d,
             u0_d, v0_d, w0_d,
+            Fwx_d, Fwy_d, Fwz_d,
             elements,
             omega,
             dpdx,
