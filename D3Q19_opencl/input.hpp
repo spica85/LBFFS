@@ -65,11 +65,11 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 {
     std::string line;
 
-    if(!inputFile.is_open())
-    {
-        std::cerr << "Could not open the file" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    // if(!inputFile.is_open())
+    // {
+    //     std::cerr << "Could not open the file" << std::endl;
+    //     exit(EXIT_FAILURE);
+    // }
 
 
     while(std::getline(inputFile, line))
@@ -91,6 +91,11 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
     std::ifstream inputFile(inputFileName);
+    if(!inputFile)
+    {
+        std::cerr << "Could not open input.txt" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 
     readToLines(inputFile, lines);
 
@@ -148,6 +153,16 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
 void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2)
 {
     std::ifstream STLfile(STLname);
+    if(!STLfile)
+    {
+        std::cout << "\nSTL (walls.stl) was not read\n" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "\nSTL (walls.stl) was read" << std::endl;
+    }
+
     std::vector<std::string> lines;
     readToLines(STLfile, lines);
 

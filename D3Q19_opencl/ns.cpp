@@ -156,7 +156,7 @@ int main()
         boundary3[ic] = obst[ic].boundary3;
     }
 
-    const std::string STLname("cylinder.ast");
+    const std::string STLname("walls.stl");
     std::vector<std::vector<float> > STLnormal(3);
     std::vector<std::vector<float> > STLv0(3);
     std::vector<std::vector<float> > STLv1(3);
@@ -168,7 +168,7 @@ int main()
 
     readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
     const int nSTL = STLnormal[0].size();
-    std::cout << "Number of elements of STL: " << nSTL << std::endl;
+    std::cout << "Number of elements of STL: " << nSTL << "\n" << std::endl;
 
     std::vector<std::vector<float> > STLc(3, std::vector<float>(nSTL));
     for(int i = 0; i < nSTL; i++)
