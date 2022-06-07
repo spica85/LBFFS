@@ -53,16 +53,12 @@ int main()
    
     // Single Relaxation Time model
 
-    // -- For cavity flow --
+    //- For cavity flow
     // const float a = 1.0; //Dimensional length of system (m)
-    // const float L = a/float(nx); //Representative length (-)
-    // const float c = uMax/U0; //Representative velocity (m/s)
-    
-
+    // const float L = a/float(nx); //Representative length (-)  
     // float nu = uMax*a/Re; //Dimensional kinematic viscosity
-    // nu = nu/(L*c); //Dimensionless kinematic viscosity
     // float dpdx = 0.0;//Dimensionless external force
-
+    //--
 
     //For channel flow
     // float Retau = 10;
@@ -71,30 +67,28 @@ int main()
     // float nu = utau*0.5*ny/Retau;
     // float dpdx = utau*utau/(0.5*ny);
 
-    //For Poiseuille flow
+    //- For Poiseuille flow
     // float h = 1.f;
     // float nu = uMax*h/Re;
-    // const float c = uMax/U0;
     // const float L = h/float(ny);
-    // nu = nu/(L*c);
-    // // const float dpdx = uMax/(h*h)*8.0*nu/(ny-1);
-    // float dpdx = 8.0*(nu*(L*c))*uMax/(h*h);
+    // float dpdx = 8.0*nu*uMax/(h*h);
     // // float dpdx = 1.f-5;
-    // dpdx *= L/(c*c);
+    //--
+    
 
-    //For flow around cylinder
+    //- For flow around cylinder
     float h = 2.f;
     float d = 0.1f;
     float nu = uMax*d/Re;
-    const float c = uMax/U0;
     const float L = h/float(ny);
-    nu = nu/(L*c);
-    // const float dpdx = uMax/(h*h)*8.0*nu/(ny-1);
     float dpdx = 0.f;
-    
+    //--
+
+    const float c = uMax/U0; //Representative velocity (m/s)
+    nu = nu/(L*c);
+    dpdx *= L/(c*c);
 
     std::cout << "dpdx = " << dpdx << std::endl;
-
     std::cout << "nu = " << nu << std::endl;
 
 
