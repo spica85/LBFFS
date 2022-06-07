@@ -18,6 +18,8 @@ if(Fwrite && nextOutTime < nt +1)
         SumFwz += Fwz[ic];
     }
     rho_av /= float(elements);
+    float rhoMax = *std::max_element(rho.begin(), rho.end());
+    float rhoMin = *std::min_element(rho.begin(), rho.end());
 
     std::ostringstream ss;
     ss << std::setw(8) << std::setfill('0') << std::to_string(nt);
@@ -39,6 +41,8 @@ if(Fwrite && nextOutTime < nt +1)
     float time = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
     std::cout << "Execution time: " << time << " (s)" << std::endl;
     std::cout << "Speed: " << float(nt)*float(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
+
+    std::cout << "rhoMax: " << rhoMax << ", rhoMin: " << rhoMin << std::endl;
 
     std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << std::endl;
 
