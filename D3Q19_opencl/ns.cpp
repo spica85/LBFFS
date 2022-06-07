@@ -54,10 +54,10 @@ int main()
     // Single Relaxation Time model
 
     //- For cavity flow
-    // const float a = 1.0; //Dimensional length of system (m)
-    // const float L = a/float(nx); //Representative length (-)  
-    // float nu = uMax*a/Re; //Dimensional kinematic viscosity
-    // float dpdx = 0.0;//Dimensionless external force
+    const float a = 1.0; //Dimensional length of system (m)
+    const float L = a/float(nx); //Representative length (-)  
+    float nu = uMax*a/Re; //Dimensional kinematic viscosity
+    float dpdx = 0.0;//Dimensionless external force
     //--
 
     //For channel flow
@@ -77,11 +77,11 @@ int main()
     
 
     //- For flow around cylinder
-    float h = 2.f;
-    float d = 0.1f;
-    float nu = uMax*d/Re;
-    const float L = h/float(ny);
-    float dpdx = 0.f;
+    // float h = 2.f;
+    // float d = 0.1f;
+    // float nu = uMax*d/Re;
+    // const float L = h/float(ny);
+    // float dpdx = 0.f;
     //--
 
     const float c = uMax/U0; //Representative velocity (m/s)
@@ -126,10 +126,10 @@ int main()
     const unsigned qElements = 19*elements;
 
     // Setting conditions
-    // #include "boundaryCondition_cavityFlow2d.hpp"
+    #include "boundaryCondition_cavityFlow.hpp"
     // #include "boundaryCondition_cavityFlow3dDiagonal.hpp"
     // #include "boundaryCondition_channelFlow.hpp"
-    #include "boundaryCondition_flowAroundCylinder.hpp"
+    // #include "boundaryCondition_flowAroundCylinder.hpp"
     if(restart)
     {
         #include "restart.hpp"

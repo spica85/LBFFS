@@ -44,7 +44,9 @@ if(Fwrite && nextOutTime < nt +1)
 
     std::cout << "rhoMax: " << rhoMax << ", rhoMin: " << rhoMin << std::endl;
 
-    std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << std::endl;
+    //- For Flow around cylinder
+    // std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << std::endl;
+    //--
 
     writeFile << "# vtk DataFile Version 3.0\n";
     writeFile << "vtk output\n";
