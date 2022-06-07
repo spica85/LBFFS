@@ -119,6 +119,40 @@ for(int k = 0; k < nz; k++)
                 obst[ic].u0 = uMax/c;
             }
 
+
+            if(i == 0 && k == 0)
+            {
+                obst[ic].boundary1 = 1;
+                obst[ic].boundary3 = 0;
+                obst[ic].normal = {-1,-1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = uMax/c;
+            }
+            if(i == 0 && k == nz-1)
+            {
+                obst[ic].boundary1 = 1;
+                obst[ic].boundary3 = 0;
+                obst[ic].normal = {-1,1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = uMax/c;
+            }
+            if(i == nx-1 && k == 0)
+            {
+                obst[ic].boundary1 = 2;
+                obst[ic].boundary3 = 0;
+                obst[ic].normal = {1,-1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = uMax/c;
+            }
+            if(i == nx-1 && k == nz-1)
+            {
+                obst[ic].boundary1 = 2;
+                obst[ic].boundary3 = 0;
+                obst[ic].normal = {1,1,0};
+                obst[ic].inner = false;
+                obst[ic].u0 = uMax/c;
+            }
+
             if(i == 0 && j == 0 && k == 0)
             {
                 obst[ic].boundary1 = 1;
