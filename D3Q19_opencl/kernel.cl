@@ -793,7 +793,6 @@ __kernel void k_streamingCollision // Pull
                     }
                     if(j == 0)
                     {
-                        // if(boundary1[ic] == 2 || boundary2[ic] == 2)
                         if(boundary2[ic] == 2)
                         {
                             if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
@@ -807,7 +806,6 @@ __kernel void k_streamingCollision // Pull
                     }
                     if(j == ny-1)
                     {
-                        // if(boundary1[ic] == 2 || boundary2[ic] == 2)
                         if(boundary2[ic] == 2)
                         {
                             if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
