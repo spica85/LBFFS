@@ -297,7 +297,7 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
             // {
             //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i+1, j, 0, nx, ny) : -1;
             // }
-            return boundary1 != 1 ? index1d(i+1, j, 0, nx, ny) : -1;
+            return boundary3 != 1 ? index1d(i+1, j, 0, nx, ny) : -1;
         }
         else
         {
