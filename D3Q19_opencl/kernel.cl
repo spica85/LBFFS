@@ -703,8 +703,8 @@ __kernel void k_streamingCollision // Pull
                             // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
                             // ft[q] = f[bbQID]; // Simple Bounce-Back
 
-                            float kai = omega*(2.f*qf -1.f)/(1.f-omega);
-                            ft[q] = (1.f -kai)*f[bbQID] +kai*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                            float chi = omega*(2.f*qf -1.f)/(1.f-omega);
+                            ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
                         }
                         else
                         {
@@ -714,12 +714,102 @@ __kernel void k_streamingCollision // Pull
 
                             uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
                             uDotC *= (1.f -1.f/qf);
-                            float kai = omega*(2.f*qf -1.f);
-                            ft[q] = (1.f -kai)*f[bbQID] +kai*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                            float chi = omega*(2.f*qf -1.f);
+                            ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
                         }
                         Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
                         Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
                         Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
+                    }
+                }
+            }
+        }
+
+        // Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
+        for(int q = 0; q < 19; q++)
+        {
+            if(boundary1[ic] == 3 || boundary2[ic] == 3 || boundary3[ic] == 3)
+            {
+                int i = ic2i(ic,nx,ny);
+                int j = ic2j(ic,nx,ny);
+                int k = ic2k(ic,nx,ny);
+
+                if(i == 0)
+                {
+                    if(boundary1[ic] == 3)
+                    {
+                        if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
+                        {                            
+                            int innerID = index1d(1,j,k,nx,ny);
+                            int qinic = idf(q, innerID, nx, ny, nz);
+                            int qic = idf(q, ic, nx, ny, nz);
+                            ft[q] = sqrt(3.f)*f[qinic] +(1.f -sqrt(3.f))*f[qic];
+                        }
+                    }
+                }
+                if(i == nx-1)
+                {
+                    if(boundary1[ic] == 3)
+                    {
+                        if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
+                        {
+                            int innerID = index1d(nx-2,j,k,nx,ny);
+                            int qinic = idf(q, innerID, nx, ny, nz);
+                            int qic = idf(q, ic, nx, ny, nz);
+                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                        }
+                    }
+                }
+                if(j == 0)
+                {
+                    if(boundary2[ic] == 3)
+                    {
+                        if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                        {
+                            int innerID = index1d(i,1,k,nx,ny);
+                            int qinic = idf(q, innerID, nx, ny, nz);
+                            int qic = idf(q, ic, nx, ny, nz);
+                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                        }
+                    }
+                }
+                if(j == ny-1)
+                {
+                    if(boundary2[ic] == 3)
+                    {
+                        if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                        {
+                            int innerID = index1d(i,ny-2,k,nx,ny);
+                            int qinic = idf(q, innerID, nx, ny, nz);
+                            int qic = idf(q, ic, nx, ny, nz);
+                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                        }
+                    }
+                }
+                if(k == 0)
+                {
+                    if(boundary3[ic] == 3)
+                    {
+                        if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
+                        {
+                            int innerID = index1d(i,j,1,nx,ny);
+                            int qinic = idf(q, innerID, nx, ny, nz);
+                            int qic = idf(q, ic, nx, ny, nz);
+                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                        }
+                    }
+                }
+                if(k == nz-1)
+                {
+                    if(boundary3[ic] == 3)
+                    {
+                        if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17)
+                        {
+                            int innerID = index1d(i,j,nz-2,nx,ny);
+                            int qinic = idf(q, innerID, nx, ny, nz);
+                            int qic = idf(q, ic, nx, ny, nz);
+                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                        }
                     }
                 }
             }
