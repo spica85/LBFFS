@@ -54,10 +54,10 @@ int main()
     // Single Relaxation Time model
 
     //- For cavity flow
-    const float a = 1.0; //Dimensional length of system (m)
-    const float L = a/float(nx); //Representative length (-)  
-    float nu = uMax*a/Re; //Dimensional kinematic viscosity
-    float dpdx = 0.0;//Dimensionless external force
+    // const float a = 1.0; //Dimensional length of system (m)
+    // const float L = a/float(nx); //Representative length (-)  
+    // float nu = uMax*a/Re; //Dimensional kinematic viscosity
+    // float dpdx = 0.0;//Dimensionless external force
     //--
 
     //For channel flow
@@ -72,16 +72,15 @@ int main()
     // float nu = uMax*h/Re;
     // const float L = h/float(ny);
     // float dpdx = 8.0*nu*uMax/(h*h);
-    // // float dpdx = 1.f-5;
     //--
     
 
     //- For flow around cylinder
-    // float h = 2.f;
-    // float d = 0.1f;
-    // float nu = uMax*d/Re;
-    // const float L = h/float(ny);
-    // float dpdx = 0.f;
+    float h = 7.f;
+    float d = 1.f;
+    float nu = uMax*d/Re;
+    const float L = h/float(ny);
+    float dpdx = 0.f;
     //--
 
     const float c = uMax/U0; //Representative velocity (m/s)
@@ -96,7 +95,8 @@ int main()
     const float omega = 1.0/(3.0*nu +0.5);
     // float omega = 1.0/0.56;
 
-    std::cout << "tau = " << 1.0/omega << std::endl;
+    std::cout << "tau = " << 1.0/omega << ", taulim = " << 0.5f +uMax/c/8.0f << std::endl;
+    std::cout << "Maximum Ma = " << (uMax/c)*sqrt(3.f) << std::endl;
 
     const std::vector<float> wt = setWt();
 
@@ -126,10 +126,9 @@ int main()
     const unsigned qElements = 19*elements;
 
     // Setting conditions
-    #include "boundaryCondition_cavityFlow.hpp"
-    // #include "boundaryCondition_cavityFlow3dDiagonal.hpp"
-    // #include "boundaryCondition_channelFlow.hpp"
-    // #include "boundaryCondition_flowAroundCylinder.hpp"
+    // #include "boundaryCondition_cavityFlow.hpp"
+    // #include "boundaryCondition_PoiseuilleFlow.hpp"
+    #include "boundaryCondition_flowAroundCylinder.hpp"
     if(restart)
     {
         #include "restart.hpp"
@@ -215,9 +214,54 @@ int main()
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
     const float dr = 3.f;
     const float p = 7.f;
-
-    for(int ic = 0; ic < nx*ny*nz; ic++)
+    const int drn = 3;
+    
+    std::vector<int> nearSTL;
+    for(int iSTL = 0; iSTL < nSTL; iSTL++)
     {
+        int i = int(STLc[0][iSTL]);
+        int j = int(STLc[1][iSTL]);
+        // int k = int(STLc[2][iSTL]);
+        int k = 0;
+
+        if(0 <= i && i <= nx-1 && 0 <= j && j <= ny-1 && 0 <= k && k <= nz-1)
+        {
+            // std::cout << "i: " << i << ", j: " << j << ", k: " << k << std::endl;
+            for(int ii = -drn; ii <= drn; ii++)
+            {
+                int iNear = i + ii;
+                if(0 <= iNear && iNear <= nx-1)
+                {
+                    for(int jj = -drn; jj <= drn; jj++)
+                    {
+                        int jNear = j + jj;
+                        if(0 <= jNear && jNear <= ny-1)
+                        {
+                            for(int kk = -drn; kk <= drn; kk++)
+                            {
+                                int kNear = k + kk;
+                                if(0 <= kNear && kNear <= nz-1)
+                                {
+                                    int ic = index1d(iNear,jNear,kNear,nx,ny);
+                                    nearSTL.push_back(ic);
+                                }
+                            }
+                        }
+                    }
+                }   
+            }
+        }
+    }
+    std::sort(nearSTL.begin(), nearSTL.end());
+    nearSTL.erase(std::unique(nearSTL.begin(), nearSTL.end()), nearSTL.end());
+
+
+    std::cout << "Number of nearSTL: " << nearSTL.size() << std::endl;
+    for(int iNSTL = 0; iNSTL < nearSTL.size(); iNSTL++)
+    {
+        int ic = nearSTL[iNSTL];
+        // std::cout << "nearSTL[" << iNSTL << "]: " << nearSTL[iNSTL] << std::endl;
+
         int i = ic2i(ic,nx,ny);
         int j = ic2j(ic,nx,ny);
         int k = ic2k(ic,nx,ny);
@@ -247,6 +291,39 @@ int main()
         }
     }
 
+
+    // for(int ic = 0; ic < nx*ny*nz; ic++)
+    // {
+    //     int i = ic2i(ic,nx,ny);
+    //     int j = ic2j(ic,nx,ny);
+    //     int k = ic2k(ic,nx,ny);
+        
+    //     float sumD = 0.f;
+    //     for(int iSTL = 0; iSTL < nSTL; iSTL++)
+    //     {
+    //         const float r = sqrt
+    //                         (
+    //                             pow(float(i) -STLc[0][iSTL],2.f)
+    //                             +pow(float(j) -STLc[1][iSTL],2.f)
+    //                             +pow(float(k) -STLc[2][iSTL],2.f)
+    //                         );
+    //         if(r < dr)
+    //         {
+    //             const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
+    //                             +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
+    //                             +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
+    //             sumD += pow(r,-p);
+    //             sdf[ic] += sd*pow(r,-p);
+    //         }
+    //     }
+    //     sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : 0.f;
+    //     if(sdf[ic] < 0.f)
+    //     {
+    //         solid[ic] = 1;
+    //     }
+    // }
+
+    
     for(int ic = 0; ic < nx*ny*nz; ic++)
     {
         int i = ic2i(ic,nx,ny);
