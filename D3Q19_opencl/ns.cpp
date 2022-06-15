@@ -76,8 +76,8 @@ int main()
     
 
     //- For flow around cylinder
-    float h = 7.f;
-    float d = 1.f;
+    float h = 6.f;
+    float d = 6.f;
     float nu = uMax*d/Re;
     const float L = h/float(ny);
     float dpdx = 0.f;
@@ -113,6 +113,8 @@ int main()
     std::vector<float> v(nx*ny*nz);
     std::vector<float> w(nx*ny*nz);
     float rho_av = 1.0;
+
+    std::vector<float> tauSGS(nx*ny*nz);
 
     std::vector<obstructure> obst(nx*ny*nz);
     std::vector<float> u0(nx*ny*nz,0.0f);
@@ -221,8 +223,8 @@ int main()
     {
         int i = int(STLc[0][iSTL]);
         int j = int(STLc[1][iSTL]);
-        // int k = int(STLc[2][iSTL]);
-        int k = 0;
+        int k = int(STLc[2][iSTL]);
+        // int k = 0;
 
         if(0 <= i && i <= nx-1 && 0 <= j && j <= ny-1 && 0 <= k && k <= nz-1)
         {
@@ -380,6 +382,8 @@ int main()
     cl::Buffer sdf_d(context, sdf.begin(), sdf.end(), true);
     cl::Buffer solid_d(context, solid.begin(), solid.end(), true);
     cl::Buffer neiSolid_d(context, neiSolid.begin(), neiSolid.end(), true);
+
+    cl::Buffer tauSGS_d(context, tauSGS.begin(), tauSGS.end(), true);
     
     // Create the kernel functor of streamingCollision
     cl::KernelFunctor
@@ -389,6 +393,7 @@ int main()
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer,
         const unsigned,
         const float,
         const float,
@@ -414,6 +419,7 @@ int main()
             sdf_d, solid_d, neiSolid_d,
             u0_d, v0_d, w0_d,
             Fwx_d, Fwy_d, Fwz_d,
+            tauSGS_d,
             elements,
             omega,
             dpdx,

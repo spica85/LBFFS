@@ -4,6 +4,7 @@ if(Fwrite && nextOutTime < nt +1)
     cl::copy(queue, Fwx_d, Fwx.begin(), Fwx.end());
     cl::copy(queue, Fwy_d, Fwy.begin(), Fwy.end());
     cl::copy(queue, Fwz_d, Fwz.begin(), Fwz.end());
+    cl::copy(queue, tauSGS_d, tauSGS.begin(), tauSGS.end());
     rho_av = 0.0;
     float SumFwx = 0.f;
     float SumFwy = 0.f;
@@ -167,6 +168,33 @@ if(Fwrite && nextOutTime < nt +1)
                     else
                     {
                         writeFile << rho[ic] << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // tauSGS output
+    {
+        writeFile << "SCALARS tauSGS float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+
+        for(int k = 0; k < nz; k++)                            
+        {                        
+            for(int j = 0; j < ny; j++)                            
+            {
+                for(int i = 0; i < nx; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)tauSGS[ic]);
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << tauSGS[ic] << "\n";
                     }
                 }
             }

@@ -539,6 +539,7 @@ __kernel void k_streamingCollision // Pull
    __global float* sdf, __global unsigned char* solid, __global unsigned char* neiSolid, 
    __global float* u0, __global float* v0, __global float* w0,
    __global float* Fwx, __global float* Fwy, __global float* Fwz,
+   __global float* tauSGS,
    const unsigned elements,
    const float omega,
    const float dpdx,
@@ -696,6 +697,9 @@ __kernel void k_streamingCollision // Pull
                         float uSqr =u*u+v*v+w*w;
                         float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
                         float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+
+                        float tau = 1.f/omega;
+                        float omegaEff = 1.f/(tau +tauSGS[ic]);
                         
                         if(qf <= 0.5f)
                         {
@@ -703,7 +707,7 @@ __kernel void k_streamingCollision // Pull
                             // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
                             // ft[q] = f[bbQID]; // Simple Bounce-Back
 
-                            float chi = omega*(2.f*qf -1.f)/(1.f-omega);
+                            float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
                             ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
                         }
                         else
@@ -714,7 +718,7 @@ __kernel void k_streamingCollision // Pull
 
                             uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
                             uDotC *= (1.f -1.f/qf);
-                            float chi = omega*(2.f*qf -1.f);
+                            float chi = omegaEff*(2.f*qf -1.f);
                             ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
                         }
                         Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
@@ -824,7 +828,6 @@ __kernel void k_streamingCollision // Pull
             for(int q = 0; q < 19; q++)
             {
                 rho += ft[q];
-
                 u += ft[q]*cx[q];
                 v += ft[q]*cy[q];
                 w += ft[q]*cz[q];
@@ -832,6 +835,44 @@ __kernel void k_streamingCollision // Pull
             u /= rho;
             v /= rho;
             w /= rho;
+
+            //-- LES viscosity
+            float Sxx = 0.f;
+            float Sxy = 0.f;
+            float Sxz = 0.f;
+            float Syy = 0.f;
+            float Syz = 0.f;
+            float Szz = 0.f;
+
+            for(int q = 0; q < 19; q++)
+            {
+                float uSqr =u*u+v*v+w*w;
+                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+                float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+                
+                Sxx += cx[q]*cx[q]*(ft[q] -feq);
+                Sxy += cx[q]*cy[q]*(ft[q] -feq);
+                Sxz += cx[q]*cz[q]*(ft[q] -feq);
+                Syy += cy[q]*cy[q]*(ft[q] -feq);
+                Syz += cy[q]*cz[q]*(ft[q] -feq);
+                Szz += cz[q]*cz[q]*(ft[q] -feq);
+            }
+            float A = -(3.f*omega)/(2.f*rho);
+            Sxx *= A;
+            Sxy *= A;
+            Sxz *= A;
+            Syy *= A;
+            Syz *= A;
+            Szz *= A;
+
+            float S = sqrt(2.f*(Sxx*Sxx+Syy*Syy+Szz*Szz+2.f*(Sxy*Sxy+Sxz*Sxz+Syz*Syz)));
+            float Cs = 0.1f;
+
+            float tau = 1.f/omega;
+            tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*S/rho));
+            float omegaEff = 1.f/(tau +tauSGS[ic]);
+            
+            //--
 
             for(int q = 0; q < 19; q++)
             {
@@ -841,7 +882,7 @@ __kernel void k_streamingCollision // Pull
 
                 int qic = q*elements +ic;
 
-                fTmp[qic] = (1.0f -omega)*ft[q] + omega *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
+                fTmp[qic] = (1.0f -omegaEff)*ft[q] + omegaEff *feq +rho*wt[q]*3.0f*dpdx*cx[q]; // Pull
 
                 // Equilibrium Boundary
                 if(boundary1[ic] == 2 || boundary2[ic] == 2 || boundary3[ic] == 2)
