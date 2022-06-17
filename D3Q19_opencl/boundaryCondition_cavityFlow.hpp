@@ -146,7 +146,7 @@ for(int k = 0; k < nz; k++)
                 obst[ic].boundary3 = 0;
                 obst[ic].normal = {1,-1,0};
                 obst[ic].inner = false;
-                obst[ic].u0 = 0.0;
+                obst[ic].u0 = uMax/c;
             }
             if(j == ny-1 && k == nz-1)
             {
@@ -154,7 +154,7 @@ for(int k = 0; k < nz; k++)
                 obst[ic].boundary3 = 0;
                 obst[ic].normal = {1,1,0};
                 obst[ic].inner = false;
-                obst[ic].u0 = 0.0;
+                obst[ic].u0 = uMax/c;
             }
 
 
