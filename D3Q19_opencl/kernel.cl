@@ -874,6 +874,7 @@ __kernel void k_streamingCollision // Pull
             float omegaEff = 1.f/(tau +tauSGS[ic]);
 
             const float sqrCs = 1.f/3.f;
+            const float quadCs = 1.f/9.f;
             
             //-- BGK model
             // for(int q = 0; q < 19; q++)
@@ -889,164 +890,295 @@ __kernel void k_streamingCollision // Pull
             //--
 
             
-            // //-- Cumulant model
-            float K200 = 0.f;
-            float K020 = 0.f;
-            float K002 = 0.f;
-            float K110 = 0.f;
-            float K101 = 0.f;
-            float K011 = 0.f;
+            //-- Cumulant model
+            // float K200 = 0.f;
+            // float K020 = 0.f;
+            // float K002 = 0.f;
+            // float K110 = 0.f;
+            // float K101 = 0.f;
+            // float K011 = 0.f;
             
-            float K210 = 0.f;
-            float K201 = 0.f;
-            float K021 = 0.f;
-            float K120 = 0.f;
-            float K102 = 0.f;
-            float K012 = 0.f;
+            // float K210 = 0.f;
+            // float K201 = 0.f;
+            // float K021 = 0.f;
+            // float K120 = 0.f;
+            // float K102 = 0.f;
+            // float K012 = 0.f;
 
-            float K220 = 0.f;
-            float K202 = 0.f;
-            float K022 = 0.f;
+            // float K220 = 0.f;
+            // float K202 = 0.f;
+            // float K022 = 0.f;
 
-            float Keq200 = sqrCs;
-            float Keq020 = sqrCs;
-            float Keq002 = sqrCs;
-            float Keq110 = 0.f;
-            float Keq101 = 0.f;
-            float Keq011 = 0.f;
+            // // float Keq200 = sqrCs;
+            // // float Keq020 = sqrCs;
+            // // float Keq002 = sqrCs;
+            // // float Keq110 = 0.f;
+            // // float Keq101 = 0.f;
+            // // float Keq011 = 0.f;
             
-            float Keq210 = 0.f;
-            float Keq201 = 0.f;
-            float Keq021 = 0.f;
-            float Keq120 = 0.f;
-            float Keq102 = 0.f;
-            float Keq012 = 0.f;
+            // // float Keq210 = 0.f;
+            // // float Keq201 = 0.f;
+            // // float Keq021 = 0.f;
+            // // float Keq120 = 0.f;
+            // // float Keq102 = 0.f;
+            // // float Keq012 = 0.f;
 
-            float Keq220 = 0.f;
-            float Keq202 = 0.f;
-            float Keq022 = 0.f;
+            // // float Keq220 = 0.f;
+            // // float Keq202 = 0.f;
+            // // float Keq022 = 0.f;
 
+            // for(int q = 0; q < 19; q++)
+            // {
+            //     float cxq = cx[q] -u;
+            //     float cyq = cy[q] -v;
+            //     float czq = cz[q] -w;
+
+            //     K200 += cxq*cxq*ft[q];
+            //     K020 += cyq*cyq*ft[q];
+            //     K002 += czq*czq*ft[q];
+            //     K110 += cxq*cyq*ft[q];
+            //     K101 += cxq*czq*ft[q];
+            //     K011 += cyq*czq*ft[q];
+                
+            //     K210 += cxq*cxq*cyq*ft[q];
+            //     K201 += cxq*cxq*czq*ft[q];
+            //     K021 += cyq*cyq*czq*ft[q];
+            //     K120 += cxq*cyq*cyq*ft[q];
+            //     K102 += cxq*czq*czq*ft[q];
+            //     K012 += cyq*czq*czq*ft[q];
+
+            //     K220 += cxq*cxq*cyq*cyq*ft[q];
+            //     K202 += cxq*cxq*czq*czq*ft[q];
+            //     K022 += cyq*cyq*czq*czq*ft[q];
+            // }
+
+            // float invRho = 1.f/rho;
+            // K200 *= invRho; 
+            // K020 *= invRho; 
+            // K002 *= invRho; 
+            // K110 *= invRho; 
+            // K101 *= invRho; 
+            // K011 *= invRho; 
+
+                
+            // K210 *= invRho; 
+            // K201 *= invRho; 
+            // K021 *= invRho; 
+            // K120 *= invRho; 
+            // K102 *= invRho; 
+            // K012 *= invRho; 
+
+                
+            // K220 *= invRho; 
+            // K202 *= invRho; 
+            // K022 *= invRho;
+
+            // K220 -= (K200*K020 +2.f*K110*K110);
+            // K202 -= (K200*K002 +2.f*K101*K101);
+            // K022 -= (K020*K002 +2.f*K011*K011);
+
+            // float omegaB = 1.f;
+            // float omegaM = (omegaB - omega)/3.f;
+            // float omegaP = omegaM +omega;
+            // float omega2 = omega;
+            // float omega3 = omega;
+            // float omega4 = omega;
+
+            // float Kcoll200 = K200 -omegaP*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
+            // float Kcoll020 = K020 -omegaM*(K200 -sqrCs) -omegaP*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
+            // float Kcoll002 = K002 -omegaM*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaP*(K002 -sqrCs);
+            // float Kcoll110 = (1.f -omega2)*K110;
+            // float Kcoll101 = (1.f -omega2)*K101;
+            // float Kcoll011 = (1.f -omega2)*K011;
+            
+            // float Kcoll210 = (1.f -omega3)*K210;
+            // float Kcoll201 = (1.f -omega3)*K201;
+            // float Kcoll021 = (1.f -omega3)*K021;
+            // float Kcoll120 = (1.f -omega3)*K120;
+            // float Kcoll102 = (1.f -omega3)*K102;
+            // float Kcoll012 = (1.f -omega3)*K012;
+
+            // float Kcoll220 = (1.f -omega4)*K220;
+            // float Kcoll202 = (1.f -omega4)*K202;
+            // float Kcoll022 = (1.f -omega4)*K022;
+            
+
+            // float CMcoll200 = Kcoll200;
+            // float CMcoll020 = Kcoll020;
+            // float CMcoll002 = Kcoll002;
+            // float CMcoll110 = Kcoll110;
+            // float CMcoll101 = Kcoll101;
+            // float CMcoll011 = Kcoll011;
+        
+            // float CMcoll210 = Kcoll210;
+            // float CMcoll201 = Kcoll201;
+            // float CMcoll021 = Kcoll021;
+            // float CMcoll120 = Kcoll120;
+            // float CMcoll102 = Kcoll102;
+            // float CMcoll012 = Kcoll012;
+
+            // float CMcoll220 = Kcoll220 +Kcoll200*Kcoll020 +2.f*Kcoll110*Kcoll110;
+            // float CMcoll202 = Kcoll202 +Kcoll200*Kcoll002 +2.f*Kcoll101*Kcoll101;
+            // float CMcoll022 = Kcoll022 +Kcoll020*Kcoll002 +2.f*Kcoll011*Kcoll011;
+
+
+            // float u2 = u*u;
+            // float v2 = v*v;
+            // float w2 = w*w;
+            // float uv = u*v;
+            // float uw = u*w;
+            // float vw = v*w;
+
+
+            // float RMcoll200 = CMcoll200 +u2;
+            // float RMcoll020 = CMcoll020 +v2;
+            // float RMcoll002 = CMcoll002 +w2;
+            // float RMcoll110 = CMcoll110 +uv;
+            // float RMcoll101 = CMcoll101 +uw;
+            // float RMcoll011 = CMcoll011 +vw;
+            
+            // float RMcoll210 = CMcoll210 +v*CMcoll200 +2.f*u*CMcoll110 +u2*v;
+            // float RMcoll201 = CMcoll201 +w*CMcoll200 +2.f*u*CMcoll101 +u2*w;
+            // float RMcoll021 = CMcoll021 +w*CMcoll020 +2.f*v*CMcoll011 +v2*w;
+            // float RMcoll120 = CMcoll120 +u*CMcoll020 +2.f*v*CMcoll110 +u*v2;
+            // float RMcoll102 = CMcoll101 +u*CMcoll002 +2.f*w*CMcoll101 +u*w2;
+            // float RMcoll012 = CMcoll012 +v*CMcoll002 +2.f*w*CMcoll011 +v*w2;
+
+            // float RMcoll220 = CMcoll220 +2.f*v*CMcoll210 +2.f*u*CMcoll120 +v2*CMcoll200 +u2*CMcoll020 +4.f*uv*CMcoll110 +u2*v2;
+            // float RMcoll202 = CMcoll202 +2.f*w*CMcoll201 +2.f*u*CMcoll102 +w2*CMcoll200 +u2*CMcoll002 +4.f*uw*CMcoll101 +u2*w2;
+            // float RMcoll022 = CMcoll022 +2.f*w*CMcoll020 +2.f*v*CMcoll012 +w2*CMcoll020 +v2*CMcoll002 +4.f*vw*CMcoll011 +v2*w2;
+
+
+            // fTmp[ 0*elements +ic] = rho*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022);
+            // fTmp[ 1*elements +ic] = 0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
+            // fTmp[ 2*elements +ic] = rho*(-u +RMcoll120 +RMcoll102) +0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
+            // fTmp[ 3*elements +ic] = 0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);    
+            // fTmp[ 4*elements +ic] = rho*(-v +RMcoll210 +RMcoll012) +0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);
+            // fTmp[ 5*elements +ic] = 0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022);
+            // fTmp[ 6*elements +ic] = rho*(-w +RMcoll201 +RMcoll021) +0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022);
+            // fTmp[ 7*elements +ic] = 0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
+            // fTmp[ 8*elements +ic] = 0.5f*rho*(-RMcoll210 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
+            // fTmp[ 9*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll210) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
+            // fTmp[10*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
+            // fTmp[11*elements +ic] = 0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
+            // fTmp[12*elements +ic] = 0.5f*rho*(-RMcoll201 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
+            // fTmp[13*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll201) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
+            // fTmp[14*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
+            // fTmp[15*elements +ic] = 0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
+            // fTmp[16*elements +ic] = 0.5f*rho*(-RMcoll021 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
+            // fTmp[17*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll021) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
+            // fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
+            //--
+
+            
+            //-- Recursive-regularized model
+            float RR200 = 0.f;
+            float RR020 = 0.f;
+            float RR002 = 0.f;
+            float RR110 = 0.f;
+            float RR101 = 0.f;
+            float RR011 = 0.f;
+            
+            float RReq200 = u*u;
+            float RReq020 = v*v;
+            float RReq002 = w*w;
+            float RReq110 = u*v;
+            float RReq101 = u*w;
+            float RReq011 = v*w;
+
+            float RReq210 = RReq200*v;
+            float RReq201 = RReq200*w;
+            float RReq021 = RReq020*w;
+            float RReq120 = RReq020*u;
+            float RReq102 = RReq002*u;
+            float RReq012 = RReq002*v;
+
+            float RReq220 = RReq200*RReq020;
+            float RReq202 = RReq200*RReq002;
+            float RReq022 = RReq020*RReq002;
+            
+            
             for(int q = 0; q < 19; q++)
             {
-                float cxq = cx[q] -u;
-                float cyq = cy[q] -v;
-                float czq = cz[q] -w;
+                float Hxx = cx[q]*cx[q] -sqrCs;
+                float Hyy = cy[q]*cy[q] -sqrCs;
+                float Hzz = cz[q]*cz[q] -sqrCs;
 
-                K200 += cxq*cxq*ft[q];
-                K020 += cyq*cyq*ft[q];
-                K002 += czq*czq*ft[q];
-                K110 += cxq*cyq*ft[q];
-                K101 += cxq*czq*ft[q];
-                K011 += cyq*czq*ft[q];
-                
-                K210 += cxq*cxq*cyq*ft[q];
-                K201 += cxq*cxq*czq*ft[q];
-                K021 += cyq*cyq*czq*ft[q];
-                K120 += cxq*cyq*cyq*ft[q];
-                K102 += cxq*czq*czq*ft[q];
-                K012 += cyq*czq*czq*ft[q];
-
-                K220 += cxq*cxq*cyq*cyq*ft[q];
-                K202 += cxq*cxq*czq*czq*ft[q];
-                K022 += cyq*cyq*czq*czq*ft[q];
+                RR200 += Hxx*ft[q];
+                RR020 += Hyy*ft[q];
+                RR002 += Hzz*ft[q];
+                RR110 += cx[q]*cy[q]*ft[q];
+                RR101 += cx[q]*cz[q]*ft[q];
+                RR011 += cy[q]*cz[q]*ft[q];
             }
-
             float invRho = 1.f/rho;
-            K200 *= invRho; 
-            K020 *= invRho; 
-            K002 *= invRho; 
-            K110 *= invRho; 
-            K101 *= invRho; 
-            K011 *= invRho; 
+            RR200 *= invRho;
+            RR020 *= invRho;
+            RR002 *= invRho;
+            RR110 *= invRho;
+            RR101 *= invRho;
+            RR011 *= invRho;
 
-                
-            K210 *= invRho; 
-            K201 *= invRho; 
-            K021 *= invRho; 
-            K120 *= invRho; 
-            K102 *= invRho; 
-            K012 *= invRho; 
+            float RRneq200 = RR200 -RReq200;
+            float RRneq020 = RR020 -RReq020;
+            float RRneq002 = RR002 -RReq002;
+            float RRneq110 = RR110 -RReq110;
+            float RRneq101 = RR101 -RReq101;
+            float RRneq011 = RR011 -RReq011;
 
-                
-            K220 *= invRho; 
-            K202 *= invRho; 
-            K022 *= invRho;
+            float RRneq210 = v*RRneq200 +2.f*u*RRneq110;
+            float RRneq201 = w*RRneq200 +2.f*u*RRneq101;
+            float RRneq021 = w*RRneq020 +2.f*v*RRneq011;
+            float RRneq120 = u*RRneq020 +2.f*v*RRneq110;
+            float RRneq102 = u*RRneq002 +2.f*w*RRneq101;
+            float RRneq012 = v*RRneq002 +2.f*w*RRneq011;
 
-            K220 -= (K200*K020 +2.f*K110*K110);
-            K202 -= (K200*K002 +2.f*K101*K101);
-            K022 -= (K020*K002 +2.f*K011*K011);
+            float RRneq220 = RReq020*RRneq200 +RReq200*RRneq020 +4.f*RReq110*RRneq110;
+            float RRneq202 = RReq002*RRneq200 +RReq200*RRneq002 +4.f*RReq101*RRneq101;
+            float RRneq022 = RReq002*RRneq020 +RReq020*RRneq002 +4.f*RReq011*RRneq011;
 
-            float omegaB = 1.f;
-            float omegaM = (omegaB - omega)/3.f;
-            float omegaP = omegaM +omega;
-            float omega2 = omega;
-            float omega3 = omega;
-            float omega4 = omega;
+            float omegaB = 0.985f;
+            float omegaM = (omegaB - omegaEff)/3.f;
+            float omegaP = omegaM +omegaEff;
+            float omega2 = omegaEff;
+            float omega3 = omegaEff;
+            float omega4 = omegaEff;
 
-            float Kcoll200 = K200 -omegaP*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
-            float Kcoll020 = K020 -omegaM*(K200 -sqrCs) -omegaP*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
-            float Kcoll002 = K002 -omegaM*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaP*(K002 -sqrCs);
-            float Kcoll110 = (1.f -omega2)*K110;
-            float Kcoll101 = (1.f -omega2)*K101;
-            float Kcoll011 = (1.f -omega2)*K011;
-            
-            float Kcoll210 = (1.f -omega3)*K210;
-            float Kcoll201 = (1.f -omega3)*K201;
-            float Kcoll021 = (1.f -omega3)*K021;
-            float Kcoll120 = (1.f -omega3)*K120;
-            float Kcoll102 = (1.f -omega3)*K102;
-            float Kcoll012 = (1.f -omega3)*K012;
+            float RRcoll200 = RR200 -omegaP*RRneq200 -omegaM*RRneq020 -omegaM*RRneq002;
+            float RRcoll020 = RR020 -omegaM*RRneq200 -omegaP*RRneq020 -omegaM*RRneq002;
+            float RRcoll002 = RR002 -omegaM*RRneq200 -omegaM*RRneq020 -omegaP*RRneq002;
+            float RRcoll110 = RR110 -omega2*RRneq110;
+            float RRcoll101 = RR101 -omega2*RRneq101;
+            float RRcoll011 = RR011 -omega2*RRneq011;
 
-            float Kcoll220 = (1.f -omega4)*K220;
-            float Kcoll202 = (1.f -omega4)*K202;
-            float Kcoll022 = (1.f -omega4)*K022;
-            
+            float RRcoll210 = RReq210 +(1.f -omega3)*RRneq210;
+            float RRcoll201 = RReq201 +(1.f -omega3)*RRneq201;
+            float RRcoll021 = RReq021 +(1.f -omega3)*RRneq021;
+            float RRcoll120 = RReq120 +(1.f -omega3)*RRneq120;
+            float RRcoll102 = RReq102 +(1.f -omega3)*RRneq102;
+            float RRcoll012 = RReq012 +(1.f -omega3)*RRneq012;
 
-            float CMcoll200 = Kcoll200;
-            float CMcoll020 = Kcoll020;
-            float CMcoll002 = Kcoll002;
-            float CMcoll110 = Kcoll110;
-            float CMcoll101 = Kcoll101;
-            float CMcoll011 = Kcoll011;
-        
-            float CMcoll210 = Kcoll210;
-            float CMcoll201 = Kcoll201;
-            float CMcoll021 = Kcoll021;
-            float CMcoll120 = Kcoll120;
-            float CMcoll102 = Kcoll102;
-            float CMcoll012 = Kcoll012;
+            float RRcoll220 = RReq220 +(1.f -omega4)*RRneq220;
+            float RRcoll202 = RReq202 +(1.f -omega4)*RRneq202;
+            float RRcoll022 = RReq022 +(1.f -omega4)*RRneq022;
 
-            float CMcoll220 = Kcoll220 +Kcoll200*Kcoll020 +2.f*Kcoll110*Kcoll110;
-            float CMcoll202 = Kcoll202 +Kcoll200*Kcoll002 +2.f*Kcoll101*Kcoll101;
-            float CMcoll022 = Kcoll022 +Kcoll020*Kcoll002 +2.f*Kcoll011*Kcoll011;
+            float RMcoll200 = RRcoll200 +sqrCs;
+            float RMcoll020 = RRcoll020 +sqrCs;
+            float RMcoll002 = RRcoll002 +sqrCs;
+            float RMcoll110 = RRcoll110;
+            float RMcoll101 = RRcoll101;
+            float RMcoll011 = RRcoll011;
 
+            float RMcoll210 = RRcoll210 +sqrCs*v;
+            float RMcoll201 = RRcoll201 +sqrCs*w;
+            float RMcoll021 = RRcoll021 +sqrCs*w;
+            float RMcoll120 = RRcoll120 +sqrCs*u;
+            float RMcoll102 = RRcoll102 +sqrCs*u;
+            float RMcoll012 = RRcoll012 +sqrCs*v;
 
-            float u2 = u*u;
-            float v2 = v*v;
-            float w2 = w*w;
-            float uv = u*v;
-            float uw = u*w;
-            float vw = v*w;
-
-
-            float RMcoll200 = CMcoll200 +u2;
-            float RMcoll020 = CMcoll020 +v2;
-            float RMcoll002 = CMcoll002 +w2;
-            float RMcoll110 = CMcoll110 +uv;
-            float RMcoll101 = CMcoll101 +uw;
-            float RMcoll011 = CMcoll011 +vw;
-            
-            float RMcoll210 = CMcoll210 +v*CMcoll200 +2.f*u*CMcoll110 +u2*v;
-            float RMcoll201 = CMcoll201 +w*CMcoll200 +2.f*u*CMcoll101 +u2*w;
-            float RMcoll021 = CMcoll021 +w*CMcoll020 +2.f*v*CMcoll011 +v2*w;
-            float RMcoll120 = CMcoll120 +u*CMcoll020 +2.f*v*CMcoll110 +u*v2;
-            float RMcoll102 = CMcoll101 +u*CMcoll002 +2.f*w*CMcoll101 +u*w2;
-            float RMcoll012 = CMcoll012 +v*CMcoll002 +2.f*w*CMcoll011 +v*w2;
-
-            float RMcoll220 = CMcoll220 +2.f*v*CMcoll210 +2.f*u*CMcoll120 +v2*CMcoll200 +u2*CMcoll020 +4.f*uv*CMcoll110 +u2*v2;
-            float RMcoll202 = CMcoll202 +2.f*w*CMcoll201 +2.f*u*CMcoll102 +w2*CMcoll200 +u2*CMcoll002 +4.f*uw*CMcoll101 +u2*w2;
-            float RMcoll022 = CMcoll022 +2.f*w*CMcoll020 +2.f*v*CMcoll012 +w2*CMcoll020 +v2*CMcoll002 +4.f*vw*CMcoll011 +v2*w2;
-
+            float RMcoll220 = RRcoll220 +sqrCs*(RRcoll200 +RRcoll020) +quadCs;
+            float RMcoll202 = RRcoll202 +sqrCs*(RRcoll200 +RRcoll002) +quadCs;
+            float RMcoll022 = RRcoll022 +sqrCs*(RRcoll020 +RRcoll002) +quadCs;
 
             fTmp[ 0*elements +ic] = rho*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022);
             fTmp[ 1*elements +ic] = 0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
