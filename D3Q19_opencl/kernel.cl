@@ -870,7 +870,7 @@ __kernel void k_streamingCollision // Pull
             float Cs = 0.1f;
 
             float tau = 1.f/omega;
-            // tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*S/rho));
+            tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*S/rho));
             float omegaEff = 1.f/(tau +tauSGS[ic]);
 
             const float sqrCs = 1.f/3.f;
@@ -1137,7 +1137,8 @@ __kernel void k_streamingCollision // Pull
             float RRneq202 = RReq002*RRneq200 +RReq200*RRneq002 +4.f*RReq101*RRneq101;
             float RRneq022 = RReq002*RRneq020 +RReq020*RRneq002 +4.f*RReq011*RRneq011;
 
-            float omegaB = 0.985f;
+            // float omegaB = 0.985f;
+            float omegaB = 1.f;
             float omegaM = (omegaB - omegaEff)/3.f;
             float omegaP = omegaM +omegaEff;
             float omega2 = omegaEff;
