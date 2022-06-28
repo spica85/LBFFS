@@ -838,39 +838,76 @@ __kernel void k_streamingCollision // Pull
             w /= rho;
 
             //-- LES viscosity
-            float Sxx = 0.f;
-            float Sxy = 0.f;
-            float Sxz = 0.f;
-            float Syy = 0.f;
-            float Syz = 0.f;
-            float Szz = 0.f;
-
-            for(int q = 0; q < 19; q++)
-            {
-                float uSqr =u*u+v*v+w*w;
-                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-                float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
-                
-                Sxx += cx[q]*cx[q]*(ft[q] -feq);
-                Sxy += cx[q]*cy[q]*(ft[q] -feq);
-                Sxz += cx[q]*cz[q]*(ft[q] -feq);
-                Syy += cy[q]*cy[q]*(ft[q] -feq);
-                Syz += cy[q]*cz[q]*(ft[q] -feq);
-                Szz += cz[q]*cz[q]*(ft[q] -feq);
-            }
-            float A = -(3.f*omega)/(2.f*rho);
-            Sxx *= A;
-            Sxy *= A;
-            Sxz *= A;
-            Syy *= A;
-            Syz *= A;
-            Szz *= A;
-
-            float S = sqrt(2.f*(Sxx*Sxx+Syy*Syy+Szz*Szz+2.f*(Sxy*Sxy+Sxz*Sxz+Syz*Syz)));
-            float Cs = 0.1f;
-
             float tau = 1.f/omega;
-            tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*S/rho));
+            // int i = ic2i(ic,nx,ny);
+            // int j = ic2j(ic,nx,ny);
+            // int k = ic2k(ic,nx,ny);
+            // if(i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
+            // {
+                float Sxx = 0.f;
+                float Sxy = 0.f;
+                float Sxz = 0.f;
+                float Syy = 0.f;
+                float Syz = 0.f;
+                float Szz = 0.f;
+
+                for(int q = 0; q < 19; q++)
+                {
+                    float uSqr =u*u+v*v+w*w;
+                    float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+                    float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+                    
+                    Sxx += cx[q]*cx[q]*(ft[q] -feq);
+                    Sxy += cx[q]*cy[q]*(ft[q] -feq);
+                    Sxz += cx[q]*cz[q]*(ft[q] -feq);
+                    Syy += cy[q]*cy[q]*(ft[q] -feq);
+                    Syz += cy[q]*cz[q]*(ft[q] -feq);
+                    Szz += cz[q]*cz[q]*(ft[q] -feq);
+                }
+                float A = -(3.f*omega)/(2.f*rho);
+                Sxx *= A;
+                Sxy *= A;
+                Sxz *= A;
+                Syy *= A;
+                Syz *= A;
+                Szz *= A;
+
+                float S = sqrt(2.f*(Sxx*Sxx+Syy*Syy+Szz*Szz+2.f*(Sxy*Sxy+Sxz*Sxz+Syz*Syz)));
+                float Cs = 0.1f;
+
+                tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*S/rho));
+
+                // const float y = sdf[ic];
+                // if(y != 10000.f && y > 0.f)
+                // {
+                //     const float kappa = 0.41f;
+                //     const float Aplus = 26.f;
+                //     const float Cdelta = 0.158f;
+                //     const float nu = (tau -0.5f)/3.f;
+                    
+                //     const float E = 9.8f;
+
+
+                //     float yPlus = 1.f;
+                //     float yPlusN = yPlus;
+                //     const float epsilon = 0.001f;
+                //     int iNew = 0;
+                //     do
+                //     {
+                //         float U = sqrt(u*u+v*v+w*w);
+                //         yPlusN = yPlus;
+                //         yPlus = ((kappa*U*y/nu) +yPlus)/(1.f +log(E*yPlus));
+                //         // if(iNew == 9 && fabs(yPlus -yPlusN) > epsilon)
+                //         // {
+                //         // printf("ic: %d, iNew: %d, y: %.2f, yPlus: %.2f, deltaYPlus: %.4f",ic,iNew,y,yPlus,fabs(yPlus-yPlusN));
+                //         // }
+                //         iNew++;
+                //     // }while(iNew < 10);
+                //     }while(fabs(yPlus -yPlusN) > epsilon && iNew < 10);
+                    
+                //     tauSGS[ic] *= pow(min(1.f, (kappa/Cdelta)*((1.f +1e-10f)-exp(-yPlus/Aplus))*y),2.f);
+                }
+            // }
             float omegaEff = 1.f/(tau +tauSGS[ic]);
 
             const float sqrCs = 1.f/3.f;
