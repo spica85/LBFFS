@@ -76,11 +76,20 @@ int main()
     
 
     //- For flow around cylinder
+    // float h = 1.f;
+    // // float d = 6.f;
+    // float d = 0.1f;
+    // float nu = uMax*d/Re;
+    // const float L = h/float(ny);
+    // float dpdx = 0.f;
+    //--
+
+    //- For backward facing step flow
     float h = 1.f;
-    // float d = 6.f;
-    float d = 0.1f;
-    float nu = uMax*d/Re;
-    const float L = h/float(ny);
+    float Ly = 3.f*h;
+    float Lx = 30.f*h;
+    float nu = uMax*h/Re;
+    const float L = Ly/float(ny);
     float dpdx = 0.f;
     //--
 
@@ -94,7 +103,6 @@ int main()
 
     const float deltaT = L/c; //Dimensional time step (s)
     const float omega = 1.0/(3.0*nu +0.5);
-    // float omega = 1.0/0.56;
 
     std::cout << "tau = " << 1.0/omega << ", taulim = " << 0.5f +uMax/c/8.0f << std::endl;
     std::cout << "Maximum Ma = " << (uMax/c)*sqrt(3.f) << std::endl;
@@ -131,7 +139,8 @@ int main()
     // Setting conditions
     // #include "boundaryCondition_cavityFlow.hpp"
     // #include "boundaryCondition_PoiseuilleFlow.hpp"
-    #include "boundaryCondition_flowAroundCylinder.hpp"
+    // #include "boundaryCondition_flowAroundCylinder.hpp"
+    #include "boundaryCondition_backStepFlow.hpp"
     if(restart)
     {
         #include "restart.hpp"
@@ -182,42 +191,17 @@ int main()
         STLc[0][i] = (STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.f;
         STLc[1][i] = (STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.f;
         STLc[2][i] = (STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f;
-        // std::cout << i << " "
-        //     << "normal: " 
-        //     << STLnormal[0][i] << ", "
-        //     << STLnormal[1][i] << ", "
-        //     << STLnormal[2][i] 
-        //     << std::endl;
-
-        // std::cout << "  "
-        //     << "v0: " 
-        //     << STLv0[0][i] << ", "
-        //     << STLv0[1][i] << ", "
-        //     << STLv0[2][i] 
-        //     << std::endl;
-
-        // std::cout << "  "
-        //     << "v1: " 
-        //     << STLv1[0][i] << ", "
-        //     << STLv1[1][i] << ", "
-        //     << STLv1[2][i] 
-        //     << std::endl;
-
-        // std::cout << "  "
-        //     << "v2: " 
-        //     << STLv2[0][i] << ", "
-        //     << STLv2[1][i] << ", "
-        //     << STLv2[2][i] 
-        //     << std::endl;
     }
 
-    std::vector<float> sdf(nx*ny*nz,0.f);
-    std::vector<float> qf(19*nx*ny*nz,-1.f);
+    const float sdfIni = 10000.f;
+    const float qfIni = 0.5f;
+    std::vector<float> sdf(nx*ny*nz,sdfIni);
+    std::vector<float> qf(19*nx*ny*nz,qfIni);
     std::vector<unsigned char> solid(nx*ny*nz,0);
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
-    const float dr = 3.f;
+    const float dr = 10.f;
     const float p = 7.f;
-    const int drn = 3;
+    const int drn = 10;
     
     std::vector<int> nearSTL;
     for(int iSTL = 0; iSTL < nSTL; iSTL++)
@@ -227,7 +211,7 @@ int main()
         int k = int(STLc[2][iSTL]);
         // int k = 0;
 
-        if(0 <= i && i <= nx-1 && 0 <= j && j <= ny-1 && 0 <= k && k <= nz-1)
+        if(0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1)
         {
             // std::cout << "i: " << i << ", j: " << j << ", k: " << k << std::endl;
             for(int ii = -drn; ii <= drn; ii++)
@@ -263,7 +247,7 @@ int main()
     for(int iNSTL = 0; iNSTL < nearSTL.size(); iNSTL++)
     {
         int ic = nearSTL[iNSTL];
-        // std::cout << "nearSTL[" << iNSTL << "]: " << nearSTL[iNSTL] << std::endl;
+        sdf[ic] = 0.f;
 
         int i = ic2i(ic,nx,ny);
         int j = ic2j(ic,nx,ny);
@@ -287,62 +271,61 @@ int main()
                 sdf[ic] += sd*pow(r,-p);
             }
         }
-        sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : 0.f;
+        sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : sdfIni;
         if(sdf[ic] < 0.f)
         {
             solid[ic] = 1;
         }
     }
 
+    for(int j = 0; j < ny; j++)
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            std::vector<int> tmp;
+            for(int i = 0; i < nx; i++)
+            {
+                int ic = index1d(i,j,k,nx,ny);
+                if(sdf[ic] == sdfIni)
+                {
+                    tmp.push_back(ic);
+                }
+                else if(tmp.size() != 0 && (sdf[ic] < 0.0 || i == nx-1))
+                {
+                    for(int id = 0; id < tmp.size(); id++)
+                    {
+                        solid[tmp[id]] = 1;
+                    }
+                    tmp.clear();
+                }
+                else if(tmp.size() != 0 && sdf[ic] != sdfIni && sdf[ic] > 0.0)
+                {
+                    tmp.clear();
+                }
+            }
+        }
+    }
 
-    // for(int ic = 0; ic < nx*ny*nz; ic++)
-    // {
-    //     int i = ic2i(ic,nx,ny);
-    //     int j = ic2j(ic,nx,ny);
-    //     int k = ic2k(ic,nx,ny);
-        
-    //     float sumD = 0.f;
-    //     for(int iSTL = 0; iSTL < nSTL; iSTL++)
-    //     {
-    //         const float r = sqrt
-    //                         (
-    //                             pow(float(i) -STLc[0][iSTL],2.f)
-    //                             +pow(float(j) -STLc[1][iSTL],2.f)
-    //                             +pow(float(k) -STLc[2][iSTL],2.f)
-    //                         );
-    //         if(r < dr)
-    //         {
-    //             const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
-    //                             +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
-    //                             +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
-    //             sumD += pow(r,-p);
-    //             sdf[ic] += sd*pow(r,-p);
-    //         }
-    //     }
-    //     sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : 0.f;
-    //     if(sdf[ic] < 0.f)
-    //     {
-    //         solid[ic] = 1;
-    //     }
-    // }
-
-    
     for(int ic = 0; ic < nx*ny*nz; ic++)
     {
         int i = ic2i(ic,nx,ny);
         int j = ic2j(ic,nx,ny);
         int k = ic2k(ic,nx,ny);
         
-        for(int q = 0; q < 19; q++)
+        if(i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
         {
-            int qic = q*elements +ic;
-            const float sdf0 = sdf[ic];
-            const float sdf1 = sdf[upwindID(q,i,j,k,nx,ny,nz)];
-            if(solid[ic] == 0 && solid[upwindID(q,i,j,k,nx,ny,nz)] == 1)
+            for(int q = 0; q < 19; q++)
             {
-                neiSolid[ic] = 1;
-                qf[qic] = abs(sdf0)/(abs(sdf0)+abs(sdf1));
-                    // std::cout << qf[qic] << std::endl;
+                int qic = q*elements +ic;
+                const float sdf0 = sdf[ic];
+                const int upID = upwindID(q,i,j,k,nx,ny,nz);
+                
+                const float sdf1 = sdf[upID];
+                if(solid[ic] == 0 && solid[upID] == 1)
+                {
+                    neiSolid[ic] = 1;
+                    qf[qic] = abs(sdf0)/(abs(sdf0)+abs(sdf1));
+                }
             }
         }
     }
