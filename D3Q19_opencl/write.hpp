@@ -5,20 +5,29 @@ if(Fwrite && nextOutTime < nt +1)
     cl::copy(queue, Fwy_d, Fwy.begin(), Fwy.end());
     cl::copy(queue, Fwz_d, Fwz.begin(), Fwz.end());
     cl::copy(queue, tauSGS_d, tauSGS.begin(), tauSGS.end());
-    rho_av = 0.0;
+    rho_av = 0.f;
+    int eleFluid = 0;
     float SumFwx = 0.f;
     float SumFwy = 0.f;
     float SumFwz = 0.f;
-    #pragma omp parallel for
-    for(int ic =0; ic <nx*ny*nz; ic++)
+
+    for(int ic =0; ic < elements; ic++)
     {
         cal_rhoUVW(ic, nx, ny, nz, f, cx, cy, cz, rho[ic], u[ic], v[ic], w[ic]);
-        rho_av += rho[ic];
-        SumFwx += Fwx[ic];
-        SumFwy += Fwy[ic];
-        SumFwz += Fwz[ic];
+        if(solid[ic] == 0)
+        {
+            rho_av += rho[ic] -1.f;
+            SumFwx += Fwx[ic];
+            SumFwy += Fwy[ic];
+            SumFwz += Fwz[ic];
+            eleFluid++;
+            // std::cout << "eleFluid: " << eleFluid
+            //           << ", rho_av: " << rho_av
+            //           << ", rho: " << rho[ic]
+            //           << std::endl;
+        }
     }
-    rho_av /= float(elements);
+    rho_av = rho_av/float(eleFluid) +1.f;
     float rhoMax = *std::max_element(rho.begin(), rho.end());
     float rhoMin = *std::min_element(rho.begin(), rho.end());
 
@@ -43,7 +52,7 @@ if(Fwrite && nextOutTime < nt +1)
     std::cout << "Execution time: " << time << " (s)" << std::endl;
     std::cout << "Speed: " << float(nt)*float(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
 
-    std::cout << "rhoMax: " << rhoMax << ", rhoMin: " << rhoMin << std::endl;
+    std::cout << "rhoMax: " << rhoMax << ", rhoMin: " << rhoMin << ", rhoAve: " << rho_av << std::endl;
 
     //- For Flow around cylinder
     // std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << std::endl;
