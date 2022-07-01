@@ -306,6 +306,14 @@ int main()
         }
     }
 
+    for(int ic = 0; ic < elements; ic++)
+    {
+        if((boundary1[ic] == 1 || boundary2[ic] == 1 || boundary3[ic] == 1) && sdf[ic] == sdfIni)
+        {
+            sdf[ic] = 0.5f;
+        }
+    }
+
     for(int ic = 0; ic < nx*ny*nz; ic++)
     {
         int i = ic2i(ic,nx,ny);

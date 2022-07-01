@@ -844,12 +844,12 @@ __kernel void k_streamingCollision // Pull
             // int k = ic2k(ic,nx,ny);
             // if(i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
             // {
-                float Sxx = 0.f;
-                float Sxy = 0.f;
-                float Sxz = 0.f;
-                float Syy = 0.f;
-                float Syz = 0.f;
-                float Szz = 0.f;
+                float PIxx = 0.f;
+                float PIxy = 0.f;
+                float PIxz = 0.f;
+                float PIyy = 0.f;
+                float PIyz = 0.f;
+                float PIzz = 0.f;
 
                 for(int q = 0; q < 19; q++)
                 {
@@ -857,30 +857,23 @@ __kernel void k_streamingCollision // Pull
                     float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
                     float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
                     
-                    Sxx += cx[q]*cx[q]*(ft[q] -feq);
-                    Sxy += cx[q]*cy[q]*(ft[q] -feq);
-                    Sxz += cx[q]*cz[q]*(ft[q] -feq);
-                    Syy += cy[q]*cy[q]*(ft[q] -feq);
-                    Syz += cy[q]*cz[q]*(ft[q] -feq);
-                    Szz += cz[q]*cz[q]*(ft[q] -feq);
+                    PIxx += cx[q]*cx[q]*(ft[q] -feq);
+                    PIxy += cx[q]*cy[q]*(ft[q] -feq);
+                    PIxz += cx[q]*cz[q]*(ft[q] -feq);
+                    PIyy += cy[q]*cy[q]*(ft[q] -feq);
+                    PIyz += cy[q]*cz[q]*(ft[q] -feq);
+                    PIzz += cz[q]*cz[q]*(ft[q] -feq);
                 }
-                float A = -(3.f*omega)/(2.f*rho);
-                Sxx *= A;
-                Sxy *= A;
-                Sxz *= A;
-                Syy *= A;
-                Syz *= A;
-                Szz *= A;
+                float sqrtPIPI = sqrt(PIxx*PIxx+PIyy*PIyy+PIzz*PIzz+2.f*(PIxy*PIxy+PIxz*PIxz+PIyz*PIyz));
+                
+                float Cs = 0.1f;// 0.1--0.2
 
-                float S = sqrt(2.f*(Sxx*Sxx+Syy*Syy+Szz*Szz+2.f*(Sxy*Sxy+Sxz*Sxz+Syz*Syz)));
-                float Cs = 0.1f;
+                tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
 
-                tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*S/rho));
-
-                // const float y = sdf[ic];
-                // if(y != 10000.f && y > 0.f)
-                // {
-                //     const float kappa = 0.41f;
+                const float y = sdf[ic];
+                if(y != 10000.f && y > 0.f)
+                {
+                    const float kappa = 0.41f;
                 //     const float Aplus = 26.f;
                 //     const float Cdelta = 0.158f;
                 //     const float nu = (tau -0.5f)/3.f;
@@ -905,7 +898,8 @@ __kernel void k_streamingCollision // Pull
                 //     // }while(iNew < 10);
                 //     }while(fabs(yPlus -yPlusN) > epsilon && iNew < 10);
                     
-                //     tauSGS[ic] *= pow(min(1.f, (kappa/Cdelta)*((1.f +1e-10f)-exp(-yPlus/Aplus))*y),2.f);
+                    // tauSGS[ic] *= pow(min(1.f, (kappa/Cdelta)*((1.f +1e-10f)-exp(-yPlus/Aplus))*y),2.f);
+                    tauSGS[ic] *= pow(min(1.f, kappa*y/Cs),2.f);
                 }
             // }
             float omegaEff = 1.f/(tau +tauSGS[ic]);
