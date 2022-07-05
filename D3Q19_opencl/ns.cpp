@@ -13,7 +13,7 @@
 #include "D3Q19.hpp"
 #include "input.hpp"
 
-// For OpenCL
+//-- For OpenCL
 #ifdef __APPLE__
 #define CL_SILENCE_DEPRECATION
 #endif
@@ -26,11 +26,12 @@
 
 #include "err_code.h"
 
-// pick up device type from compiler command line or from the default type
+//-- pick up device type from compiler command line or from the default type
 #ifndef DEVICE
 #define DEVICE CL_DEVICE_TYPE_DEFAULT
 #endif
-// 
+//--
+//-- 
 
 int main()
 {
@@ -50,8 +51,6 @@ int main()
     float U0;
 
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re, U0);
-   
-    // Single Relaxation Time model
 
     //- For cavity flow
     // const float a = 1.0; //Dimensional length of system (m)
@@ -86,8 +85,8 @@ int main()
 
     //- For backward facing step flow
     float h = 1.f;
-    float Ly = 3.f*h;
-    float Lx = 30.f*h;
+    float Ly = 3.f*h; // 5.f*h// Flow around Digital Science
+    float Lx = 40.f*h;
     float nu = uMax*h/Re;
     const float L = Ly/float(ny);
     float dpdx = 0.f;
@@ -96,6 +95,11 @@ int main()
     const float c = uMax/U0; //Representative velocity (m/s)
     nu = nu/(L*c);
     dpdx *= L/(c*c);
+
+    std::cout << "Size: "
+              << "(" << L/2 << ", " << L/2 << ", " << L/2 << "), "
+              <<  "(" << L/2+L*(nx-1) << ", " << L/2+L*(ny-1) << ", " << L/2+L*(nz-1) << ")"
+              << std::endl;
 
     std::cout << "dpdx = " << dpdx << std::endl;
     std::cout << "nu = " << nu << std::endl;
@@ -109,13 +113,14 @@ int main()
 
     const std::vector<float> wt = setWt();
 
-    // D3Q19 model
+    //-- D3Q19 model
     const std::vector<float> cx = setCx();
     const std::vector<float> cy = setCy();
     const std::vector<float> cz = setCz();
 
     std::vector<float> f(19*nx*ny*nz);
     std::vector<float> fTmp(19*nx*ny*nz);
+    //--
     
     std::vector<float> rho(nx*ny*nz);
     std::vector<float> u(nx*ny*nz);
@@ -161,6 +166,7 @@ int main()
         boundary3[ic] = obst[ic].boundary3;
     }
 
+    //-- Reading and settings of STL 
     const std::string STLname("walls.stl");
     std::vector<std::vector<float> > STLnormal(3);
     std::vector<std::vector<float> > STLv0(3);
@@ -192,16 +198,18 @@ int main()
         STLc[1][i] = (STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.f;
         STLc[2][i] = (STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f;
     }
+    //--
 
+    //-- Calculation of sdf for the boundaries defined by STL
     const float sdfIni = 10000.f;
     const float qfIni = 0.5f;
     std::vector<float> sdf(nx*ny*nz,sdfIni);
     std::vector<float> qf(19*nx*ny*nz,qfIni);
     std::vector<unsigned char> solid(nx*ny*nz,0);
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
-    const float dr = 10.f;
+    float dr = 10.f;
     const float p = 7.f;
-    const int drn = 10;
+    int drn = 10;
     
     std::vector<int> nearSTL;
     for(int iSTL = 0; iSTL < nSTL; iSTL++)
@@ -213,7 +221,6 @@ int main()
 
         if(0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1)
         {
-            // std::cout << "i: " << i << ", j: " << j << ", k: " << k << std::endl;
             for(int ii = -drn; ii <= drn; ii++)
             {
                 int iNear = i + ii;
@@ -306,14 +313,6 @@ int main()
         }
     }
 
-    for(int ic = 0; ic < elements; ic++)
-    {
-        if((boundary1[ic] == 1 || boundary2[ic] == 1 || boundary3[ic] == 1) && sdf[ic] == sdfIni)
-        {
-            sdf[ic] = 0.5f;
-        }
-    }
-
     for(int ic = 0; ic < nx*ny*nz; ic++)
     {
         int i = ic2i(ic,nx,ny);
@@ -337,6 +336,162 @@ int main()
             }
         }
     }
+    //--
+
+    //-- Calculation of sdf for the boundaries of the calculation region
+    dr = 3.f;
+    drn = 3;
+    std::vector<std::vector<float> > bWallsC(3);
+    std::vector<std::vector<float> > bWallsNormal(3);
+    for(int j = 0; j < ny; j++)
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            int icStart = index1d(0,j,k,nx,ny);
+            int icEnd = index1d(nx-1,j,k,nx,ny);
+            if(boundary1[icStart] == 1)
+            {
+                bWallsC[0].push_back(-0.5f);
+                bWallsC[1].push_back(j);
+                bWallsC[2].push_back(k);
+                bWallsNormal[0].push_back(1.f);
+                bWallsNormal[1].push_back(0.f);
+                bWallsNormal[2].push_back(0.f);
+            }
+            if(boundary1[icEnd] == 1)
+            {
+                bWallsC[0].push_back(nx-0.5f);
+                bWallsC[1].push_back(j);
+                bWallsC[2].push_back(k);
+                bWallsNormal[0].push_back(-1.f);
+                bWallsNormal[1].push_back(0.f);
+                bWallsNormal[2].push_back(0.f);
+            }
+        }
+    }
+    for(int i = 0; i < nx; i++)
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            int icStart = index1d(i,0,k,nx,ny);
+            int icEnd = index1d(i,ny-1,k,nx,ny);
+            if(boundary2[icStart] == 1)
+            {
+                bWallsC[0].push_back(i);
+                bWallsC[1].push_back(-0.5f);
+                bWallsC[2].push_back(k);
+                bWallsNormal[0].push_back(0.f);
+                bWallsNormal[1].push_back(1.f);
+                bWallsNormal[2].push_back(0.f);
+            }
+            if(boundary2[icEnd] == 1)
+            {
+                bWallsC[0].push_back(i);
+                bWallsC[1].push_back(ny-0.5f);
+                bWallsC[2].push_back(k);
+                bWallsNormal[0].push_back(0.f);
+                bWallsNormal[1].push_back(-1.f);
+                bWallsNormal[2].push_back(0.f);
+            }
+        }
+    }
+    for(int i = 0; i < nx; i++)
+    {
+        for(int j = 0; j < ny; j++)
+        {
+            int icStart = index1d(i,j,0,nx,ny);
+            int icEnd = index1d(i,j,nz-1,nx,ny);
+            if(boundary3[icStart] == 1)
+            {
+                bWallsC[0].push_back(i);
+                bWallsC[1].push_back(j);
+                bWallsC[2].push_back(-0.5f);
+                bWallsNormal[0].push_back(0.f);
+                bWallsNormal[1].push_back(0.f);
+                bWallsNormal[2].push_back(1.f);
+            }
+            if(boundary3[icEnd] == 1)
+            {
+                bWallsC[0].push_back(i);
+                bWallsC[1].push_back(j);
+                bWallsC[2].push_back(nz-0.5f);
+                bWallsNormal[0].push_back(0.f);
+                bWallsNormal[1].push_back(0.f);
+                bWallsNormal[2].push_back(-1.f);
+            }
+        }
+    }
+
+    int nBwalls = bWallsC[0].size();
+    std::cout << "nBwalls: " << nBwalls << std::endl;
+    std::vector<int> nearBwalls;
+    for(int iBwalls = 0; iBwalls < nBwalls; iBwalls++)
+    {
+        int i = int(bWallsC[0][iBwalls]);
+        int j = int(bWallsC[1][iBwalls]);
+        int k = int(bWallsC[2][iBwalls]);
+        
+        for(int ii = -drn; ii <= drn; ii++)
+        {
+            int iNear = i + ii;
+            if(0 <= iNear && iNear <= nx-1)
+            {
+                for(int jj = -drn; jj <= drn; jj++)
+                {
+                    int jNear = j + jj;
+                    if(0 <= jNear && jNear <= ny-1)
+                    {
+                        for(int kk = -drn; kk <= drn; kk++)
+                        {
+                            int kNear = k + kk;
+                            if(0 <= kNear && kNear <= nz-1)
+                            {
+                                int ic = index1d(iNear,jNear,kNear,nx,ny);
+                                nearBwalls.push_back(ic);
+                            }
+                        }
+                    }
+                }
+            }   
+        }
+    }
+    std::sort(nearBwalls.begin(), nearBwalls.end());
+    nearBwalls.erase(std::unique(nearBwalls.begin(), nearBwalls.end()), nearBwalls.end());
+
+
+    std::cout << "Number of nearBwalls: " << nearBwalls.size() << std::endl;
+    for(int iNBwalls = 0; iNBwalls < nearBwalls.size(); iNBwalls++)
+    {
+        int ic = nearBwalls[iNBwalls];
+        sdf[ic] = 0.f;
+
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+        
+        float sumD = 0.f;
+        for(int iBwalls = 0; iBwalls < nBwalls; iBwalls++)
+        {
+            const float r = sqrt
+                            (
+                                pow(float(i) -bWallsC[0][iBwalls],2.f)
+                                +pow(float(j) -bWallsC[1][iBwalls],2.f)
+                                +pow(float(k) -bWallsC[2][iBwalls],2.f)
+                            );
+            if(r < dr)
+            {
+                const float sd = (float(i) -bWallsC[0][iBwalls])*bWallsNormal[0][iBwalls]
+                                +(float(j) -bWallsC[1][iBwalls])*bWallsNormal[1][iBwalls]
+                                +(float(k) -bWallsC[2][iBwalls])*bWallsNormal[2][iBwalls];
+                sumD += pow(r,-p);
+                sdf[ic] += sd*pow(r,-p);
+            }
+        }
+        sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : sdfIni;
+    }
+    //--
+
+
 
     try
     {
