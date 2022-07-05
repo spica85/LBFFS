@@ -655,7 +655,7 @@ __kernel void k_streamingCollision // Pull
             }
         }
 
-        // Bounce-Back for internal walls
+        //-- Bounce-Back for internal walls
         {
             float rho = 0.0f;
             float u = 0.0f;
@@ -728,8 +728,9 @@ __kernel void k_streamingCollision // Pull
                 }
             }
         }
+        //--
 
-        // Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
+        //-- Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
         for(int q = 0; q < 19; q++)
         {
             if(boundary1[ic] == 3 || boundary2[ic] == 3 || boundary3[ic] == 3)
@@ -818,8 +819,9 @@ __kernel void k_streamingCollision // Pull
                 }
             }
         }
+        //--
         
-        // Collision
+        //-- Collision
         {
             float rho = 0.0f;
             float u = 0.0f;
@@ -839,69 +841,63 @@ __kernel void k_streamingCollision // Pull
 
             //-- LES viscosity
             float tau = 1.f/omega;
-            // int i = ic2i(ic,nx,ny);
-            // int j = ic2j(ic,nx,ny);
-            // int k = ic2k(ic,nx,ny);
-            // if(i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
-            // {
-                float PIxx = 0.f;
-                float PIxy = 0.f;
-                float PIxz = 0.f;
-                float PIyy = 0.f;
-                float PIyz = 0.f;
-                float PIzz = 0.f;
+            
+            float PIxx = 0.f;
+            float PIxy = 0.f;
+            float PIxz = 0.f;
+            float PIyy = 0.f;
+            float PIyz = 0.f;
+            float PIzz = 0.f;
 
-                for(int q = 0; q < 19; q++)
-                {
-                    float uSqr =u*u+v*v+w*w;
-                    float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-                    float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
-                    
-                    PIxx += cx[q]*cx[q]*(ft[q] -feq);
-                    PIxy += cx[q]*cy[q]*(ft[q] -feq);
-                    PIxz += cx[q]*cz[q]*(ft[q] -feq);
-                    PIyy += cy[q]*cy[q]*(ft[q] -feq);
-                    PIyz += cy[q]*cz[q]*(ft[q] -feq);
-                    PIzz += cz[q]*cz[q]*(ft[q] -feq);
-                }
-                float sqrtPIPI = sqrt(PIxx*PIxx+PIyy*PIyy+PIzz*PIzz+2.f*(PIxy*PIxy+PIxz*PIxz+PIyz*PIyz));
+            for(int q = 0; q < 19; q++)
+            {
+                float uSqr =u*u+v*v+w*w;
+                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+                float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
                 
-                float Cs = 0.1f;// 0.1--0.2
+                PIxx += cx[q]*cx[q]*(ft[q] -feq);
+                PIxy += cx[q]*cy[q]*(ft[q] -feq);
+                PIxz += cx[q]*cz[q]*(ft[q] -feq);
+                PIyy += cy[q]*cy[q]*(ft[q] -feq);
+                PIyz += cy[q]*cz[q]*(ft[q] -feq);
+                PIzz += cz[q]*cz[q]*(ft[q] -feq);
+            }
+            float sqrtPIPI = sqrt(PIxx*PIxx+PIyy*PIyy+PIzz*PIzz+2.f*(PIxy*PIxy+PIxz*PIxz+PIyz*PIyz));
+            
+            float Cs = 0.1f;// 0.1--0.2
 
-                tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
+            tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
 
-                const float y = sdf[ic];
-                if(y != 10000.f && y > 0.f)
-                {
-                    const float kappa = 0.41f;
-                //     const float Aplus = 26.f;
-                //     const float Cdelta = 0.158f;
-                //     const float nu = (tau -0.5f)/3.f;
-                    
-                //     const float E = 9.8f;
+            //-- Damping of nuSGS (tauSGS) near wall
+            const float y = sdf[ic];
+            if(y != 10000.f && y > 0.f)
+            {
+                const float kappa = 0.41f;
+                tauSGS[ic] *= pow(min(1.f, kappa*y/Cs),2.f); // Treatment in Fluent
 
+                // //-- van Driest damping function
+                // const float Aplus = 26.f;
+                // const float Cdelta = 0.158f;
+                // const float nu = (tau -0.5f)/3.f;
+                // const float E = 9.8f;
 
-                //     float yPlus = 1.f;
-                //     float yPlusN = yPlus;
-                //     const float epsilon = 0.001f;
-                //     int iNew = 0;
-                //     do
-                //     {
-                //         float U = sqrt(u*u+v*v+w*w);
-                //         yPlusN = yPlus;
-                //         yPlus = ((kappa*U*y/nu) +yPlus)/(1.f +log(E*yPlus));
-                //         // if(iNew == 9 && fabs(yPlus -yPlusN) > epsilon)
-                //         // {
-                //         // printf("ic: %d, iNew: %d, y: %.2f, yPlus: %.2f, deltaYPlus: %.4f",ic,iNew,y,yPlus,fabs(yPlus-yPlusN));
-                //         // }
-                //         iNew++;
-                //     // }while(iNew < 10);
-                //     }while(fabs(yPlus -yPlusN) > epsilon && iNew < 10);
-                    
-                    // tauSGS[ic] *= pow(min(1.f, (kappa/Cdelta)*((1.f +1e-10f)-exp(-yPlus/Aplus))*y),2.f);
-                    tauSGS[ic] *= pow(min(1.f, kappa*y/Cs),2.f);
-                }
-            // }
+                // float yPlus = 1.f;
+                // float yPlusN = yPlus;
+                // const float epsilon = 0.001f;
+                // int iNew = 0;
+                // do
+                // {
+                //     float U = sqrt(u*u+v*v+w*w);
+                //     yPlusN = yPlus;
+                //     yPlus = ((kappa*U*y/nu) +yPlus)/(1.f +log(E*yPlus));
+                //     iNew++;
+                // }while(fabs(yPlus -yPlusN) > epsilon && iNew < 10);
+                
+                // tauSGS[ic] *= pow(min(1.f, (kappa/Cs)*((1.f +1e-10f)-exp(-yPlus/Aplus))*y),2.f);
+                // //--
+            }
+            //--
+            
             float omegaEff = 1.f/(tau +tauSGS[ic]);
 
             const float sqrCs = 1.f/3.f;
@@ -1234,7 +1230,7 @@ __kernel void k_streamingCollision // Pull
             //--
         }
 
-        // Equilibrium Boundary
+        //-- Equilibrium Boundary
         if(boundary1[ic] == 2 || boundary2[ic] == 2 || boundary3[ic] == 2)
         {
             int i = ic2i(ic,nx,ny);
@@ -1342,5 +1338,6 @@ __kernel void k_streamingCollision // Pull
                 }
             }
         }
+        //--
     }
 }
