@@ -150,7 +150,7 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     inputFile.close();
 }
 
-void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2)
+void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2, int& nSTL, std::vector<std::vector<float> >& STLc, float L)
 {
     std::ifstream STLfile(STLname);
     if(!STLfile)
@@ -213,6 +213,24 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
             STLv2[2].push_back(std::stof(lines[i+3]));
             i += 3;
         }
+    }
+
+    nSTL = STLnormal[0].size();
+    for(int i = 0; i < nSTL; i++)
+    {
+        STLv0[0][i] = STLv0[0][i]/L -0.5;
+        STLv0[1][i] = STLv0[1][i]/L -0.5;
+        STLv0[2][i] = STLv0[2][i]/L -0.5;
+        STLv1[0][i] = STLv1[0][i]/L -0.5;
+        STLv1[1][i] = STLv1[1][i]/L -0.5;
+        STLv1[2][i] = STLv1[2][i]/L -0.5;
+        STLv2[0][i] = STLv2[0][i]/L -0.5;
+        STLv2[1][i] = STLv2[1][i]/L -0.5;
+        STLv2[2][i] = STLv2[2][i]/L -0.5;
+
+        STLc[0].push_back((STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.f);
+        STLc[1].push_back((STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.f);
+        STLc[2].push_back((STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f);
     }
 
 }

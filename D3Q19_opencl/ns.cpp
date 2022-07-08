@@ -172,41 +172,20 @@ int main()
     std::vector<std::vector<float> > STLv0(3);
     std::vector<std::vector<float> > STLv1(3);
     std::vector<std::vector<float> > STLv2(3);
+    int nSTL;
+    std::vector<std::vector<float> > STLc(3);
 
     std::vector<float> Fwx(nx*ny*nz,0.0f);
     std::vector<float> Fwy(nx*ny*nz,0.0f);
     std::vector<float> Fwz(nx*ny*nz,0.0f);
 
-    readSTL(STLname, STLnormal, STLv0, STLv1, STLv2);
-    const int nSTL = STLnormal[0].size();
-    std::cout << "Number of elements of STL: " << nSTL << "\n" << std::endl;
-
-    std::vector<std::vector<float> > STLc(3, std::vector<float>(nSTL));
-    for(int i = 0; i < nSTL; i++)
-    {
-        STLv0[0][i] = STLv0[0][i]/L -0.5;
-        STLv0[1][i] = STLv0[1][i]/L -0.5;
-        STLv0[2][i] = STLv0[2][i]/L -0.5;
-        STLv1[0][i] = STLv1[0][i]/L -0.5;
-        STLv1[1][i] = STLv1[1][i]/L -0.5;
-        STLv1[2][i] = STLv1[2][i]/L -0.5;
-        STLv2[0][i] = STLv2[0][i]/L -0.5;
-        STLv2[1][i] = STLv2[1][i]/L -0.5;
-        STLv2[2][i] = STLv2[2][i]/L -0.5;
-
-        STLc[0][i] = (STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.f;
-        STLc[1][i] = (STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.f;
-        STLc[2][i] = (STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f;
-    }
+    readSTL(STLname, STLnormal, STLv0, STLv1, STLv2, nSTL, STLc, L);
+    std::cout << "Number of elements of STL: " << nSTL << std::endl;
     //--
 
     //-- Calculation of sdf for the boundaries defined by STL
     const float sdfIni = 10000.f;
-    const float qfIni = 0.5f;
     std::vector<float> sdf(nx*ny*nz,sdfIni);
-    std::vector<float> qf(19*nx*ny*nz,qfIni);
-    std::vector<unsigned char> solid(nx*ny*nz,0);
-    std::vector<unsigned char> neiSolid(nx*ny*nz,0);
     float dr = 10.f;
     const float p = 7.f;
     int drn = 10;
@@ -279,6 +258,12 @@ int main()
             }
         }
         sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : sdfIni;
+    }
+
+
+    std::vector<unsigned char> solid(elements,0);
+    for(int ic = 0; ic < elements; ic++)
+    {
         if(sdf[ic] < 0.f)
         {
             solid[ic] = 1;
@@ -312,6 +297,10 @@ int main()
             }
         }
     }
+
+    const float qfIni = 0.5f;
+    std::vector<float> qf(19*nx*ny*nz,qfIni);
+    std::vector<unsigned char> neiSolid(nx*ny*nz,0);
 
     for(int ic = 0; ic < nx*ny*nz; ic++)
     {
