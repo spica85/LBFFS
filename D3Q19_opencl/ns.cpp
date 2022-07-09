@@ -12,6 +12,7 @@
 
 #include "D3Q19.hpp"
 #include "input.hpp"
+#include "walls.hpp"
 
 //-- For OpenCL
 #ifdef __APPLE__
