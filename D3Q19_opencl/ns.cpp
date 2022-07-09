@@ -183,7 +183,7 @@ int main()
     std::cout << "Number of elements of STL: " << nSTL << std::endl;
     //--
 
-    //-- Calculation of sdf for the boundaries defined by STL
+    //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
     const float sdfIni = 10000.f;
     std::vector<float> sdf(nx*ny*nz,sdfIni);
     float dr = 10.f;
@@ -193,34 +193,10 @@ int main()
     std::vector<unsigned char> solid(elements,0);
     setSolid(solid, sdf, sdfIni, nx, ny, nz);
 
-
     const float qfIni = 0.5f;
     std::vector<float> qf(19*nx*ny*nz,qfIni);
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
-
-    for(int ic = 0; ic < nx*ny*nz; ic++)
-    {
-        int i = ic2i(ic,nx,ny);
-        int j = ic2j(ic,nx,ny);
-        int k = ic2k(ic,nx,ny);
-        
-        if(i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
-        {
-            for(int q = 0; q < 19; q++)
-            {
-                int qic = q*elements +ic;
-                const float sdf0 = sdf[ic];
-                const int upID = upwindID(q,i,j,k,nx,ny,nz);
-                
-                const float sdf1 = sdf[upID];
-                if(solid[ic] == 0 && solid[upID] == 1)
-                {
-                    neiSolid[ic] = 1;
-                    qf[qic] = abs(sdf0)/(abs(sdf0)+abs(sdf1));
-                }
-            }
-        }
-    }
+    setQf(qf, neiSolid, sdf, solid, nx, ny, nz);
     //--
 
     //-- Calculation of sdf for the boundaries of the calculation region
