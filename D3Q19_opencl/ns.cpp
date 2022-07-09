@@ -53,68 +53,9 @@ int main()
 
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re, U0);
 
-    //- For cavity flow
-    // const float a = 1.0; //Dimensional length of system (m)
-    // const float L = a/float(nx); //Representative length (-)  
-    // float nu = uMax*a/Re; //Dimensional kinematic viscosity
-    // float dpdx = 0.0;//Dimensionless external force
-    //--
-
-    //For channel flow
-    // float Retau = 10;
-    // float Retau = 1;
-    // float utau = 0.005;
-    // float nu = utau*0.5*ny/Retau;
-    // float dpdx = utau*utau/(0.5*ny);
-
-    //- For Poiseuille flow
-    // float h = 1.f;
-    // float nu = uMax*h/Re;
-    // const float L = h/float(ny);
-    // float dpdx = 8.0*nu*uMax/(h*h);
-    //--
-    
-
-    //- For flow around cylinder
-    // float h = 1.f;
-    // // float d = 6.f;
-    // float d = 0.1f;
-    // float nu = uMax*d/Re;
-    // const float L = h/float(ny);
-    // float dpdx = 0.f;
-    //--
-
-    //- For backward facing step flow
-    float h = 1.f;
-    float Ly = 3.f*h; // 5.f*h// Flow around Digital Science
-    float Lx = 40.f*h;
-    float nu = uMax*h/Re;
-    const float L = Ly/float(ny);
-    float dpdx = 0.f;
-    //--
-
-    const float c = uMax/U0; //Representative velocity (m/s)
-    nu = nu/(L*c);
-    dpdx *= L/(c*c);
-
-    std::cout << "Size: "
-              << "(" << L/2 << ", " << L/2 << ", " << L/2 << "), "
-              <<  "(" << L/2+L*(nx-1) << ", " << L/2+L*(ny-1) << ", " << L/2+L*(nz-1) << ")"
-              << std::endl;
-
-    std::cout << "dpdx = " << dpdx << std::endl;
-    std::cout << "nu = " << nu << std::endl;
-
-
-    const float deltaT = L/c; //Dimensional time step (s)
-    const float omega = 1.0/(3.0*nu +0.5);
-
-    std::cout << "tau = " << 1.0/omega << ", taulim = " << 0.5f +uMax/c/8.0f << std::endl;
-    std::cout << "Maximum Ma = " << (uMax/c)*sqrt(3.f) << std::endl;
-
+    //-- D3Q19 model
     const std::vector<float> wt = setWt();
 
-    //-- D3Q19 model
     const std::vector<float> cx = setCx();
     const std::vector<float> cy = setCy();
     const std::vector<float> cz = setCz();
@@ -141,12 +82,39 @@ int main()
 
     const unsigned elements = nx*ny*nz;
     const unsigned qElements = 19*elements;
+    //--
 
-    // Setting conditions
+    // #include "settingsForCavityFlow.hpp"
+    // #include "settingsForChannelFlow.hpp"
+    // #include "settingsForPoiseuilleFlow.hpp"
+    // #include "settingsForFlowAroundCylinder.hpp"
+    #include "settingsForBackStepFlow.hpp"
+
+    const float c = uMax/U0; //Representative velocity (m/s)
+    nu = nu/(L*c);
+    dpdx *= L/(c*c);
+
+    std::cout << "Size: "
+              << "(" << L/2 << ", " << L/2 << ", " << L/2 << "), "
+              <<  "(" << L/2+L*(nx-1) << ", " << L/2+L*(ny-1) << ", " << L/2+L*(nz-1) << ")"
+              << std::endl;
+
+    std::cout << "dpdx = " << dpdx << std::endl;
+    std::cout << "nu = " << nu << std::endl;
+
+
+    const float deltaT = L/c; //Dimensional time step (s)
+    const float omega = 1.0/(3.0*nu +0.5);
+
+    std::cout << "tau = " << 1.0/omega << ", taulim = " << 0.5f +uMax/c/8.0f << std::endl;
+    std::cout << "Maximum Ma = " << (uMax/c)*sqrt(3.f) << std::endl;
+
+    //-- Settings for boundary conditions
     // #include "boundaryCondition_cavityFlow.hpp"
     // #include "boundaryCondition_PoiseuilleFlow.hpp"
     // #include "boundaryCondition_flowAroundCylinder.hpp"
     #include "boundaryCondition_backStepFlow.hpp"
+
     if(restart)
     {
         #include "restart.hpp"
