@@ -865,8 +865,11 @@ __kernel void k_streamingCollision // Pull
             float sqrtPIPI = sqrt(PIxx*PIxx+PIyy*PIyy+PIzz*PIzz+2.f*(PIxy*PIxy+PIxz*PIxz+PIyz*PIyz));
             
             float Cs = 0.1f;// 0.1--0.2
+            // float Cs = 0.2f;// 0.1--0.2
+            // float Cs = 0.33f;// 0.1--0.2
 
             tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
+            // tauSGS[ic] = 3.f*(Cs*Cs)*sqrt(2.f)*sqrtPIPI*0.5f/rho*3.0f/tau;
 
             //-- Damping of nuSGS (tauSGS) near wall
             const float y = sdf[ic];
@@ -917,7 +920,7 @@ __kernel void k_streamingCollision // Pull
             //--
 
             
-            //-- Cumulant model
+            // //-- Cumulant model
             // float K200 = 0.f;
             // float K020 = 0.f;
             // float K002 = 0.f;
@@ -953,6 +956,55 @@ __kernel void k_streamingCollision // Pull
             // // float Keq220 = 0.f;
             // // float Keq202 = 0.f;
             // // float Keq022 = 0.f;
+
+            // // float invRho = 1.f/rho;
+            // // // Order 4
+            // // K220 = invRho * (ft[8] + ft[10] + ft[7] + ft[9]);
+            // // K202 = invRho * (ft[12] + ft[14] + ft[11] + ft[13]);
+            // // K022 = invRho * (ft[16] + ft[18] + ft[15] + ft[17]);
+            // // // Order 2
+            // // K200 = invRho * (ft[2] + ft[1]) + K220 + K202;
+            // // K020 = invRho * (ft[4] + ft[3]) + K220 + K022;
+            // // K002 = invRho * (ft[6] + ft[5]) + K202 + K022;
+        
+            // // K110 = K220 - 2.*invRho * (ft[10] + ft[9]);
+            // // K101 = K202 - 2.*invRho * (ft[14] + ft[13]);
+            // // K011 = K022 - 2.*invRho * (ft[18] + ft[17]);
+            // // // Order 3
+            // // K210 = K220 - 2.*invRho * (ft[8] + ft[9]);
+            // // K201 = K202 - 2.*invRho * (ft[12] + ft[13]);
+            // // K021 = K022 - 2.*invRho * (ft[16] + ft[17]);
+            // // K120 = K220 - 2.*invRho * (ft[8] + ft[10]);
+            // // K102 = K202 - 2.*invRho * (ft[12] + ft[14]);
+            // // K012 = K022 - 2.*invRho * (ft[16] + ft[18]);
+
+            // // // Compute central moments from raw moments using binomial formulas
+            // // double ux2 = u*u;
+            // // double uy2 = v*v;
+            // // double uz2 = w*w;
+            // // double uxy = u*v;
+            // // double uxz = u*w;
+            // // double uyz = v*w;
+
+            // // K200 -= ux2;
+            // // K020 -= uy2;
+            // // K002 -= uz2;
+            
+            // // K110 -= uxy;
+            // // K101 -= uxz;
+            // // K011 -= uyz;
+
+            // // K210 -= (v*K200 + 2.*u*K110 + ux2*v);
+            // // K201 -= (w*K200 + 2.*u*K101 + ux2*w);
+            // // K021 -= (w*K020 + 2.*v*K011 + uy2*w);
+            // // K120 -= (u*K020 + 2.*v*K110 + u*uy2);
+            // // K102 -= (u*K002 + 2.*w*K101 + u*uz2);
+            // // K012 -= (v*K002 + 2.*w*K011 + v*uz2);
+            
+            // // K220 -= (2.*v*K210 + 2.*u*K120 + uy2*K200 + ux2*K020 + 4.*uxy*K110 + ux2*uy2);
+            // // K202 -= (2.*w*K201 + 2.*u*K102 + uz2*K200 + ux2*K002 + 4.*uxz*K101 + ux2*uz2);
+            // // K022 -= (2.*w*K021 + 2.*v*K012 + uz2*K020 + uy2*K002 + 4.*uyz*K011 + uy2*uz2);
+
 
             // for(int q = 0; q < 19; q++)
             // {
@@ -1004,16 +1056,21 @@ __kernel void k_streamingCollision // Pull
             // K202 -= (K200*K002 +2.f*K101*K101);
             // K022 -= (K020*K002 +2.f*K011*K011);
 
-            // float omegaB = 1.f;
-            // float omegaM = (omegaB - omega)/3.f;
-            // float omegaP = omegaM +omega;
-            // float omega2 = omega;
-            // float omega3 = omega;
-            // float omega4 = omega;
+            // // float omegaB = 1.f;
+            // // float omegaM = (omegaB - omegaEff)/3.f;
+            // // float omegaP = omegaM +omegaEff;
+            // // float Kcoll200 = K200 -omegaP*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
+            // // float Kcoll020 = K020 -omegaM*(K200 -sqrCs) -omegaP*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
+            // // float Kcoll002 = K002 -omegaM*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaP*(K002 -sqrCs);
 
-            // float Kcoll200 = K200 -omegaP*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
-            // float Kcoll020 = K020 -omegaM*(K200 -sqrCs) -omegaP*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
-            // float Kcoll002 = K002 -omegaM*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaP*(K002 -sqrCs);
+            // float Kcoll200 = (1.f -omegaEff)*K200 +omegaEff*sqrCs;
+            // float Kcoll020 = (1.f -omegaEff)*K020 +omegaEff*sqrCs;
+            // float Kcoll002 = (1.f -omegaEff)*K002 +omegaEff*sqrCs;
+
+            // float omega2 = omegaEff;
+            // float omega3 = omegaEff;
+            // float omega4 = omegaEff;
+
             // float Kcoll110 = (1.f -omega2)*K110;
             // float Kcoll101 = (1.f -omega2)*K101;
             // float Kcoll011 = (1.f -omega2)*K011;
@@ -1068,18 +1125,18 @@ __kernel void k_streamingCollision // Pull
             // float RMcoll201 = CMcoll201 +w*CMcoll200 +2.f*u*CMcoll101 +u2*w;
             // float RMcoll021 = CMcoll021 +w*CMcoll020 +2.f*v*CMcoll011 +v2*w;
             // float RMcoll120 = CMcoll120 +u*CMcoll020 +2.f*v*CMcoll110 +u*v2;
-            // float RMcoll102 = CMcoll101 +u*CMcoll002 +2.f*w*CMcoll101 +u*w2;
+            // float RMcoll102 = CMcoll102 +u*CMcoll002 +2.f*w*CMcoll101 +u*w2;
             // float RMcoll012 = CMcoll012 +v*CMcoll002 +2.f*w*CMcoll011 +v*w2;
 
             // float RMcoll220 = CMcoll220 +2.f*v*CMcoll210 +2.f*u*CMcoll120 +v2*CMcoll200 +u2*CMcoll020 +4.f*uv*CMcoll110 +u2*v2;
             // float RMcoll202 = CMcoll202 +2.f*w*CMcoll201 +2.f*u*CMcoll102 +w2*CMcoll200 +u2*CMcoll002 +4.f*uw*CMcoll101 +u2*w2;
-            // float RMcoll022 = CMcoll022 +2.f*w*CMcoll020 +2.f*v*CMcoll012 +w2*CMcoll020 +v2*CMcoll002 +4.f*vw*CMcoll011 +v2*w2;
+            // float RMcoll022 = CMcoll022 +2.f*w*CMcoll021 +2.f*v*CMcoll012 +w2*CMcoll020 +v2*CMcoll002 +4.f*vw*CMcoll011 +v2*w2;
 
 
             // fTmp[ 0*elements +ic] = rho*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022);
             // fTmp[ 1*elements +ic] = 0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
             // fTmp[ 2*elements +ic] = rho*(-u +RMcoll120 +RMcoll102) +0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
-            // fTmp[ 3*elements +ic] = 0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);    
+            // fTmp[ 3*elements +ic] = 0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);
             // fTmp[ 4*elements +ic] = rho*(-v +RMcoll210 +RMcoll012) +0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);
             // fTmp[ 5*elements +ic] = 0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022);
             // fTmp[ 6*elements +ic] = rho*(-w +RMcoll201 +RMcoll021) +0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022);
@@ -1168,13 +1225,20 @@ __kernel void k_streamingCollision // Pull
             float omegaB = 1.f;
             float omegaM = (omegaB - omegaEff)/3.f;
             float omegaP = omegaM +omegaEff;
-            float omega2 = omegaEff;
-            float omega3 = omegaEff;
-            float omega4 = omegaEff;
 
             float RRcoll200 = RR200 -omegaP*RRneq200 -omegaM*RRneq020 -omegaM*RRneq002;
             float RRcoll020 = RR020 -omegaM*RRneq200 -omegaP*RRneq020 -omegaM*RRneq002;
             float RRcoll002 = RR002 -omegaM*RRneq200 -omegaM*RRneq020 -omegaP*RRneq002;
+
+
+            // float RRcoll200 = RR200 -omegaEff*RRneq200;
+            // float RRcoll020 = RR020 -omegaEff*RRneq020;
+            // float RRcoll002 = RR002 -omegaEff*RRneq002;
+
+            float omega2 = omegaEff;
+            float omega3 = omegaEff;
+            float omega4 = omegaEff;
+
             float RRcoll110 = RR110 -omega2*RRneq110;
             float RRcoll101 = RR101 -omega2*RRneq101;
             float RRcoll011 = RR011 -omega2*RRneq011;
