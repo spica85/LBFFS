@@ -88,7 +88,8 @@ int main()
     // #include "settingsForChannelFlow.hpp"
     // #include "settingsForPoiseuilleFlow.hpp"
     // #include "settingsForFlowAroundCylinder.hpp"
-    #include "settingsForBackStepFlow.hpp"
+    // #include "settingsForBackStepFlow.hpp"
+    #include "settingsForFlowAroundCar.hpp"
 
     const float c = uMax/U0; //Representative velocity (m/s)
     nu = nu/(L*c);
@@ -112,8 +113,8 @@ int main()
     //-- Settings for boundary conditions
     // #include "boundaryCondition_cavityFlow.hpp"
     // #include "boundaryCondition_PoiseuilleFlow.hpp"
-    // #include "boundaryCondition_flowAroundCylinder.hpp"
-    #include "boundaryCondition_backStepFlow.hpp"
+    #include "boundaryCondition_flowAroundCylinder.hpp"
+    // #include "boundaryCondition_backStepFlow.hpp"
 
     if(restart)
     {
