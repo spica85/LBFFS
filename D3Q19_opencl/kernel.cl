@@ -868,6 +868,60 @@ __kernel void k_streamingCollision // Pull
             // float Cs = 0.2f;// 0.1--0.2
             // float Cs = 0.33f;// 0.1--0.2
 
+            //-- spongeZone
+            int icX0 = index1d(0,ny/2,nz/2,nx,ny);
+            int icXE = index1d(nx-1,ny/2,nz/2,nx,ny);
+            int icY0 = index1d(nx/2,0,nz/2,nx,ny);
+            int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
+            int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
+            int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
+            const float spzWidth = 0.2f;
+            const float CsSpz = 0.4f;
+
+            if(boundary1[icX0] == 3)
+            {
+                if(i < nx*spzWidth)
+                {
+                    Cs = CsSpz”;
+                }
+            }
+            if(boundary1[icXE] == 3)
+            {
+                if(i > nx*(1.f -spzWidth))
+                {
+                    Cs = CsSpz;
+                }
+            }
+            if(boundary2[icY0] == 3)
+            {
+                if(j < ny*spzWidth)
+                {
+                    Cs = CsSpz;
+                }
+            }
+            if(boundary2[icYE] == 3)
+            {
+                if(j > ny*(1.f -spzWidth))
+                {
+                    Cs = CsSpz;
+                }
+            }
+            if(boundary3[icZ0] == 3)
+            {
+                if(k < nz*spzWidth)
+                {
+                    Cs = CsSpz;
+                }
+            }
+            if(boundary3[icZE] == 3)
+            {
+                if(k > nz*(1.f -spzWidth))
+                {
+                    Cs = CsSpz;
+                }
+            }
+            //--
+
             tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
             // tauSGS[ic] = 3.f*(Cs*Cs)*sqrt(2.f)*sqrtPIPI*0.5f/rho*3.0f/tau;
 
