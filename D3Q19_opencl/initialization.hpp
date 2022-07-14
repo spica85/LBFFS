@@ -15,7 +15,8 @@ for(int k = 0; k < nz; k++)
             {
                 float uSqr =u*u+v*v+w*w;
                 float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-                float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+                // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
+                float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
 
                 int icf = idf(q,ic,nx,ny,nz);
                 f[icf] = feq;
