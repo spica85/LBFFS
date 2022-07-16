@@ -86,7 +86,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& uMax, float& rho0, float& Re, float& U0)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -133,18 +133,26 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     nz = lookup<int>(lines, nzStr);
     std::cout << std::endl;
 
+    std::string LxStr("Lx");
+    Lx = lookup<float>(lines, LxStr);
+    std::cout << std::endl;
+
     std::string uMaxStr("uMax");//(m/s)
     uMax = lookup<float>(lines, uMaxStr);
 
     std::string rho0Str("rho0");
     rho0 = lookup<float>(lines, rho0Str);
 
-    std::string ReStr("Re");
-    Re = lookup<float>(lines, ReStr);
-    std::cout << std::endl;
-
     std::string U0Str("U0"); //Dimensionless maximum velocity
     U0 = lookup<float>(lines, U0Str);
+    std::cout << std::endl;
+
+    std::string nuStr("nu");
+    nu = lookup<float>(lines, nuStr);
+    std::cout << std::endl;
+
+    std::string dpdxStr("dpdx");
+    dpdx = lookup<float>(lines, dpdxStr);
     std::cout << std::endl;
 
     inputFile.close();

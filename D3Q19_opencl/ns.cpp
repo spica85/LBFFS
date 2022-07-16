@@ -46,12 +46,15 @@ int main()
     int nx;
     int ny;
     int nz;
+    float Lx;
     float uMax;
     float rho0;
     float Re;
+    float nu;
     float U0;
+    float dpdx;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, uMax, rho0, Re, U0);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -84,12 +87,12 @@ int main()
     const unsigned qElements = 19*elements;
     //--
 
-    // #include "settingsForCavityFlow.hpp"
-    // #include "settingsForChannelFlow.hpp"
-    // #include "settingsForPoiseuilleFlow.hpp"
-    // #include "settingsForFlowAroundCylinder.hpp"
-    // #include "settingsForBackStepFlow.hpp"
-    #include "settingsForFlowAroundCar.hpp"
+    const float L = Lx/float(nx-1);
+    dpdx = 0.f;
+    Re = uMax*Lx/nu;
+
+    std::cout << "Re: " << Re << std::endl;
+
 
     const float c = uMax/U0; //Representative velocity (m/s)
     nu = nu/(L*c);
