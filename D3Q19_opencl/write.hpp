@@ -211,7 +211,7 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }
 
-    // obst output
+    // boundary1 conditions output
     {
         writeFile << "SCALARS boundary1 float\n";
         writeFile << "LOOKUP_TABLE default\n";
@@ -224,12 +224,12 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)obst[ic].boundary1);
+                        asciiToBinary(str,(float)boundary1[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << obst[ic].boundary1 << "\n";
+                        writeFile << boundary1[ic] << "\n";
                     }
                 }
             }
@@ -237,7 +237,7 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }                    
 
-    // obst output
+    // boundary2 conditions output
     {
         writeFile << "SCALARS boundary2 float\n";
         writeFile << "LOOKUP_TABLE default\n";
@@ -250,12 +250,12 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)obst[ic].boundary2);
+                        asciiToBinary(str,(float)boundary2[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << obst[ic].boundary2 << "\n";
+                        writeFile << boundary2[ic] << "\n";
                     }
                 }
             }
@@ -263,7 +263,7 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }                    
 
-    // obst output
+    // boundary3 conditions output
     {
         writeFile << "SCALARS boundary3 float\n";
         writeFile << "LOOKUP_TABLE default\n";
@@ -276,12 +276,12 @@ if(Fwrite && nextOutTime < nt +1)
                     int ic = index1d(i,j,k,nx,ny);
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)obst[ic].boundary3);
+                        asciiToBinary(str,(float)boundary3[ic]);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << obst[ic].boundary3 << "\n";
+                        writeFile << boundary3[ic] << "\n";
                     }
                 }
             }

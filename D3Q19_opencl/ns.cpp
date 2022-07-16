@@ -75,7 +75,6 @@ int main()
 
     std::vector<float> tauSGS(nx*ny*nz);
 
-    std::vector<obstructure> obst(nx*ny*nz);
     std::vector<float> u0(nx*ny*nz,0.0f);
     std::vector<float> v0(nx*ny*nz,0.0f);
     std::vector<float> w0(nx*ny*nz,0.0f);
@@ -126,17 +125,6 @@ int main()
     else
     {
         #include "initialization.hpp"        
-    }
-
-    for(int ic = 0; ic < nx*ny*nz; ic++)
-    {
-        u0[ic] = obst[ic].u0;
-        v0[ic] = obst[ic].v0;
-        w0[ic] = obst[ic].w0;
-
-        boundary1[ic] = obst[ic].boundary1;
-        boundary2[ic] = obst[ic].boundary2;
-        boundary3[ic] = obst[ic].boundary3;
     }
 
     //-- Reading and settings of STL 
