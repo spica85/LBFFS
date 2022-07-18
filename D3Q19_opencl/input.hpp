@@ -158,4 +158,106 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     inputFile.close();
 }
 
+void inputBoundaryConditions(
+    int& nxMinBoundary1, int& nxMinBoundary2, int& nxMinBoundary3, float& nxMinU0, float& nxMinV0, float& nxMinW0,
+    int& nxMaxBoundary1, int& nxMaxBoundary2, int& nxMaxBoundary3, float& nxMaxU0, float& nxMaxV0, float& nxMaxW0,
+    int& nyMinBoundary1, int& nyMinBoundary2, int& nyMinBoundary3, float& nyMinU0, float& nyMinV0, float& nyMinW0,
+    int& nyMaxBoundary1, int& nyMaxBoundary2, int& nyMaxBoundary3, float& nyMaxU0, float& nyMaxV0, float& nyMaxW0,
+    int& nzMinBoundary1, int& nzMinBoundary2, int& nzMinBoundary3, float& nzMinU0, float& nzMinV0, float& nzMinW0,
+    int& nzMaxBoundary1, int& nzMaxBoundary2, int& nzMaxBoundary3, float& nzMaxU0, float& nzMaxV0, float& nzMaxW0,
+    const float c
+    )
+{
+    std::string inputFileName("boundaryConditions.txt");
+    std::vector<std::string> lines;
+    std::ifstream inputFile(inputFileName);
+    if(!inputFile)
+    {
+        std::cerr << "Could not open input.txt" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    readToLines(inputFile, lines);
+
+    std::string nxMinBoundary1Str("nxMinBoundary1");
+    nxMinBoundary1 = lookup<int>(lines, nxMinBoundary1Str);
+    std::string nxMinBoundary2Str("nxMinBoundary2");
+    nxMinBoundary2 = lookup<int>(lines, nxMinBoundary2Str);
+    std::string nxMinBoundary3Str("nxMinBoundary3");
+    nxMinBoundary3 = lookup<int>(lines, nxMinBoundary3Str);
+    std::string nxMinU0Str("nxMinU0");
+    nxMinU0 = lookup<float>(lines, nxMinU0Str)/c;
+    std::string nxMinV0Str("nxMinV0");
+    nxMinV0 = lookup<float>(lines, nxMinV0Str)/c;
+    std::string nxMinW0Str("nxMinW0");
+    nxMinW0 = lookup<float>(lines, nxMinW0Str)/c;
+
+    std::string nxMaxBoundary1Str("nxMaxBoundary1");
+    nxMaxBoundary1 = lookup<int>(lines, nxMaxBoundary1Str);
+    std::string nxMaxBoundary2Str("nxMaxBoundary2");
+    nxMaxBoundary2 = lookup<int>(lines, nxMaxBoundary2Str);
+    std::string nxMaxBoundary3Str("nxMaxBoundary3");
+    nxMaxBoundary3 = lookup<int>(lines, nxMaxBoundary3Str);
+    std::string nxMaxU0Str("nxMaxU0");
+    nxMaxU0 = lookup<float>(lines, nxMaxU0Str)/c;
+    std::string nxMaxV0Str("nxMaxV0");
+    nxMaxV0 = lookup<float>(lines, nxMaxV0Str)/c;
+    std::string nxMaxW0Str("nxMaxW0");
+    nxMaxW0 = lookup<float>(lines, nxMaxW0Str)/c;
+
+
+    std::string nyMinBoundary1Str("nyMinBoundary1");
+    nyMinBoundary1 = lookup<int>(lines, nyMinBoundary1Str);
+    std::string nyMinBoundary2Str("nyMinBoundary2");
+    nyMinBoundary2 = lookup<int>(lines, nyMinBoundary2Str);
+    std::string nyMinBoundary3Str("nyMinBoundary3");
+    nyMinBoundary3 = lookup<int>(lines, nyMinBoundary3Str);
+    std::string nyMinU0Str("nyMinU0");
+    nyMinU0 = lookup<float>(lines, nyMinU0Str)/c;
+    std::string nyMinV0Str("nyMinV0");
+    nyMinV0 = lookup<float>(lines, nyMinV0Str)/c;
+    std::string nyMinW0Str("nyMinW0");
+    nyMinW0 = lookup<float>(lines, nyMinW0Str)/c;
+
+    std::string nyMaxBoundary1Str("nyMaxBoundary1");
+    nyMaxBoundary1 = lookup<int>(lines, nyMaxBoundary1Str);
+    std::string nyMaxBoundary2Str("nyMaxBoundary2");
+    nyMaxBoundary2 = lookup<int>(lines, nyMaxBoundary2Str);
+    std::string nyMaxBoundary3Str("nyMaxBoundary3");
+    nyMaxBoundary3 = lookup<int>(lines, nyMaxBoundary3Str);
+    std::string nyMaxU0Str("nyMaxU0");
+    nyMaxU0 = lookup<float>(lines, nyMaxU0Str)/c;
+    std::string nyMaxV0Str("nyMaxV0");
+    nyMaxV0 = lookup<float>(lines, nyMaxV0Str)/c;
+    std::string nyMaxW0Str("nyMaxW0");
+    nyMaxW0 = lookup<float>(lines, nyMaxW0Str)/c;
+
+
+    std::string nzMinBoundary1Str("nzMinBoundary1");
+    nzMinBoundary1 = lookup<int>(lines, nzMinBoundary1Str);
+    std::string nzMinBoundary2Str("nzMinBoundary2");
+    nzMinBoundary2 = lookup<int>(lines, nzMinBoundary2Str);
+    std::string nzMinBoundary3Str("nzMinBoundary3");
+    nzMinBoundary3 = lookup<int>(lines, nzMinBoundary3Str);
+    std::string nzMinU0Str("nzMinU0");
+    nzMinU0 = lookup<float>(lines, nzMinU0Str)/c;
+    std::string nzMinV0Str("nzMinV0");
+    nzMinV0 = lookup<float>(lines, nzMinV0Str)/c;
+    std::string nzMinW0Str("nzMinW0");
+    nzMinW0 = lookup<float>(lines, nzMinW0Str)/c;
+
+    std::string nzMaxBoundary1Str("nzMaxBoundary1");
+    nzMaxBoundary1 = lookup<int>(lines, nzMaxBoundary1Str);
+    std::string nzMaxBoundary2Str("nzMaxBoundary2");
+    nzMaxBoundary2 = lookup<int>(lines, nzMaxBoundary2Str);
+    std::string nzMaxBoundary3Str("nzMaxBoundary3");
+    nzMaxBoundary3 = lookup<int>(lines, nzMaxBoundary3Str);
+    std::string nzMaxU0Str("nzMaxU0");
+    nzMaxU0 = lookup<float>(lines, nzMaxU0Str)/c;
+    std::string nzMaxV0Str("nzMaxV0");
+    nzMaxV0 = lookup<float>(lines, nzMaxV0Str)/c;
+    std::string nzMaxW0Str("nzMaxW0");
+    nzMaxW0 = lookup<float>(lines, nzMaxW0Str)/c;
+}
+
 #endif

@@ -87,7 +87,6 @@ int main()
     //--
 
     const float L = Lx/float(nx-1);
-    dpdx = 0.f;
     Re = uMax*Lx/nu;
 
     std::cout << "Re: " << Re << std::endl;
@@ -113,10 +112,35 @@ int main()
     std::cout << "Maximum Ma = " << (uMax/c)*sqrt(3.f) << std::endl;
 
     //-- Settings for boundary conditions
-    // #include "boundaryCondition_cavityFlow.hpp"
-    // #include "boundaryCondition_PoiseuilleFlow.hpp"
-    #include "boundaryCondition_flowAroundCylinder.hpp"
-    // #include "boundaryCondition_backStepFlow.hpp"
+    int nxMinBoundary1 = 0; int nxMinBoundary2 = 0; int nxMinBoundary3 = 0;
+    float nxMinU0 = 0.f; float nxMinV0 = 0.f; float nxMinW0 = 0.f;
+    int nxMaxBoundary1 = 0; int nxMaxBoundary2 = 0; int nxMaxBoundary3 = 0;
+    float nxMaxU0 = 0.f; float nxMaxV0 = 0.f; float nxMaxW0 = 0.f;
+    int nyMinBoundary1 = 0; int nyMinBoundary2 = 0; int nyMinBoundary3 = 0;
+    float nyMinU0 = 0.f; float nyMinV0 = 0.f; float nyMinW0 = 0.f;
+    int nyMaxBoundary1 = 0; int nyMaxBoundary2 = 0; int nyMaxBoundary3 = 0;
+    float nyMaxU0 = 0.f; float nyMaxV0 = 0.f; float nyMaxW0 = 0.f;
+    int nzMinBoundary1 = 0; int nzMinBoundary2 = 0; int nzMinBoundary3 = 0;
+    float nzMinU0 = 0.f; float nzMinV0 = 0.f; float nzMinW0 = 0.f;
+    int nzMaxBoundary1 = 0; int nzMaxBoundary2 = 0; int nzMaxBoundary3 = 0;
+    float nzMaxU0 = 0.f; float nzMaxV0 = 0.f; float nzMaxW0 = 0.f;
+    inputBoundaryConditions(
+        nxMinBoundary1, nxMinBoundary2, nxMinBoundary3,
+        nxMinU0, nxMinV0, nxMinW0,
+        nxMaxBoundary1, nxMaxBoundary2, nxMaxBoundary3,
+        nxMaxU0, nxMaxV0, nxMaxW0,
+        nyMinBoundary1, nyMinBoundary2, nyMinBoundary3,
+        nyMinU0, nyMinV0, nyMinW0,
+        nyMaxBoundary1, nyMaxBoundary2, nyMaxBoundary3,
+        nyMaxU0, nyMaxV0, nyMaxW0,
+        nzMinBoundary1, nzMinBoundary2, nzMinBoundary3,
+        nzMinU0, nzMinV0, nzMinW0,
+        nzMaxBoundary1, nzMaxBoundary2, nzMaxBoundary3,
+        nzMaxU0, nzMaxV0, nzMaxW0,
+        c
+        );
+    
+    #include "setBoundaryConditions.hpp"
 
     if(restart)
     {
