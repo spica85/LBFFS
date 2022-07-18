@@ -909,7 +909,7 @@ __kernel void k_streamingCollision // Pull
             int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
             int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
             int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
-            const float spzWidth = 0.2f;
+            const float spzWidth = 0.1f;
             
             if(boundary1[icX0] == 3)
             {
@@ -1332,25 +1332,25 @@ __kernel void k_streamingCollision // Pull
             float RMcoll202 = RRcoll202 +sqrCs*(RRcoll200 +RRcoll002) +quadCs;
             float RMcoll022 = RRcoll022 +sqrCs*(RRcoll020 +RRcoll002) +quadCs;
 
-            fTmp[ 0*elements +ic] = rho*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022);
-            fTmp[ 1*elements +ic] = 0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
-            fTmp[ 2*elements +ic] = rho*(-u +RMcoll120 +RMcoll102) +0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202);
-            fTmp[ 3*elements +ic] = 0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);    
-            fTmp[ 4*elements +ic] = rho*(-v +RMcoll210 +RMcoll012) +0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022);
-            fTmp[ 5*elements +ic] = 0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022);
-            fTmp[ 6*elements +ic] = rho*(-w +RMcoll201 +RMcoll021) +0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022);
-            fTmp[ 7*elements +ic] = 0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
-            fTmp[ 8*elements +ic] = 0.5f*rho*(-RMcoll210 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
-            fTmp[ 9*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll210) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
-            fTmp[10*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220);
-            fTmp[11*elements +ic] = 0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
-            fTmp[12*elements +ic] = 0.5f*rho*(-RMcoll201 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
-            fTmp[13*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll201) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
-            fTmp[14*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202);
-            fTmp[15*elements +ic] = 0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
-            fTmp[16*elements +ic] = 0.5f*rho*(-RMcoll021 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
-            fTmp[17*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll021) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
-            fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022);
+            fTmp[ 0*elements +ic] = rho*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022) +rho*wt[0]*3.0f*dpdx*cx[0];
+            fTmp[ 1*elements +ic] = 0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202) +rho*wt[1]*3.0f*dpdx*cx[1];
+            fTmp[ 2*elements +ic] = rho*(-u +RMcoll120 +RMcoll102) +0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202) +rho*wt[2]*3.0f*dpdx*cx[2];
+            fTmp[ 3*elements +ic] = 0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022) +rho*wt[3]*3.0f*dpdx*cx[3];
+            fTmp[ 4*elements +ic] = rho*(-v +RMcoll210 +RMcoll012) +0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022) +rho*wt[4]*3.0f*dpdx*cx[4];
+            fTmp[ 5*elements +ic] = 0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022) +rho*wt[5]*3.0f*dpdx*cx[5];
+            fTmp[ 6*elements +ic] = rho*(-w +RMcoll201 +RMcoll021) +0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022) +rho*wt[6]*3.0f*dpdx*cx[4];
+            fTmp[ 7*elements +ic] = 0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[7]*3.0f*dpdx*cx[7];
+            fTmp[ 8*elements +ic] = 0.5f*rho*(-RMcoll210 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[8]*3.0f*dpdx*cx[8];
+            fTmp[ 9*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll210) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[9]*3.0f*dpdx*cx[9];
+            fTmp[10*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[10]*3.0f*dpdx*cx[10];
+            fTmp[11*elements +ic] = 0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[11]*3.0f*dpdx*cx[11];
+            fTmp[12*elements +ic] = 0.5f*rho*(-RMcoll201 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[12]*3.0f*dpdx*cx[12];
+            fTmp[13*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll201) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[13]*3.0f*dpdx*cx[13];
+            fTmp[14*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[14]*3.0f*dpdx*cx[14];
+            fTmp[15*elements +ic] = 0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[15]*3.0f*dpdx*cx[15];
+            fTmp[16*elements +ic] = 0.5f*rho*(-RMcoll021 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[16]*3.0f*dpdx*cx[16];
+            fTmp[17*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll021) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[17]*3.0f*dpdx*cx[17];
+            fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[18]*3.0f*dpdx*cx[18];
             //--
         }
 
