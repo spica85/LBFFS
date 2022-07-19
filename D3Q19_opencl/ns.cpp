@@ -53,8 +53,9 @@ int main()
     float nu;
     float U0;
     float dpdx;
+    float LES;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -246,7 +247,8 @@ int main()
         const float,
         const float,
         const float,
-        const int, const int, const int
+        const int, const int, const int,
+        const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
     std::chrono::system_clock::time_point start;
@@ -272,7 +274,8 @@ int main()
             omega,
             dpdx,
             rho_av,
-            nx, ny, nz
+            nx, ny, nz,
+            LES
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
