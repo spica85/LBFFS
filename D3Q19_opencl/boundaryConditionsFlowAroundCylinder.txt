@@ -1,11 +1,11 @@
 nxMinBoundary1 BounceBack
 nxMinBoundary2 Cyclic
 nxMinBoundary3 Cyclic
-nxMinU0 0.0
+nxMinU0 1.0
 nxMinV0 0.0
 nxMinW0 0.0
 
-nxMaxBoundary1 BounceBack
+nxMaxBoundary1 Outlet
 nxMaxBoundary2 Cyclic
 nxMaxBoundary3 Cyclic
 nxMaxU0 0.0
@@ -16,7 +16,7 @@ nxMaxW0 0.0
 nyMinBoundary1 Cyclic
 nyMinBoundary2 BounceBack
 nyMinBoundary3 Cyclic
-nyMinU0 0.0
+nyMinU0 1.0
 nyMinV0 0.0
 nyMinW0 0.0
 
