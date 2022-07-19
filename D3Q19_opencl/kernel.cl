@@ -544,7 +544,8 @@ __kernel void k_streamingCollision // Pull
    const float omega,
    const float dpdx,
    const float rho_av,
-   const int nx, const int ny, const int nz
+   const int nx, const int ny, const int nz,
+   const float LES
 )
 {
     int ic = get_global_id(0);
@@ -870,7 +871,7 @@ __kernel void k_streamingCollision // Pull
             // float Cs = 0.2f;// 0.1--0.2
             // float Cs = 0.33f;// 0.1--0.2
 
-            tauSGS[ic] = 0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
+            tauSGS[ic] = LES*0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
             // tauSGS[ic] = 3.f*(Cs*Cs)*sqrt(2.f)*sqrtPIPI*0.5f/rho*3.0f/tau;
 
             //-- Damping of nuSGS (tauSGS) near wall
