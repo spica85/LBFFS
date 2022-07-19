@@ -60,6 +60,7 @@ template<typename Type> Type lookup(std::vector<std::string>& lines, std::string
 template bool lookup<bool>(std::vector<std::string>& lines, std::string& str);
 template int lookup<int>(std::vector<std::string>& lines, std::string& str);
 template double lookup<double>(std::vector<std::string>& lines, std::string& str);
+template std::string lookup<std::string>(std::vector<std::string>& lines, std::string& str);
 
 void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 {
@@ -86,7 +87,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -155,7 +156,35 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     dpdx = lookup<float>(lines, dpdxStr);
     std::cout << std::endl;
 
+    std::string LESStr("LES");
+    LES = lookup<bool>(lines, LESStr) ? 1.f : 0.f;
+
     inputFile.close();
+}
+
+int BCnameToNum(std::string name)
+{
+    if(name == "Cyclic")
+    {
+        return 0;
+    }
+    else if(name == "BounceBack")
+    {
+        return 1;
+    }
+    else if(name == "Equilibrium")
+    {
+        return 2;
+    }
+    else if(name == "Outlet")
+    {
+        return 3;
+    }
+    else
+    {
+        std::cerr << "Please select from Cyclic, BounceBack, Equilibrium, and Outlet" << std::endl;
+        exit(EXIT_FAILURE);
+    }
 }
 
 void inputBoundaryConditions(
@@ -180,11 +209,14 @@ void inputBoundaryConditions(
     readToLines(inputFile, lines);
 
     std::string nxMinBoundary1Str("nxMinBoundary1");
-    nxMinBoundary1 = lookup<int>(lines, nxMinBoundary1Str);
+    std::string nxMinBoundary1name = lookup<std::string>(lines, nxMinBoundary1Str);
+    nxMinBoundary1 = BCnameToNum(nxMinBoundary1name);
     std::string nxMinBoundary2Str("nxMinBoundary2");
-    nxMinBoundary2 = lookup<int>(lines, nxMinBoundary2Str);
+    std::string nxMinBoundary2name = lookup<std::string>(lines, nxMinBoundary2Str);
+    nxMinBoundary2 = BCnameToNum(nxMinBoundary2name);
     std::string nxMinBoundary3Str("nxMinBoundary3");
-    nxMinBoundary3 = lookup<int>(lines, nxMinBoundary3Str);
+    std::string nxMinBoundary3name = lookup<std::string>(lines, nxMinBoundary3Str);
+    nxMinBoundary3 = BCnameToNum(nxMinBoundary3name);
     std::string nxMinU0Str("nxMinU0");
     nxMinU0 = lookup<float>(lines, nxMinU0Str)/c;
     std::string nxMinV0Str("nxMinV0");
@@ -193,11 +225,14 @@ void inputBoundaryConditions(
     nxMinW0 = lookup<float>(lines, nxMinW0Str)/c;
 
     std::string nxMaxBoundary1Str("nxMaxBoundary1");
-    nxMaxBoundary1 = lookup<int>(lines, nxMaxBoundary1Str);
+    std::string nxMaxBoundary1name = lookup<std::string>(lines, nxMaxBoundary1Str);
+    nxMaxBoundary1 = BCnameToNum(nxMaxBoundary1name);
     std::string nxMaxBoundary2Str("nxMaxBoundary2");
-    nxMaxBoundary2 = lookup<int>(lines, nxMaxBoundary2Str);
+    std::string nxMaxBoundary2name = lookup<std::string>(lines, nxMaxBoundary2Str);
+    nxMaxBoundary2 = BCnameToNum(nxMaxBoundary2name);
     std::string nxMaxBoundary3Str("nxMaxBoundary3");
-    nxMaxBoundary3 = lookup<int>(lines, nxMaxBoundary3Str);
+    std::string nxMaxBoundary3name = lookup<std::string>(lines, nxMaxBoundary3Str);
+    nxMaxBoundary3 = BCnameToNum(nxMaxBoundary3name);
     std::string nxMaxU0Str("nxMaxU0");
     nxMaxU0 = lookup<float>(lines, nxMaxU0Str)/c;
     std::string nxMaxV0Str("nxMaxV0");
@@ -207,11 +242,14 @@ void inputBoundaryConditions(
 
 
     std::string nyMinBoundary1Str("nyMinBoundary1");
-    nyMinBoundary1 = lookup<int>(lines, nyMinBoundary1Str);
+    std::string nyMinBoundary1name = lookup<std::string>(lines, nyMinBoundary1Str);
+    nyMinBoundary1 = BCnameToNum(nyMinBoundary1name);
     std::string nyMinBoundary2Str("nyMinBoundary2");
-    nyMinBoundary2 = lookup<int>(lines, nyMinBoundary2Str);
+    std::string nyMinBoundary2name = lookup<std::string>(lines, nyMinBoundary2Str);
+    nyMinBoundary2 = BCnameToNum(nyMinBoundary2name);
     std::string nyMinBoundary3Str("nyMinBoundary3");
-    nyMinBoundary3 = lookup<int>(lines, nyMinBoundary3Str);
+    std::string nyMinBoundary3name = lookup<std::string>(lines, nyMinBoundary3Str);
+    nyMinBoundary3 = BCnameToNum(nyMinBoundary3name);
     std::string nyMinU0Str("nyMinU0");
     nyMinU0 = lookup<float>(lines, nyMinU0Str)/c;
     std::string nyMinV0Str("nyMinV0");
@@ -220,11 +258,14 @@ void inputBoundaryConditions(
     nyMinW0 = lookup<float>(lines, nyMinW0Str)/c;
 
     std::string nyMaxBoundary1Str("nyMaxBoundary1");
-    nyMaxBoundary1 = lookup<int>(lines, nyMaxBoundary1Str);
+    std::string nyMaxBoundary1name = lookup<std::string>(lines, nyMaxBoundary1Str);
+    nyMaxBoundary1 = BCnameToNum(nyMaxBoundary1name);
     std::string nyMaxBoundary2Str("nyMaxBoundary2");
-    nyMaxBoundary2 = lookup<int>(lines, nyMaxBoundary2Str);
+    std::string nyMaxBoundary2name = lookup<std::string>(lines, nyMaxBoundary2Str);
+    nyMaxBoundary2 = BCnameToNum(nyMaxBoundary2name);
     std::string nyMaxBoundary3Str("nyMaxBoundary3");
-    nyMaxBoundary3 = lookup<int>(lines, nyMaxBoundary3Str);
+    std::string nyMaxBoundary3name = lookup<std::string>(lines, nyMaxBoundary3Str);
+    nyMaxBoundary3 = BCnameToNum(nyMaxBoundary3name);
     std::string nyMaxU0Str("nyMaxU0");
     nyMaxU0 = lookup<float>(lines, nyMaxU0Str)/c;
     std::string nyMaxV0Str("nyMaxV0");
@@ -234,11 +275,14 @@ void inputBoundaryConditions(
 
 
     std::string nzMinBoundary1Str("nzMinBoundary1");
-    nzMinBoundary1 = lookup<int>(lines, nzMinBoundary1Str);
+    std::string nzMinBoundary1name = lookup<std::string>(lines, nzMinBoundary1Str);
+    nzMinBoundary1 = BCnameToNum(nzMinBoundary1name);
     std::string nzMinBoundary2Str("nzMinBoundary2");
-    nzMinBoundary2 = lookup<int>(lines, nzMinBoundary2Str);
+    std::string nzMinBoundary2name = lookup<std::string>(lines, nzMinBoundary2Str);
+    nzMinBoundary2 = BCnameToNum(nzMinBoundary2name);
     std::string nzMinBoundary3Str("nzMinBoundary3");
-    nzMinBoundary3 = lookup<int>(lines, nzMinBoundary3Str);
+    std::string nzMinBoundary3name = lookup<std::string>(lines, nzMinBoundary3Str);
+    nzMinBoundary3 = BCnameToNum(nzMinBoundary3name);
     std::string nzMinU0Str("nzMinU0");
     nzMinU0 = lookup<float>(lines, nzMinU0Str)/c;
     std::string nzMinV0Str("nzMinV0");
@@ -247,17 +291,21 @@ void inputBoundaryConditions(
     nzMinW0 = lookup<float>(lines, nzMinW0Str)/c;
 
     std::string nzMaxBoundary1Str("nzMaxBoundary1");
-    nzMaxBoundary1 = lookup<int>(lines, nzMaxBoundary1Str);
+    std::string nzMaxBoundary1name = lookup<std::string>(lines, nzMaxBoundary1Str);
+    nzMaxBoundary1 = BCnameToNum(nzMaxBoundary1name);
     std::string nzMaxBoundary2Str("nzMaxBoundary2");
-    nzMaxBoundary2 = lookup<int>(lines, nzMaxBoundary2Str);
+    std::string nzMaxBoundary2name = lookup<std::string>(lines, nzMaxBoundary2Str);
+    nzMaxBoundary2 = BCnameToNum(nzMaxBoundary2name);
     std::string nzMaxBoundary3Str("nzMaxBoundary3");
-    nzMaxBoundary3 = lookup<int>(lines, nzMaxBoundary3Str);
+    std::string nzMaxBoundary3name = lookup<std::string>(lines, nzMaxBoundary3Str);
+    nzMaxBoundary3 = BCnameToNum(nzMaxBoundary3name);
     std::string nzMaxU0Str("nzMaxU0");
     nzMaxU0 = lookup<float>(lines, nzMaxU0Str)/c;
     std::string nzMaxV0Str("nzMaxV0");
     nzMaxV0 = lookup<float>(lines, nzMaxV0Str)/c;
     std::string nzMaxW0Str("nzMaxW0");
     nzMaxW0 = lookup<float>(lines, nzMaxW0Str)/c;
+    
 }
 
 #endif
