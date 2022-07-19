@@ -107,9 +107,7 @@ void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const f
         int i = int(STLc[0][iSTL]);
         int j = int(STLc[1][iSTL]);
         int k = int(STLc[2][iSTL]);
-        // int k = 0;
-        if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
-        // if(0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1)
+        // if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
         {
             for(int ii = -drn; ii <= drn; ii++)
             {
@@ -303,7 +301,13 @@ void setQf(std::vector<float>& qf, std::vector<unsigned char>& neiSolid, std::ve
         int j = ic2j(ic,nx,ny);
         int k = ic2k(ic,nx,ny);
         
-        if(i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
+        if
+        (
+            (nx == 1 && (j != 0 && j != ny-1 && k != 0 && k != nz-1)) ||
+            (ny == 1 && (i != 0 && i != nx-1 && k != 0 && k != nz-1)) || 
+            (nz == 1 && (i != 0 && i != nx-1 && j != 0 && j != ny-1)) ||
+            (i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
+        )
         {
             for(int q = 0; q < 19; q++)
             {
