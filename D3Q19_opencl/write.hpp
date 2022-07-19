@@ -55,6 +55,7 @@ if(Fwrite && nextOutTime < nt +1)
     std::cout << "rhoMax: " << rhoMax << ", rhoMin: " << rhoMin << ", rhoAve: " << rho_av << std::endl;
 
     //- For Flow around cylinder
+    // const float d=0.1f;
     // std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*d*L) << std::endl;
     //--
 
