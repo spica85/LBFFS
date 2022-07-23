@@ -54,8 +54,10 @@ int main()
     float U0;
     float dpdx;
     float LES;
+    bool forceCoeffs;
+    float Dref;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();

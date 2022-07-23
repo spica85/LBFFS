@@ -87,7 +87,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -158,6 +158,19 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
 
     std::string LESStr("LES");
     LES = lookup<bool>(lines, LESStr) ? 1.f : 0.f;
+
+    std::string forceCoeffsStr("forceCoeffs");
+    forceCoeffs = lookup<bool>(lines, forceCoeffsStr);
+
+    if(forceCoeffs)
+    {
+        std::string DrefStr("Dref");
+        Dref = lookup<float>(lines, DrefStr);
+    }
+    else
+    {
+        Dref = 1.f;
+    }
 
     inputFile.close();
 }

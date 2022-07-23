@@ -15,3 +15,5 @@ U0 0.02
 nu 0.001
 dpdx 0.0
 LES false
+forceCoeffs true
+Dref 0.1

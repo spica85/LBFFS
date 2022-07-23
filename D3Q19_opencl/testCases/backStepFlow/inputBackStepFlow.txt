@@ -15,3 +15,4 @@ U0 0.05
 nu 0.00018181818
 dpdx 0.0
 LES true
+forceCoeffs false
