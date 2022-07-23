@@ -1,43 +1,43 @@
-nxMinBoundary1 1
-nxMinBoundary2 0
-nxMinBoundary3 0
+nxMinBoundary1 BounceBack
+nxMinBoundary2 Cyclic
+nxMinBoundary3 Cyclic
 nxMinU0 1.0
 nxMinV0 0.0
 nxMinW0 0.0
 
-nxMaxBoundary1 3
-nxMaxBoundary2 0
-nxMaxBoundary3 0
+nxMaxBoundary1 Outlet
+nxMaxBoundary2 Cyclic
+nxMaxBoundary3 Cyclic
 nxMaxU0 0.0
 nxMaxV0 0.0
 nxMaxW0 0.0
 
 
-nyMinBoundary1 0
-nyMinBoundary2 1
-nyMinBoundary3 0
+nyMinBoundary1 Cyclic
+nyMinBoundary2 BounceBack
+nyMinBoundary3 Cyclic
 nyMinU0 0.0
 nyMinV0 0.0
 nyMinW0 0.0
 
-nyMaxBoundary1 0
-nyMaxBoundary2 1
-nyMaxBoundary3 0
+nyMaxBoundary1 Cyclic
+nyMaxBoundary2 BounceBack
+nyMaxBoundary3 Cyclic
 nyMaxU0 0.0
 nyMaxV0 0.0
 nyMaxW0 0.0
 
 
-nzMinBoundary1 0
-nzMinBoundary2 0
-nzMinBoundary3 0
+nzMinBoundary1 Cyclic
+nzMinBoundary2 Cyclic
+nzMinBoundary3 Cyclic
 nzMinU0 0.0
 nzMinV0 0.0
 nzMinW0 0.0
 
-nzMaxBoundary1 0
-nzMaxBoundary2 0
-nzMaxBoundary3 0
+nzMaxBoundary1 Cyclic
+nzMaxBoundary2 Cyclic
+nzMaxBoundary3 Cyclic
 nzMaxU0 0.0
 nzMaxV0 0.0
 nzMaxW0 0.0
