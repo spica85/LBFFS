@@ -1,0 +1,17 @@
+Fwrite true
+restart false
+nThreads 1
+writeBinary true
+startTimeStep 0
+endTimeStep 1000000
+outInterval 10000
+nx 1650
+ny 102
+nz 100
+Lx 50.0
+uMax 1.0
+rho0 1.0
+U0 0.05
+nu 0.00018181818
+dpdx 0.0
+LES true
