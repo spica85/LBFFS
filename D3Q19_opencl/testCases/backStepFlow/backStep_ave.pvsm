@@ -6454,10 +6454,10 @@
     </Proxy>
     <Proxy group="sources" type="LegacyVTKFileReader" id="15672" servers="1">
       <Property name="FileNameInfo" id="15672.FileNameInfo" number_of_elements="1">
-        <Element index="0" value="/home/tetsuya/Codes/OpenCL/LBM.dev/D3Q19_opencl/build/out/backStepBoxes/ave.vtk"/>
+        <Element index="0" value="ave.vtk"/>
       </Property>
       <Property name="FileNames" id="15672.FileNames" number_of_elements="1">
-        <Element index="0" value="/home/tetsuya/Codes/OpenCL/LBM.dev/D3Q19_opencl/build/out/backStepBoxes/ave.vtk"/>
+        <Element index="0" value="ave.vtk"/>
         <Domain name="files" id="15672.FileNames.files"/>
       </Property>
       <Property name="TimestepValues" id="15672.TimestepValues"/>
