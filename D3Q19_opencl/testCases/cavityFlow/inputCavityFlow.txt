@@ -3,7 +3,7 @@ restart false
 nThreads 1
 writeBinary true
 startTimeStep 0
-endTimeStep 10000
+endTimeStep 100000
 outInterval 1000
 nx 100
 ny 100
