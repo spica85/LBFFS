@@ -12,7 +12,7 @@ LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and 
 * Spongezones which suppress wave reflections at outlet boundaries
 
 ## Test cases
-* Poiseuille flow (Re=100)
+* Poiseuille flow (Re=100, Laminar)
 <table>
 <tr>
 <td>Velocity distribution</td>
@@ -24,7 +24,7 @@ LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and 
 </tr>
 </table>
 
-* Lid driven cavity flow (Re=100)
+* Lid driven cavity flow (Re=100, Laminar)
 <table>
 <tr>
 <td>Velocity vector</td>
@@ -36,7 +36,7 @@ LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and 
 </tr>
 </table>
 
-* Flow around a cylinder
+* Flow around a cylinder (Re=100, Laminar)
 
 https://user-images.githubusercontent.com/109857341/180644337-b0e62fda-41a7-487d-9cee-98e37b96f939.mp4
 <table>
@@ -50,14 +50,14 @@ https://user-images.githubusercontent.com/109857341/180644337-b0e62fda-41a7-487d
 </tr>
 </table>
 
-* Backward facing step flow
+* Backward facing step flow (Re=5500, Turbulence)
 
 https://user-images.githubusercontent.com/109857341/180644458-212d29d3-9d87-4b73-b8d2-fd086c1d4b44.mp4
 
 <img src="https://user-images.githubusercontent.com/109857341/180644496-94171507-2454-4ed6-b495-355ab656610b.png" width="640px">
 
 
-* Flow around a car
+* Flow around a car (Actual physical properties, Turbulence)
 
 https://user-images.githubusercontent.com/109857341/180644599-89a6945f-214d-449f-8b31-b7e3ab75fc98.mp4
 
