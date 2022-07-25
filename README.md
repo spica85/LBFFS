@@ -1,4 +1,4 @@
-# LBFFS
+# LBFFS [English/[Japanese](README_ja.md)]
 LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and OpenCL languages to run on a single GPU
 
 ## Features
