@@ -34,33 +34,33 @@ inline int idf(int q, int i, int nx, int ny, int nz)
     return q*nx*ny*nz+i;
 }
 
-class obstructure
-{
-    private:
-    public:
-    int boundary1;
-    int boundary2;
-    int boundary3;
-    std::vector<int> normal;
-    bool inner;
-    float u0;
-    float v0;
-    float w0;
-    float rho0;
-    obstructure()
-    {
-        boundary1 = 0;
-        boundary2 = 0;
-        boundary2 = 0;
-        normal = {0, 0, 0};
-        inner = false;
+// class obstructure
+// {
+//     private:
+//     public:
+//     int boundary1;
+//     int boundary2;
+//     int boundary3;
+//     std::vector<int> normal;
+//     bool inner;
+//     float u0;
+//     float v0;
+//     float w0;
+//     float rho0;
+//     obstructure()
+//     {
+//         boundary1 = 0;
+//         boundary2 = 0;
+//         boundary2 = 0;
+//         normal = {0, 0, 0};
+//         inner = false;
 
-        u0 = 0.0;
-        v0 = 0.0;
-        w0 = 0.0;
-        rho0 = 1.0;
-    }
-};
+//         u0 = 0.0;
+//         v0 = 0.0;
+//         w0 = 0.0;
+//         rho0 = 1.0;
+//     }
+// };
 
 char* asciiToBinary(char* str, const float x)
 {
@@ -174,408 +174,408 @@ inline int reflectQ(const int q)
     exit(EXIT_FAILURE);    
 }
 
-inline int bounceBackQID(obstructure& obst, const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
-{
-    if(q == 0)
-    {
-        return index1df(0,i,j,k,nx,ny,nz);
-    }
+// inline int bounceBackQID(obstructure& obst, const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+// {
+//     if(q == 0)
+//     {
+//         return index1df(0,i,j,k,nx,ny,nz);
+//     }
 
-    const std::vector<int> normal_in = {-1,0,0};
-    const std::vector<int> normal_ip = {1,0,0};
-    const std::vector<int> normal_jn = {0,-1,0};
-    const std::vector<int> normal_jp = {0,1,0};
-    const std::vector<int> normal_kn = {0,0,-1};
-    const std::vector<int> normal_kp = {0,0,1};
+//     const std::vector<int> normal_in = {-1,0,0};
+//     const std::vector<int> normal_ip = {1,0,0};
+//     const std::vector<int> normal_jn = {0,-1,0};
+//     const std::vector<int> normal_jp = {0,1,0};
+//     const std::vector<int> normal_kn = {0,0,-1};
+//     const std::vector<int> normal_kp = {0,0,1};
 
-    const std::vector<int> normal_injn = {-1,-1,0};
-    const std::vector<int> normal_injp = {-1,1,0};
-    const std::vector<int> normal_ipjn = {1,-1,0};
-    const std::vector<int> normal_ipjp = {1,1,0};
-    const std::vector<int> normal_inkn = {-1,0,-1};
-    const std::vector<int> normal_inkp = {-1,0,1};
-    const std::vector<int> normal_ipkn = {1,0,-1};
-    const std::vector<int> normal_ipkp = {1,0,1};
-    const std::vector<int> normal_jnkn = {0,-1,-1};
-    const std::vector<int> normal_jnkp = {0,-1,1};
-    const std::vector<int> normal_jpkn = {0,1,-1};
-    const std::vector<int> normal_jpkp = {0,1,1};
+//     const std::vector<int> normal_injn = {-1,-1,0};
+//     const std::vector<int> normal_injp = {-1,1,0};
+//     const std::vector<int> normal_ipjn = {1,-1,0};
+//     const std::vector<int> normal_ipjp = {1,1,0};
+//     const std::vector<int> normal_inkn = {-1,0,-1};
+//     const std::vector<int> normal_inkp = {-1,0,1};
+//     const std::vector<int> normal_ipkn = {1,0,-1};
+//     const std::vector<int> normal_ipkp = {1,0,1};
+//     const std::vector<int> normal_jnkn = {0,-1,-1};
+//     const std::vector<int> normal_jnkp = {0,-1,1};
+//     const std::vector<int> normal_jpkn = {0,1,-1};
+//     const std::vector<int> normal_jpkp = {0,1,1};
 
-    const std::vector<int> normal_injnkn = {-1,-1,-1};
-    const std::vector<int> normal_injpkn = {-1,1,-1};
-    const std::vector<int> normal_injnkp = {-1,-1,1};
-    const std::vector<int> normal_injpkp = {-1,1,1};
-    const std::vector<int> normal_ipjnkn = {1,-1,-1};
-    const std::vector<int> normal_ipjpkn = {1,1,-1};
-    const std::vector<int> normal_ipjnkp = {1,-1,1};
-    const std::vector<int> normal_ipjpkp = {1,1,1};
+//     const std::vector<int> normal_injnkn = {-1,-1,-1};
+//     const std::vector<int> normal_injpkn = {-1,1,-1};
+//     const std::vector<int> normal_injnkp = {-1,-1,1};
+//     const std::vector<int> normal_injpkp = {-1,1,1};
+//     const std::vector<int> normal_ipjnkn = {1,-1,-1};
+//     const std::vector<int> normal_ipjpkn = {1,1,-1};
+//     const std::vector<int> normal_ipjnkp = {1,-1,1};
+//     const std::vector<int> normal_ipjpkp = {1,1,1};
 
 
-    if(obst.normal == normal_in) //i=0
-    {
-        if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ip) //i=nx-1
-    {
-        if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_jn) //j=0
-    {
-        if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_jp) //j=ny-1
-    {
-        if(q == 4 || q == 9 || q == 8 || q == 18 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_kn) //k=0
-    {
-        if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_kp) //k=nz-1
-    {
-        if(q == 6 || q == 13 || q == 12 || q == 17 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_injn) //i=0 && j=0
-    {
-        if(q == 1 || q == 7 || q == 11 || q == 13 || q == 3 || q == 15 || q == 17)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 9 || q == 10)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_injp) //i=0 && j=ny-1
-    {
-        if(q == 1 || q == 9 || q == 11 || q == 13 || q == 4 || q == 18 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 7 || q == 8)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipjn) //i=nx-1 && j=0
-    {
-        if(q == 2 || q == 10 || q == 12 || q == 14 || q == 3 || q == 15 || q == 17)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 8 || q == 7)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipjp) //i=nx-1 && j=ny-1
-    {
-        if(q == 2 || q == 8 || q == 12 || q == 14 || q == 4 || q == 18 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 10 || q == 9)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_inkn) //i=0 && k=0
-    {
-        if(q == 1 || q == 7 || q == 9 || q == 11 || q == 5 || q == 15 || q == 18)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 13 || q == 14)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_inkp) //i=0 && k=nz-1
-    {
-        if(q == 1 || q == 10 || q == 9 || q == 13 || q == 6 || q == 17 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 11 || q == 12)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipkn) //i=nx-1 && k=0
-    {
-        if(q == 2 || q == 8 || q == 10 || q == 14 || q == 5 || q == 15 || q == 18)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 12 || q == 11)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipkp) //i=nx-1 && k=nz-1
-    {
-        if(q == 2 || q == 8 || q == 10 || q == 12 || q == 6 || q == 17 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 14 || q == 13)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_jnkn) //j=0 && k=0
-    {
-        if(q == 3 || q == 7 || q == 10 || q == 15 || q == 5 || q == 11 || q == 14)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 15 || q == 18)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_jnkp) //j=0 && k=nz-1
-    {
-        if(q == 3 || q == 7 || q == 10 || q == 17 || q == 6 || q == 13 || q == 12)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 15 || q == 16)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_jpkn) //j=ny-1 && k=0
-    {
-        if(q == 2 || q == 9 || q == 8 || q == 18 || q == 5 || q == 11 || q == 14)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 16 || q == 15)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_jpkp) //j=ny-1 && k=nz-1
-    {
-        if(q == 4 || q == 9 || q == 8 || q == 16 || q == 6 || q == 13 || q == 12)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 18 || q == 17)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_injnkn) //i=0 && j=0 && k=0
-    {
-        if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13 || q == 3 || q == 10 || q == 15 || q == 17 || q == 5 || q == 14 || q == 18)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_injpkn) //i=0 && j=ny-1 && k=0
-    {
-        if(q == 1 || q == 9 || q == 11 || q == 4 || q == 9 || q == 18 || q == 16 || q == 5 || q == 15) 
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 7 || q == 8 || q == 13 || q == 14)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_injnkp) //i=0 && j=0 && k=nz-1
-    {
-        if(q == 1 || q == 7 || q == 13 || q == 3 || q == 15 || q == 17 || q == 6 || q == 13 || q == 16) 
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 9 || q == 10 || q == 11 || q == 12)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_injnkp) //i=0 && j=ny-1 && k=nz-1
-    {
-        if(q == 1 || q == 9 || q == 13 || q == 4 || q == 18 || q == 17 || q == 6 || q == 13 || q == 17) 
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 7 || q == 8 || q == 11 || q == 12)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipjnkn) //i=nx-1 && j=0 && k=0
-    {
-        if(q == 2 || q == 10 || q == 14 || q == 3 || q == 15 || q == 17 || q == 5 || q == 11 || q == 18) 
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 8 || q == 7 || q == 12 || q == 11)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipjpkn) //i=nx-1 && j=ny-1 && k=0
-    {
-        if(q == 2 || q == 8 || q == 14 || q == 4 || q == 18 || q == 16 || q == 5 || q == 15)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 10 || q == 9 || q == 12 || q == 11)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipjpkn) //i=nx-1 && j=0 && k=nz-1
-    {
-        if(q == 2 || q == 10 || q == 12 || q == 3 || q == 15 || q == 17 || q == 6 || q == 16)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 8 || q == 7 || q == 14 || q == 13)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    else if(obst.normal == normal_ipjpkp) //i=nx-1 && j=ny-1 && k=nz-1
-    {
-        if(q == 2 || q == 8 || q == 12 || q == 4 || q == 18 || q == 16 || q == 6 || q == 17)
-        {
-            return index1df(reflectQ(q),i,j,k,nx,ny,nz);
-        }
-        else if(q == 10 || q == 9 || q == 14 || q == 13)
-        {
-            return -1;
-        }
-        else
-        {
-            return index1df(q,i,j,k,nx,ny,nz);
-        }
-    }
-    std::cerr << "Error bounceBack" << std::endl;
-    exit(EXIT_FAILURE);    
-}
+//     if(obst.normal == normal_in) //i=0
+//     {
+//         if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ip) //i=nx-1
+//     {
+//         if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_jn) //j=0
+//     {
+//         if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_jp) //j=ny-1
+//     {
+//         if(q == 4 || q == 9 || q == 8 || q == 18 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_kn) //k=0
+//     {
+//         if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_kp) //k=nz-1
+//     {
+//         if(q == 6 || q == 13 || q == 12 || q == 17 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_injn) //i=0 && j=0
+//     {
+//         if(q == 1 || q == 7 || q == 11 || q == 13 || q == 3 || q == 15 || q == 17)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 9 || q == 10)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_injp) //i=0 && j=ny-1
+//     {
+//         if(q == 1 || q == 9 || q == 11 || q == 13 || q == 4 || q == 18 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 7 || q == 8)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipjn) //i=nx-1 && j=0
+//     {
+//         if(q == 2 || q == 10 || q == 12 || q == 14 || q == 3 || q == 15 || q == 17)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 8 || q == 7)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipjp) //i=nx-1 && j=ny-1
+//     {
+//         if(q == 2 || q == 8 || q == 12 || q == 14 || q == 4 || q == 18 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 10 || q == 9)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_inkn) //i=0 && k=0
+//     {
+//         if(q == 1 || q == 7 || q == 9 || q == 11 || q == 5 || q == 15 || q == 18)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 13 || q == 14)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_inkp) //i=0 && k=nz-1
+//     {
+//         if(q == 1 || q == 10 || q == 9 || q == 13 || q == 6 || q == 17 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 11 || q == 12)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipkn) //i=nx-1 && k=0
+//     {
+//         if(q == 2 || q == 8 || q == 10 || q == 14 || q == 5 || q == 15 || q == 18)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 12 || q == 11)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipkp) //i=nx-1 && k=nz-1
+//     {
+//         if(q == 2 || q == 8 || q == 10 || q == 12 || q == 6 || q == 17 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 14 || q == 13)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_jnkn) //j=0 && k=0
+//     {
+//         if(q == 3 || q == 7 || q == 10 || q == 15 || q == 5 || q == 11 || q == 14)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 15 || q == 18)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_jnkp) //j=0 && k=nz-1
+//     {
+//         if(q == 3 || q == 7 || q == 10 || q == 17 || q == 6 || q == 13 || q == 12)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 15 || q == 16)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_jpkn) //j=ny-1 && k=0
+//     {
+//         if(q == 2 || q == 9 || q == 8 || q == 18 || q == 5 || q == 11 || q == 14)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 16 || q == 15)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_jpkp) //j=ny-1 && k=nz-1
+//     {
+//         if(q == 4 || q == 9 || q == 8 || q == 16 || q == 6 || q == 13 || q == 12)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 18 || q == 17)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_injnkn) //i=0 && j=0 && k=0
+//     {
+//         if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13 || q == 3 || q == 10 || q == 15 || q == 17 || q == 5 || q == 14 || q == 18)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_injpkn) //i=0 && j=ny-1 && k=0
+//     {
+//         if(q == 1 || q == 9 || q == 11 || q == 4 || q == 9 || q == 18 || q == 16 || q == 5 || q == 15) 
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 7 || q == 8 || q == 13 || q == 14)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_injnkp) //i=0 && j=0 && k=nz-1
+//     {
+//         if(q == 1 || q == 7 || q == 13 || q == 3 || q == 15 || q == 17 || q == 6 || q == 13 || q == 16) 
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 9 || q == 10 || q == 11 || q == 12)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_injnkp) //i=0 && j=ny-1 && k=nz-1
+//     {
+//         if(q == 1 || q == 9 || q == 13 || q == 4 || q == 18 || q == 17 || q == 6 || q == 13 || q == 17) 
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 7 || q == 8 || q == 11 || q == 12)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipjnkn) //i=nx-1 && j=0 && k=0
+//     {
+//         if(q == 2 || q == 10 || q == 14 || q == 3 || q == 15 || q == 17 || q == 5 || q == 11 || q == 18) 
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 8 || q == 7 || q == 12 || q == 11)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipjpkn) //i=nx-1 && j=ny-1 && k=0
+//     {
+//         if(q == 2 || q == 8 || q == 14 || q == 4 || q == 18 || q == 16 || q == 5 || q == 15)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 10 || q == 9 || q == 12 || q == 11)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipjpkn) //i=nx-1 && j=0 && k=nz-1
+//     {
+//         if(q == 2 || q == 10 || q == 12 || q == 3 || q == 15 || q == 17 || q == 6 || q == 16)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 8 || q == 7 || q == 14 || q == 13)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     else if(obst.normal == normal_ipjpkp) //i=nx-1 && j=ny-1 && k=nz-1
+//     {
+//         if(q == 2 || q == 8 || q == 12 || q == 4 || q == 18 || q == 16 || q == 6 || q == 17)
+//         {
+//             return index1df(reflectQ(q),i,j,k,nx,ny,nz);
+//         }
+//         else if(q == 10 || q == 9 || q == 14 || q == 13)
+//         {
+//             return -1;
+//         }
+//         else
+//         {
+//             return index1df(q,i,j,k,nx,ny,nz);
+//         }
+//     }
+//     std::cerr << "Error bounceBack" << std::endl;
+//     exit(EXIT_FAILURE);    
+// }
 
 // void boundaryConditions(obstructure& obst, std::vector<float>& f, int ic, int nx, int ny, int nz)
 // {
