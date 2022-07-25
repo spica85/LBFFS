@@ -1,18 +1,18 @@
 # LBFFS [[English](README.md)/Japanese]
-LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and OpenCL languages to run on a single GPU
+LBFFSは格子ボルツマン法に基づく流体シミュレーションソフトです．C++とOpenCLで書かれており，単一のGPUで動作します．
 
-## Features
-* D3Q19 discrete velocity model
-* Recursive regularized collision model
-* Large eddy simulation based on Smagorinsky sub-grid scale model with damping near walls
-* On-lattice boundary condition on wall by half-way Bounce-Back method
-* Off-lattice boundary condition on wall by Filippova & Hanel’s Interpolated Bounce-Back method
-* Off-lattice boundary setting by importing a STL file
-* Outlet boundary condition which suppresses wave reflections [Geier et al., Comput. Math. Appl. (2015), Appendix F]
-* Spongezones which suppress wave reflections at outlet boundaries
+## 特徴
+* D3Q19離散速度モデル
+* Recursive regularized衝突モデル
+* Smagorinskyモデルに基づくLarge eddy simulation（壁近傍での乱流粘性の減衰を考慮）
+* Half-way Bounce-Back法による格子点上での壁境界条件
+* Filippova & Hanel’s Interpolated Bounce-Back法による格子点外での壁境界条件（曲面などへの対応）
+* STLファイルによる壁境界の設定
+* 反射波を抑制する流出境界条件 [Geier et al., Comput. Math. Appl. (2015), Appendix F]
+* 流出境界からの反射波を抑制するスポンジゾーン
 
-## Test cases
-* Poiseuille flow (Re=100)
+## テストケース
+* ポアズイユ流れ (Re=100，層流)
 <table>
 <tr>
 <td>Velocity distribution</td>
@@ -24,7 +24,7 @@ LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and 
 </tr>
 </table>
 
-* Lid driven cavity flow (Re=100)
+* 天井駆動のキャビティ流れ (Re=100，層流)
 <table>
 <tr>
 <td>Velocity vector</td>
@@ -36,7 +36,7 @@ LBFFS is a flow simulator based on Lattice Boltzmann Method, written in C++ and 
 </tr>
 </table>
 
-* Flow around a cylinder
+* 円柱周りの流れ（Re=100，層流）
 
 https://user-images.githubusercontent.com/109857341/180644337-b0e62fda-41a7-487d-9cee-98e37b96f939.mp4
 <table>
@@ -50,14 +50,14 @@ https://user-images.githubusercontent.com/109857341/180644337-b0e62fda-41a7-487d
 </tr>
 </table>
 
-* Backward facing step flow
+* 後ろ向きステップの流れ（乱流）
 
 https://user-images.githubusercontent.com/109857341/180644458-212d29d3-9d87-4b73-b8d2-fd086c1d4b44.mp4
 
 <img src="https://user-images.githubusercontent.com/109857341/180644496-94171507-2454-4ed6-b495-355ab656610b.png" width="640px">
 
 
-* Flow around a car
+* 車周りの流れ（乱流）
 
 https://user-images.githubusercontent.com/109857341/180644599-89a6945f-214d-449f-8b31-b7e3ab75fc98.mp4
 
