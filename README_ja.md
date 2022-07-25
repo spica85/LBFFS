@@ -61,4 +61,5 @@ https://user-images.githubusercontent.com/109857341/180644458-212d29d3-9d87-4b73
 
 https://user-images.githubusercontent.com/109857341/180644599-89a6945f-214d-449f-8b31-b7e3ab75fc98.mp4
 
-
+## ライセンス
+[BSD-3-Clause license](LICENSE)
