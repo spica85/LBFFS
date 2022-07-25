@@ -50,14 +50,14 @@ https://user-images.githubusercontent.com/109857341/180644337-b0e62fda-41a7-487d
 </tr>
 </table>
 
-* 後ろ向きステップの流れ（乱流）
+* 後ろ向きステップの流れ（Re=5500，乱流）
 
 https://user-images.githubusercontent.com/109857341/180644458-212d29d3-9d87-4b73-b8d2-fd086c1d4b44.mp4
 
 <img src="https://user-images.githubusercontent.com/109857341/180644496-94171507-2454-4ed6-b495-355ab656610b.png" width="640px">
 
 
-* 車周りの流れ（乱流）
+* 車周りの流れ（現実の物性値，乱流）
 
 https://user-images.githubusercontent.com/109857341/180644599-89a6945f-214d-449f-8b31-b7e3ab75fc98.mp4
 
