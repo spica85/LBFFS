@@ -7,7 +7,7 @@ project(D3Q19_opencl CXX)
 # Making an execution file named ns.out from ns.cpp
 add_executable(ns.opencl ns.cpp)
 # Setting for the option of g++
-set(CMAKE_CXX_FLAGS "-O3 -Xpreprocessor  -fopenmp -lomp -std=c++11 -L/opt/homebrew/lib -I/opt/homebrew/include")
+set(CMAKE_CXX_FLAGS "-O3 -fopenmp -std=c++11")
 
 # For OpenCL
 set(OpenCL_LIBRARY /opt/amdgpu-pro/lib/x86_64-linux-gnu/libOpenCL.so)
