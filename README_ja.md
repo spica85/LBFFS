@@ -32,7 +32,7 @@ LBFFSは格子ボルツマン法に基づく流体シミュレーションソフ
 </tr>
 <tr>
 <td><img src="https://user-images.githubusercontent.com/109857341/180638527-6905b752-ebff-4695-a5c2-aacec47b16ac.png" width="320px"></td>
-<td><img src="https://user-images.githubusercontent.com/109857341/180638616-66064f75-6159-4655-a28d-1c7f0be1dcc7.png" width="320px"></td>
+<td><img src="https://user-images.githubusercontent.com/109857341/182006837-1e144cbc-5c16-4bc1-aefe-eba9ca35f386.png" width="320px"></td>
 </tr>
 </table>
 
