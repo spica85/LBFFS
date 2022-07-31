@@ -356,6 +356,150 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
     }
 }
 
+int qicNear(int q, int ic, int iNear, int nx, int ny, int nz)
+{
+    int i = ic2i(ic,nx,ny);
+    int j = ic2j(ic,nx,ny);
+    int k = ic2k(ic,nx,ny);
+
+    if(i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1)
+    {
+        printf("Error: Missing near points!\n");
+    }
+
+    if(iNear == 0)
+    {
+        return idf(q, ic, nx, ny, nz);
+    }
+    else if(iNear == 1)
+    {
+        return index1df(q, i+1, j, k, nx, ny, nz);
+    }
+    else if(iNear == 2)
+    {
+        return index1df(q, i-1, j, k, nx, ny, nz);
+    }
+    else if(iNear == 3)
+    {
+        return index1df(q, i, j+1, k, nx, ny, nz);
+    }
+    else if(iNear == 4)
+    {
+        return index1df(q, i, j-1, k, nx, ny, nz);
+    }
+    else if(iNear == 5)
+    {
+        return index1df(q, i, j, k+1, nx, ny, nz);
+    }
+    else if(iNear == 6)
+    {
+        return index1df(q, i+1, j, k-1, nx, ny, nz);
+    }
+    else if(iNear == 7)
+    {
+        return index1df(q, i+1, j+1, k, nx, ny, nz);
+    }
+    else if(iNear == 8)
+    {
+        return index1df(q, i-1, j-1, k, nx, ny, nz);
+    }
+    else if(iNear == 9)
+    {
+        return index1df(q, i+1, j-1, k, nx, ny, nz);
+    }
+    else if(iNear == 10)
+    {
+        return index1df(q, i-1, j+1, k, nx, ny, nz);
+    }
+    else if(iNear == 11)
+    {
+        return index1df(q, i+1, j, k+1, nx, ny, nz);
+    }
+    else if(iNear == 12)
+    {
+        return index1df(q, i-1, j, k-1, nx, ny, nz);
+    }
+    else if(iNear == 13)
+    {
+        return index1df(q, i+1, j, k-1, nx, ny, nz);
+    }
+    else if(iNear == 14)
+    {
+        return index1df(q, i-1, j, k+1, nx, ny, nz);
+    }
+    else if(iNear == 15)
+    {
+        return index1df(q, i, j+1, k+1, nx, ny, nz);
+    }
+    else if(iNear == 16)
+    {
+        return index1df(q, i, j-1, k-1, nx, ny, nz);
+    }
+    else if(iNear == 17)
+    {
+        return index1df(q, i, j+1, k-1, nx, ny, nz);
+    }
+    else if(iNear == 18)
+    {
+        return index1df(q, i, j-1, k+1, nx, ny, nz);
+    }
+    else if(iNear == 19)
+    {
+        return index1df(q, i+1, j+1, k+1, nx, ny, nz);
+    }
+    else if(iNear == 20)
+    {
+        return index1df(q, i-1, j-1, k-1, nx, ny, nz);
+    }
+    else if(iNear == 21)
+    {
+        return index1df(q, i+1, j-1, k+1, nx, ny, nz);
+    }
+    else if(iNear == 22)
+    {
+        return index1df(q, i-1, j+1, k-1, nx, ny, nz);
+    }
+    else if(iNear == 23)
+    {
+        return index1df(q, i+1, j+1, k-1, nx, ny, nz);
+    }
+    else if(iNear == 24)
+    {
+        return index1df(q, i-1, j-1, k+1, nx, ny, nz);
+    }
+    else if(iNear == 25)
+    {
+        return index1df(q, i+1, j-1, k-1, nx, ny, nz);
+    }
+    else if(iNear == 26)
+    {
+        return index1df(q, i-1, j+1, k+1, nx, ny, nz);
+    }
+}
+
+void cal_rhoUVW(const float* f, float* rho, float* u, float* v, float* w)
+{
+    float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f, 1.0f, -1.0f,  1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f};
+    float cy[19] = {0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f};
+    float cz[19] = {0.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f,  1.0f};
+
+    *rho = 0.0f;
+    *u = 0.0f;
+    *v = 0.0f;
+    *w = 0.0f;
+
+    for(int q = 0; q < 19; q++)
+    {
+        *rho += f[q];
+        *u += f[q]*cx[q];
+        *v += f[q]*cy[q];
+        *w += f[q]*cz[q];
+    }
+    *u /= *rho;
+    *v /= *rho;
+    *w /= *rho;
+}
+
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
@@ -646,6 +790,31 @@ __kernel void k_streamingCollision // Pull
             }
         }
         //--
+
+        //-- IBM
+        {
+            float rhoNear[27];
+            float uNear[27];
+            float vNear[27];
+            float wNear[27];
+            float fNear[27][19];
+
+            int i = ic2i(ic,nx,ny);
+            int j = ic2j(ic,nx,ny);
+            int k = ic2k(ic,nx,ny);
+
+
+            for(int iNear; iNear < 27; iNear++)
+            {
+                for(int q = 0; q < 19; q++)
+                {
+                    int qicN = qicNear(q, ic, iNear, nx, ny, nz);
+                    fNear[iNear][q] = f[qicN];
+                }
+                cal_rhoUVW(fNear[iNear], &rhoNear[iNear], &uNear[iNear], &vNear[iNear], &wNear[iNear]);
+            }
+        }
+
         
         //-- Collision
         {
