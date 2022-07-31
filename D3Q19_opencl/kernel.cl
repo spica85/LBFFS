@@ -132,10 +132,6 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         {
             return index1d(i,j-1,k,nx,ny);
         }
-        // else if(i != 0 && i != nx-1)
-        // {
-        //     return boundary1 != 1 ? index1d(i,ny-1,k,nx,ny) : -1;
-        // }
         else
         {
             return boundary2 != 1 ? index1d(i,ny-1,k,nx,ny) : -1;
@@ -147,10 +143,6 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         {
             return index1d(i,j+1,k,nx,ny);
         }
-        // else if(i != 0 && i != nx-1)
-        // {
-        //     return boundary1 != 1 ? index1d(i,0,k,nx,ny) : -1;
-        // }
         else
         {
             return boundary2 != 1 ? index1d(i,0,k,nx,ny) : -1;
@@ -162,27 +154,9 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         {
             return index1d(i,j,k-1,nx,ny);
         }
-        // else if(i != 0 && i != nx-1)
-        // {
-        //     if(j != 0 && j != ny-1)
-        //     {
-        //         return boundary1 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
-        //     }
-        //     else
-        //     {
-        //         return boundary2 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
-        //     }
-        // }
         else
         {
-            // if(j != 0 && j != ny-1)
-            // {
-            //     return boundary2 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
-            // }
-            // else
-            // {
-                return boundary3 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
-            // }
+            return boundary3 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
         }
     }
     else if(q == 6)
@@ -191,27 +165,9 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         {
             return index1d(i,j,k+1,nx,ny);
         }
-        // else if(i != 0 && i != nx-1)
-        // {
-        //     if(j != 0 && j != ny-1)
-        //     {
-        //         return boundary1 != 1 ? index1d(i,j,0,nx,ny) : -1;
-        //     }
-        //     else
-        //     {
-        //         return boundary2 != 1 ? index1d(i,j,0,nx,ny) : -1;
-        //     }
-        // }
         else
         {
-            // if(j != 0 && j != ny-1)
-            // {
-            //     return boundary2 != 1 ? index1d(i,j,0,nx,ny) : -1;
-            // }
-            // else
-            // {
-                return boundary3 != 1 ? index1d(i,j,0,nx,ny) : -1;
-            // }
+            return boundary3 != 1 ? index1d(i,j,0,nx,ny) : -1;
         }
     }
     else if(q == 7)
@@ -254,26 +210,10 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i != 0 && k == 0)
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i-1, j, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i-1, j, nz-1, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i-1, j, nz-1, nx, ny) : -1;
         }
         else
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
-            // }
             return (boundary1 != 1 && boundary3 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
         }
     }
@@ -289,26 +229,10 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i != nx-1 && k == nz-1)
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i+1, j, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i+1, j, 0, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i+1, j, 0, nx, ny) : -1;
         }
         else
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(0, j, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(0, j, 0, nx, ny) : -1;
-            // }
             return (boundary1 != 1 && boundary3 != 1) ? index1d(0, j, 0, nx, ny) : -1;
         }
     }
@@ -324,26 +248,10 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i != 0 && k == nz-1)
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i-1, j, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i-1, j, 0, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i-1, j, 0, nx, ny) : -1;
         }
         else
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1;
-            // }
             return (boundary1 != 1 && boundary3 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1;
         }
     }
@@ -359,26 +267,10 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i != nx-1 && k == 0)
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i+1, j, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i+1, j, nz-1, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i+1, j, nz-1, nx, ny) : -1;
         }
         else
         {
-            // if(j != 0  && j != ny-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(0, j, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(0, j, nz-1, nx, ny) : -1;
-            // }
             return (boundary1 != 1 && boundary3 != 1) ? index1d(0, j, nz-1, nx, ny) : -1;
         }
     }
@@ -390,31 +282,14 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == 0 && k != 0)
         {
-            // return boundary1 != 1 ? index1d(i, ny-1, k-1, nx, ny) : -1;
             return boundary2 != 1 ? index1d(i, ny-1, k-1, nx, ny) : -1;
         }
         else if(j != 0 && k == 0)
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i, j-1, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j-1, nz-1, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i, j-1, nz-1, nx, ny) : -1;
         }
         else
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
-            // }
             return (boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
         }
     }
@@ -426,31 +301,14 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == ny-1 && k != nz-1)
         {
-            // return boundary1 != 1 ? index1d(i, 0, k+1, nx, ny) : -1;
             return boundary2 != 1 ? index1d(i, 0, k+1, nx, ny) : -1;
         }
         else if(j != ny-1 && k == nz-1)
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i, j+1, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j+1, 0, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i, j+1, 0, nx, ny) : -1;
         }
         else
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, 0, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, 0, nx, ny) : -1;
-            // }
             return (boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, 0, nx, ny) : -1;
         }
     }
@@ -462,31 +320,14 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == 0 && k != nz-1)
         {
-            // return boundary1 != 1 ? index1d(i, ny-1, k+1, nx, ny) : -1;
             return boundary2 != 1 ? index1d(i, ny-1, k+1, nx, ny) : -1;
         }
         else if(j != 0 && k == nz-1)
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i, j-1, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j-1, 0, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i, j-1, 0, nx, ny) : -1;
         }
         else
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1;
-            // }
             return (boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1;
         }
     }
@@ -498,31 +339,14 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == ny-1 && k != 0)
         {
-            // return boundary1 != 1 ? index1d(i, 0, k-1, nx, ny) : -1;
             return boundary2 != 1 ? index1d(i, 0, k-1, nx, ny) : -1;
         }
         else if(j != ny-1 && k == 0)
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return boundary1 != 1 ? index1d(i, j+1, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, j+1, nz-1, nx, ny) : -1;
-            // }
             return boundary3 != 1 ? index1d(i, j+1, nz-1, nx, ny) : -1;
         }
         else
         {
-            // if(i != 0 && i != nx-1)
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1;
-            // }
-            // else
-            // {
-            //     return (boundary1 != 1 && boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1;
-            // }
             return (boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1;
         }
     }
