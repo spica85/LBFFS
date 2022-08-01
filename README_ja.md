@@ -11,6 +11,9 @@ LBFFSは格子ボルツマン法に基づく流体シミュレーションソフ
 * 反射波を抑制する流出境界条件 [Geier et al., Comput. Math. Appl. (2015), Appendix F]
 * 流出境界からの反射波を抑制するスポンジゾーン
 
+## Google Colaboratoryでの実行スクリプト  
+[Sample](runScriptOnColab.ipynb)
+
 ## テストケース
 * ポアズイユ流れ (Re=100，層流)
 <table>
