@@ -11,6 +11,9 @@ LBFFS is a flow simulator based on lattice boltzmann method, written in C++ and 
 * Outlet boundary condition which suppresses wave reflections [Geier et al., Comput. Math. Appl. (2015), Appendix F]
 * Spongezones which suppress wave reflections at outlet boundaries
 
+## Run script on Google Colaboratory  
+[Sample](runScriptOnColab.ipynb)
+
 ## Test cases
 * Poiseuille flow (Re=100, Laminar)
 <table>
