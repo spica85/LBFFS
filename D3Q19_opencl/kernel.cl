@@ -356,124 +356,124 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
     }
 }
 
-int qicNear(int q, int ic, int iNear, int nx, int ny, int nz)
+int icNear(int ic, int iNear, int nx, int ny, int nz)
 {
     int i = ic2i(ic,nx,ny);
     int j = ic2j(ic,nx,ny);
     int k = ic2k(ic,nx,ny);
 
-    if(i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1)
-    {
-        printf("Error: Missing near points!\n");
-    }
+    // if(i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1)
+    // {
+    //     printf("Error: Missing near points!\n");
+    // }
 
     if(iNear == 0)
     {
-        return idf(q, ic, nx, ny, nz);
+        return ic;
     }
     else if(iNear == 1)
     {
-        return index1df(q, i+1, j, k, nx, ny, nz);
+        return i+1 <= nx ? index1d(i+1, j, k, nx, ny) : -1;
     }
     else if(iNear == 2)
     {
-        return index1df(q, i-1, j, k, nx, ny, nz);
+        return i-1 >= 0 ? index1d(i-1, j, k, nx, ny) : -1;
     }
     else if(iNear == 3)
     {
-        return index1df(q, i, j+1, k, nx, ny, nz);
+        return j+1 <= ny ? index1d(i, j+1, k, nx, ny) : -1;
     }
     else if(iNear == 4)
     {
-        return index1df(q, i, j-1, k, nx, ny, nz);
+        return j-1 >= 0 ? index1d(i, j-1, k, nx, ny) : -1;
     }
     else if(iNear == 5)
     {
-        return index1df(q, i, j, k+1, nx, ny, nz);
+        return k+1 <= nz ? index1d(i, j, k+1, nx, ny) : -1;
     }
     else if(iNear == 6)
     {
-        return index1df(q, i+1, j, k-1, nx, ny, nz);
+        return k-1 >= 0 ? index1d(i, j, k-1, nx, ny) : -1;
     }
     else if(iNear == 7)
     {
-        return index1df(q, i+1, j+1, k, nx, ny, nz);
+        return (i+1 <= nx && j+1 <= ny) ? index1d(i+1, j+1, k, nx, ny) : -1;
     }
     else if(iNear == 8)
     {
-        return index1df(q, i-1, j-1, k, nx, ny, nz);
+        return (i-1 >= 0 && j-1 >= 0) ? index1d(i-1, j-1, k, nx, ny) : -1;
     }
     else if(iNear == 9)
     {
-        return index1df(q, i+1, j-1, k, nx, ny, nz);
+        return (i+1 <= nx && j-1 >= 0) ? index1d(i+1, j-1, k, nx, ny) : -1;
     }
     else if(iNear == 10)
     {
-        return index1df(q, i-1, j+1, k, nx, ny, nz);
+        return (i-1 >= 0 && j+1 <= ny) ? index1d(i-1, j+1, k, nx, ny) : -1;
     }
     else if(iNear == 11)
     {
-        return index1df(q, i+1, j, k+1, nx, ny, nz);
+        return (i+1 <= nx && k+1 <= nz) ? index1d(i+1, j, k+1, nx, ny) : -1;
     }
     else if(iNear == 12)
     {
-        return index1df(q, i-1, j, k-1, nx, ny, nz);
+        return (i-1 >= 0 && k-1 >= 0) ? index1d(i-1, j, k-1, nx, ny) : -1;
     }
     else if(iNear == 13)
     {
-        return index1df(q, i+1, j, k-1, nx, ny, nz);
+        return (i+1 <= nx && k-1 >= 0) ? index1d(i+1, j, k-1, nx, ny) : -1;
     }
     else if(iNear == 14)
     {
-        return index1df(q, i-1, j, k+1, nx, ny, nz);
+        return (i-1 >= 0 && k+1 <= nz) ? index1d(i-1, j, k+1, nx, ny) : -1;
     }
     else if(iNear == 15)
     {
-        return index1df(q, i, j+1, k+1, nx, ny, nz);
+        return (j+1 <= ny && k+1 <= nz) ? index1d(i, j+1, k+1, nx, ny) : -1;
     }
     else if(iNear == 16)
     {
-        return index1df(q, i, j-1, k-1, nx, ny, nz);
+        return (j-1 >= 0 && k-1 >= 0) ? index1d(i, j-1, k-1, nx, ny) : -1;
     }
     else if(iNear == 17)
     {
-        return index1df(q, i, j+1, k-1, nx, ny, nz);
+        return (j+1 <= ny && k-1 >= 0) ? index1d(i, j+1, k-1, nx, ny) : -1;
     }
     else if(iNear == 18)
     {
-        return index1df(q, i, j-1, k+1, nx, ny, nz);
+        return (j-1 >= 0 && k+1 <= nz) ? index1d(i, j-1, k+1, nx, ny) : -1;
     }
     else if(iNear == 19)
     {
-        return index1df(q, i+1, j+1, k+1, nx, ny, nz);
+        return (i+1 <= nx && j+1 <= ny && k+1 <= nz) ? index1d(i+1, j+1, k+1, nx, ny) : -1;
     }
     else if(iNear == 20)
     {
-        return index1df(q, i-1, j-1, k-1, nx, ny, nz);
+        return (i-1 >= 0 && j-1 >= 0 && k-1 >= 0) ? index1d(i-1, j-1, k-1, nx, ny) : -1;
     }
     else if(iNear == 21)
     {
-        return index1df(q, i+1, j-1, k+1, nx, ny, nz);
+        return (i+1 <= nx && j-1 >= 0 && k+1 <= nz) ? index1d(i+1, j-1, k+1, nx, ny) : -1;
     }
     else if(iNear == 22)
     {
-        return index1df(q, i-1, j+1, k-1, nx, ny, nz);
+        return (i-1 >= 0 && j+1 <= ny && k-1 >= 0) ? index1d(i-1, j+1, k-1, nx, ny) : -1;
     }
     else if(iNear == 23)
     {
-        return index1df(q, i+1, j+1, k-1, nx, ny, nz);
+        return (i+1 <= nx && j+1 <= ny && k-1 >= 0) ? index1d(i+1, j+1, k-1, nx, ny) : -1;
     }
     else if(iNear == 24)
     {
-        return index1df(q, i-1, j-1, k+1, nx, ny, nz);
+        return (i-1 >= 0 && j-1 >= 0 && k+1 <= nz) ? index1d(i-1, j-1, k+1, nx, ny) : -1;
     }
     else if(iNear == 25)
     {
-        return index1df(q, i+1, j-1, k-1, nx, ny, nz);
+        return (i+1 <= nx && j-1 >= 0 && k-1 >= 0) ? index1d(i+1, j-1, k-1, nx, ny) : -1;
     }
     else if(iNear == 26)
     {
-        return index1df(q, i-1, j+1, k+1, nx, ny, nz);
+        return (i-1 >= 0 && j+1 <= ny && k+1 <= nz) ? index1d(i-1, j+1, k+1, nx, ny) : -1;
     }
 }
 
@@ -625,79 +625,79 @@ __kernel void k_streamingCollision // Pull
         }
 
         //-- Bounce-Back for internal walls
-        {
-            float rho = 0.0f;
-            float u = 0.0f;
-            float v = 0.0f;
-            float w = 0.0f;
-            for(int q = 0; q < 19; q++)
-            {
-                int qic = q*elements +ic;
-                rho += f[qic];
+        // {
+        //     float rho = 0.0f;
+        //     float u = 0.0f;
+        //     float v = 0.0f;
+        //     float w = 0.0f;
+        //     for(int q = 0; q < 19; q++)
+        //     {
+        //         int qic = q*elements +ic;
+        //         rho += f[qic];
 
-                u += f[qic]*cx[q];
-                v += f[qic]*cy[q];
-                w += f[qic]*cz[q];
-            }
-            u /= rho;
-            v /= rho;
-            w /= rho;
-            float p = rho/3.f;
+        //         u += f[qic]*cx[q];
+        //         v += f[qic]*cy[q];
+        //         w += f[qic]*cz[q];
+        //     }
+        //     u /= rho;
+        //     v /= rho;
+        //     w /= rho;
+        //     float p = rho/3.f;
 
-            Fwx[ic] = 0.f;
-            Fwy[ic] = 0.f;
-            Fwz[ic] = 0.f;
+        //     Fwx[ic] = 0.f;
+        //     Fwy[ic] = 0.f;
+        //     Fwz[ic] = 0.f;
 
-            for(int q = 1; q < 19; q++)
-            {
-                if(neiSolid[ic] == 1)
-                {
-                    if(solid[upID[q]] == 1)
-                    {
-                        const float sdf0 = sdf[ic];
-                        const float sdf1 = sdf[upID[q]];
-                        const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+        //     for(int q = 1; q < 19; q++)
+        //     {
+        //         if(neiSolid[ic] == 1)
+        //         {
+        //             if(solid[upID[q]] == 1)
+        //             {
+        //                 const float sdf0 = sdf[ic];
+        //                 const float sdf1 = sdf[upID[q]];
+        //                 const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
 
-                        int qbb = reflectQ(q);
-                        int bbQID = idf(qbb, ic, nx, ny, nz);
-                        int upQID = idf(q, upID[qbb], nx, ny, nz);
-                        int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
+        //                 int qbb = reflectQ(q);
+        //                 int bbQID = idf(qbb, ic, nx, ny, nz);
+        //                 int upQID = idf(q, upID[qbb], nx, ny, nz);
+        //                 int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
 
-                        float uSqr =u*u+v*v+w*w;
-                        float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
-                        float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
-                        // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
+        //                 float uSqr =u*u+v*v+w*w;
+        //                 float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+        //                 float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+        //                 // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
 
-                        float tau = 1.f/omega;
-                        float omegaEff = 1.f/(tau +tauSGS[ic]);
+        //                 float tau = 1.f/omega;
+        //                 float omegaEff = 1.f/(tau +tauSGS[ic]);
                         
-                        if(qf <= 0.5f)
-                        {
-                            // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
-                            // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
-                            // ft[q] = f[bbQID]; // Simple Bounce-Back
+        //                 if(qf <= 0.5f)
+        //                 {
+        //                     // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
+        //                     // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
+        //                     // ft[q] = f[bbQID]; // Simple Bounce-Back
 
-                            float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
-                            ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
-                        }
-                        else
-                        {
-                            // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
-                            // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
-                            // ft[q] = f[bbQID]; // Simple Bounce-Back
+        //                     float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
+        //                     ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+        //                 }
+        //                 else
+        //                 {
+        //                     // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
+        //                     // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
+        //                     // ft[q] = f[bbQID]; // Simple Bounce-Back
 
-                            uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
-                            uDotC *= (1.f -1.f/qf);
-                            float chi = omegaEff*(2.f*qf -1.f);
-                            ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
-                        }
-                        Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
-                        Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
-                        Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
-                    }
-                }
-            }
-        }
+        //                     uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
+        //                     uDotC *= (1.f -1.f/qf);
+        //                     float chi = omegaEff*(2.f*qf -1.f);
+        //                     ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+        //                 }
+        //                 Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
+        //                 Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
+        //                 Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
+        //             }
+        //         }
+        //     }
+        // }
         //--
 
         //-- Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
@@ -790,32 +790,7 @@ __kernel void k_streamingCollision // Pull
             }
         }
         //--
-
-        //-- IBM
-        {
-            float rhoNear[27];
-            float uNear[27];
-            float vNear[27];
-            float wNear[27];
-            float fNear[27][19];
-
-            int i = ic2i(ic,nx,ny);
-            int j = ic2j(ic,nx,ny);
-            int k = ic2k(ic,nx,ny);
-
-
-            for(int iNear; iNear < 27; iNear++)
-            {
-                for(int q = 0; q < 19; q++)
-                {
-                    int qicN = qicNear(q, ic, iNear, nx, ny, nz);
-                    fNear[iNear][q] = f[qicN];
-                }
-                cal_rhoUVW(fNear[iNear], &rhoNear[iNear], &uNear[iNear], &vNear[iNear], &wNear[iNear]);
-            }
-        }
-
-        
+       
         //-- Collision
         {
             float rho = 0.0f;
@@ -1454,6 +1429,62 @@ __kernel void k_streamingCollision // Pull
                         }
                     }
                 }
+            }
+        }
+
+        //-- IBM
+        if(neiSolid[ic] == 1)
+        {
+            float Gx = 0.f;
+            float Gy = 0.f;
+            float Gz = 0.f;
+            float rhoOrign;
+            for(int iNear = 1; iNear < 27; iNear++)
+            {
+                int icN = icNear(ic, iNear, nx, ny, nz);
+                if(icN != 1)
+                {
+                    if(solid[icN] == 1)
+                    {
+                        float uOrign;
+                        float vOrign;
+                        float wOrign;
+                        float rhoNear;
+                        float uNear;
+                        float vNear;
+                        float wNear;
+                        float fOrign[19];
+                        float fNear[19];
+                
+                        for(int q = 0; q < 19; q++)
+                        {
+                            int qic = idf(q, ic, nx, ny, nz);
+                            int qicN = idf(q, icN, nx, ny, nz);
+                            fOrign[q] = fTmp[qic];
+                            fNear[q] = fTmp[qicN];
+                        }
+                        cal_rhoUVW(fOrign, &rhoOrign, &uOrign, &vOrign, &wOrign);
+                        cal_rhoUVW(fNear, &rhoNear, &uNear, &vNear, &wNear);
+
+                        const float sdf0 = sdf[ic];
+                        const float sdf1 = sdf[icN];
+                        const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+                        
+                        float uWall = uOrign*(1.f -qf) +qf*uNear;
+                        float vWall = vOrign*(1.f -qf) +qf*vNear;
+                        float wWall = wOrign*(1.f -qf) +qf*wNear;
+
+                        Gx += -uWall*(1.f -qf);
+                        Gy += -vWall*(1.f -qf);
+                        Gz += -wWall*(1.f -qf);
+                    }
+                }
+            }
+
+            for(int q = 0; q < 19; q++)
+            {
+                int qic = idf(q, ic, nx, ny, nz);
+                fTmp[qic] += rhoOrign*wt[q]*3.0f*(Gx*cx[q] +Gy*cy[q] +Gz*cz[q]);
             }
         }
         //--
