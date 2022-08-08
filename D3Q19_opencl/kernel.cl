@@ -1503,7 +1503,7 @@ __kernel void k_streamingCollision // Pull
     GzIBM[ic] = 0.f;
 }
 
-__kernel void k_Gwall // Pull
+__kernel void k_Gwall
 (
     __global float* rho,
     __global float* u, __global float* v, __global float* w,
@@ -1556,7 +1556,7 @@ __kernel void k_Gwall // Pull
     GzMovingWall[iMSTL] = w0 -wMovingWall;
 }
 
-__kernel void k_Gibm // Pull
+__kernel void k_Gibm
 (
     __global float* rho,
     __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
@@ -1594,6 +1594,34 @@ __kernel void k_Gibm // Pull
                 GyIBM[icBoxPoint] = atom_add_float(&GyIBM[icBoxPoint],GyMovingWall[iMSTL]*delta);
                 GzIBM[icBoxPoint] = atom_add_float(&GzIBM[icBoxPoint],GzMovingWall[iMSTL]*delta);
             }
+        }
+    }
+}
+
+__kernel void k_Force
+(
+    __global float* fTmp,
+    __global float* solid,
+    __global float* rho,
+    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
+    const unsigned elements
+)
+{
+    int ic = get_global_id(0);
+
+    float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
+
+    //                 0     1      2     3      4     5      6     7      8      9     10    11     12     13     14    15     16     17     18
+    float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f, 1.0f, -1.0f,  1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f};
+    float cy[19] = {0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f};
+    float cz[19] = {0.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f,  1.0f};
+
+    if(solid[ic] == 0)
+    {
+        for(int q = 0; q < 19; q++)
+        {
+            int qic = q*elements +ic;
+            fTmp[qic] += rho[ic]*wt[q]*3.0f*(GxIBM[ic]*cx[q] +GyIBM[ic]*cy[q] +GzIBM[ic]*cz[q]);
         }
     }
 }

@@ -318,6 +318,16 @@ int main()
         const int, const int, const int
     > k_Gibm(program, "k_Gibm");
 
+    // Create the kernel functor of Force
+    cl::KernelFunctor
+    <
+        cl::Buffer,
+        cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        const unsigned
+    > k_Force(program, "k_Force");
+
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
     start = std::chrono::system_clock::now();
@@ -384,6 +394,22 @@ int main()
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
+        }
+
+        {
+        util::Timer timer;
+        k_Force
+        (
+            cl::EnqueueArgs(queue,cl::NDRange(elements)),
+            fTmp_d,
+            solid_d,
+            rho_d,
+            GxIBM_d, GyIBM_d, GzIBM_d,
+            elements
+        );
+        queue.finish();
+        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
         }
         
         std::swap(fTmp_d,f_d);
