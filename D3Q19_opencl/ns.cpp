@@ -195,6 +195,29 @@ int main()
     // setSDF(sdf, sdfIni, dr, p, bWallsC, bWallsNormal, nx, ny, nz, true);
     //--
 
+    //-- Reading and settings of moving STL
+    const std::string movingSTLname("movingWalls.stl");
+    std::vector<std::vector<float> > movingSTLnormal(3);
+    std::vector<std::vector<float> > movingSTLv0(3);
+    std::vector<std::vector<float> > movingSTLv1(3);
+    std::vector<std::vector<float> > movingSTLv2(3);
+    int nMovingSTL;
+    std::vector<std::vector<float> > movingSTLc(3);
+
+    readSTL(movingSTLname, movingSTLnormal, movingSTLv0, movingSTLv1, movingSTLv2, nMovingSTL, movingSTLc, L);
+    std::cout << "Number of elements of moving STL: " << nMovingSTL << std::endl;
+    std::vector<float> movingSTLcList(3*nMovingSTL);
+    for(int iMSTL = 0; iMSTL < nMovingSTL; iMSTL++)
+    {
+        movingSTLcList[iMSTL*3] = movingSTLc[0][iMSTL];
+        movingSTLcList[iMSTL*3+1] = movingSTLc[1][iMSTL];
+        movingSTLcList[iMSTL*3+2] = movingSTLc[2][iMSTL];
+    }
+    std::vector<float> uMovingWall(nMovingSTL);
+    std::vector<float> vMovingWall(nMovingSTL);
+    std::vector<float> wMovingWall(nMovingSTL);
+    // --
+
 
 
     try
@@ -229,12 +252,20 @@ int main()
     cl::Buffer boundary1_d(context, boundary1.begin(), boundary1.end(), true);
     cl::Buffer boundary2_d(context, boundary2.begin(), boundary2.end(), true);
     cl::Buffer boundary3_d(context, boundary3.begin(), boundary3.end(), true);
-    cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
     cl::Buffer sdf_d(context, sdf.begin(), sdf.end(), true);
     cl::Buffer solid_d(context, solid.begin(), solid.end(), true);
     cl::Buffer neiSolid_d(context, neiSolid.begin(), neiSolid.end(), true);
 
     cl::Buffer tauSGS_d(context, tauSGS.begin(), tauSGS.end(), true);
+
+    cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
+    cl::Buffer u_d(context, u.begin(), u.end(), true);
+    cl::Buffer v_d(context, v.begin(), v.end(), true);
+    cl::Buffer w_d(context, w.begin(), w.end(), true);
+    cl::Buffer movingSTLcList_d(context, movingSTLcList.begin(), movingSTLcList.end(), true);
+    cl::Buffer uMovingWall_d(context, uMovingWall.begin(), uMovingWall.end(), true);
+    cl::Buffer vMovingWall_d(context, vMovingWall.begin(), vMovingWall.end(), true);
+    cl::Buffer wMovingWall_d(context, wMovingWall.begin(), wMovingWall.end(), true);
     
     // Create the kernel functor of streamingCollision
     cl::KernelFunctor
@@ -245,6 +276,8 @@ int main()
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
         const float,
         const float,
@@ -252,6 +285,17 @@ int main()
         const int, const int, const int,
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
+
+    // Create the kernel functor of Uwall
+    cl::KernelFunctor
+    <
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        const int,
+        const int, const int, const int
+    > k_Uwall(program, "k_Uwall");  
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -272,6 +316,8 @@ int main()
             u0_d, v0_d, w0_d,
             Fwx_d, Fwy_d, Fwz_d,
             tauSGS_d,
+            rho_d,
+            u_d, v_d, w_d,
             elements,
             omega,
             dpdx,
@@ -281,7 +327,24 @@ int main()
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
+        printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
+        }
+
+        {
+        util::Timer timer;
+        k_Uwall
+        (
+            cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+            rho_d,
+            u_d, v_d, w_d,
+            movingSTLcList_d,
+            uMovingWall_d, vMovingWall_d, wMovingWall_d,
+            nMovingSTL,
+            nx, ny, nz
+        );
+        queue.finish();
+        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        printf("\nThe kernel of Uawll ran in %lf m seconds\n", rtime);
         }
         
         std::swap(fTmp_d,f_d);

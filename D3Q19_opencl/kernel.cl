@@ -477,6 +477,51 @@ int icNear(int ic, int iNear, int nx, int ny, int nz)
     }
 }
 
+int icBox(int ic, int iBox, int nx, int ny, int nz)
+{
+    int i = ic2i(ic,nx,ny);
+    int j = ic2j(ic,nx,ny);
+    int k = ic2k(ic,nx,ny);
+
+    // if(i == 0 || i == nx-1 || j == 0 || j == ny-1 || k == 0 || k == nz-1)
+    // {
+    //     printf("Error: Missing near points!\n");
+    // }
+
+    if(iBox == 0)
+    {
+        return ic;
+    }
+    else if(iBox == 1)
+    {
+        return i+1 < nx ? index1d(i+1, j, k, nx, ny) : -1;
+    }
+    else if(iBox == 2)
+    {
+        return j+1 < ny ? index1d(i, j+1, k, nx, ny) : -1;
+    }
+    else if(iBox == 3)
+    {
+        return k+1 < nz ? index1d(i, j, k+1, nx, ny) : -1;
+    }
+    else if(iBox == 4)
+    {
+        return (i+1 < nx && j+1 < ny) ? index1d(i+1, j+1, k, nx, ny) : -1;
+    }
+    else if(iBox == 5)
+    {
+        return (i+1 < nx && k+1 < nz) ? index1d(i+1, j, k+1, nx, ny) : -1;
+    }
+    else if(iBox == 6)
+    {
+        return (j+1 < ny && k+1 < nz) ? index1d(i, j+1, k+1, nx, ny) : -1;
+    }
+    else if(iBox == 7)
+    {
+        return (i+1 < nx && j+1 < ny && k+1 < nz) ? index1d(i+1, j+1, k+1, nx, ny) : -1;
+    }
+}
+
 void cal_rhoUVW(const float* f, float* rho, float* u, float* v, float* w)
 {
     float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f, 1.0f, -1.0f,  1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f};
@@ -508,6 +553,8 @@ __kernel void k_streamingCollision // Pull
    __global float* u0, __global float* v0, __global float* w0,
    __global float* Fwx, __global float* Fwy, __global float* Fwz,
    __global float* tauSGS,
+   __global float* rho,
+   __global float* u, __global float* v, __global float* w,
    const unsigned elements,
    const float omega,
    const float dpdx,
@@ -625,79 +672,79 @@ __kernel void k_streamingCollision // Pull
         }
 
         //-- Bounce-Back for internal walls
-        // {
-        //     float rho = 0.0f;
-        //     float u = 0.0f;
-        //     float v = 0.0f;
-        //     float w = 0.0f;
-        //     for(int q = 0; q < 19; q++)
-        //     {
-        //         int qic = q*elements +ic;
-        //         rho += f[qic];
+        {
+            float rho = 0.0f;
+            float u = 0.0f;
+            float v = 0.0f;
+            float w = 0.0f;
+            for(int q = 0; q < 19; q++)
+            {
+                int qic = q*elements +ic;
+                rho += f[qic];
 
-        //         u += f[qic]*cx[q];
-        //         v += f[qic]*cy[q];
-        //         w += f[qic]*cz[q];
-        //     }
-        //     u /= rho;
-        //     v /= rho;
-        //     w /= rho;
-        //     float p = rho/3.f;
+                u += f[qic]*cx[q];
+                v += f[qic]*cy[q];
+                w += f[qic]*cz[q];
+            }
+            u /= rho;
+            v /= rho;
+            w /= rho;
+            float p = rho/3.f;
 
-        //     Fwx[ic] = 0.f;
-        //     Fwy[ic] = 0.f;
-        //     Fwz[ic] = 0.f;
+            Fwx[ic] = 0.f;
+            Fwy[ic] = 0.f;
+            Fwz[ic] = 0.f;
 
-        //     for(int q = 1; q < 19; q++)
-        //     {
-        //         if(neiSolid[ic] == 1)
-        //         {
-        //             if(solid[upID[q]] == 1)
-        //             {
-        //                 const float sdf0 = sdf[ic];
-        //                 const float sdf1 = sdf[upID[q]];
-        //                 const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+            for(int q = 1; q < 19; q++)
+            {
+                if(neiSolid[ic] == 1)
+                {
+                    if(solid[upID[q]] == 1)
+                    {
+                        const float sdf0 = sdf[ic];
+                        const float sdf1 = sdf[upID[q]];
+                        const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
 
-        //                 int qbb = reflectQ(q);
-        //                 int bbQID = idf(qbb, ic, nx, ny, nz);
-        //                 int upQID = idf(q, upID[qbb], nx, ny, nz);
-        //                 int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
+                        int qbb = reflectQ(q);
+                        int bbQID = idf(qbb, ic, nx, ny, nz);
+                        int upQID = idf(q, upID[qbb], nx, ny, nz);
+                        int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
 
-        //                 float uSqr =u*u+v*v+w*w;
-        //                 float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
-        //                 float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
-        //                 // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
+                        float uSqr =u*u+v*v+w*w;
+                        float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                        float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                        // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
 
-        //                 float tau = 1.f/omega;
-        //                 float omegaEff = 1.f/(tau +tauSGS[ic]);
+                        float tau = 1.f/omega;
+                        float omegaEff = 1.f/(tau +tauSGS[ic]);
                         
-        //                 if(qf <= 0.5f)
-        //                 {
-        //                     // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
-        //                     // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
-        //                     // ft[q] = f[bbQID]; // Simple Bounce-Back
+                        if(qf <= 0.5f)
+                        {
+                            // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
+                            // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
+                            // ft[q] = f[bbQID]; // Simple Bounce-Back
 
-        //                     float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
-        //                     ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
-        //                 }
-        //                 else
-        //                 {
-        //                     // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
-        //                     // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
-        //                     // ft[q] = f[bbQID]; // Simple Bounce-Back
+                            float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
+                            ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                        }
+                        else
+                        {
+                            // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
+                            // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
+                            // ft[q] = f[bbQID]; // Simple Bounce-Back
 
-        //                     uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
-        //                     uDotC *= (1.f -1.f/qf);
-        //                     float chi = omegaEff*(2.f*qf -1.f);
-        //                     ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
-        //                 }
-        //                 Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
-        //                 Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
-        //                 Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
-        //             }
-        //         }
-        //     }
-        // }
+                            uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
+                            uDotC *= (1.f -1.f/qf);
+                            float chi = omegaEff*(2.f*qf -1.f);
+                            ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                        }
+                        Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
+                        Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
+                        Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
+                    }
+                }
+            }
+        }
         //--
 
         //-- Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
@@ -793,21 +840,25 @@ __kernel void k_streamingCollision // Pull
        
         //-- Collision
         {
-            float rho = 0.0f;
-            float u = 0.0f;
-            float v = 0.0f;
-            float w = 0.0f;
+            // float rho = 0.0f;
+            // float u = 0.0f;
+            // float v = 0.0f;
+            // float w = 0.0f;
+            rho[ic] = 0.0f;
+            u[ic] = 0.0f;
+            v[ic] = 0.0f;
+            w[ic] = 0.0f;
 
             for(int q = 0; q < 19; q++)
             {
-                rho += ft[q];
-                u += ft[q]*cx[q];
-                v += ft[q]*cy[q];
-                w += ft[q]*cz[q];
+                rho[ic] += ft[q];
+                u[ic] += ft[q]*cx[q];
+                v[ic] += ft[q]*cy[q];
+                w[ic] += ft[q]*cz[q];
             }
-            u /= rho;
-            v /= rho;
-            w /= rho;
+            u[ic] /= rho[ic];
+            v[ic] /= rho[ic];
+            w[ic] /= rho[ic];
 
             //-- LES viscosity
             float tau = 1.f/omega;
@@ -821,10 +872,10 @@ __kernel void k_streamingCollision // Pull
 
             for(int q = 0; q < 19; q++)
             {
-                float uSqr =u*u+v*v+w*w;
-                float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
+                float uSqr =u[ic]*u[ic]+v[ic]*v[ic]+w[ic]*w[ic];
+                float uDotC = u[ic]*cx[q]+v[ic]*cy[q]+w[ic]*cz[q];
                 // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rho;
-                float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                float feq = (rho[ic]+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
                 
                 PIxx += cx[q]*cx[q]*(ft[q] -feq);
                 PIxy += cx[q]*cy[q]*(ft[q] -feq);
@@ -839,7 +890,7 @@ __kernel void k_streamingCollision // Pull
             // float Cs = 0.2f;// 0.1--0.2
             // float Cs = 0.33f;// 0.1--0.2
 
-            tauSGS[ic] = LES*0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
+            tauSGS[ic] = LES*0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho[ic]));
             // tauSGS[ic] = 3.f*(Cs*Cs)*sqrt(2.f)*sqrtPIPI*0.5f/rho*3.0f/tau;
 
             //-- Damping of nuSGS (tauSGS) near wall
@@ -1192,19 +1243,19 @@ __kernel void k_streamingCollision // Pull
             float RR101 = 0.f;
             float RR011 = 0.f;
             
-            float RReq200 = u*u;
-            float RReq020 = v*v;
-            float RReq002 = w*w;
-            float RReq110 = u*v;
-            float RReq101 = u*w;
-            float RReq011 = v*w;
+            float RReq200 = u[ic]*u[ic];
+            float RReq020 = v[ic]*v[ic];
+            float RReq002 = w[ic]*w[ic];
+            float RReq110 = u[ic]*v[ic];
+            float RReq101 = u[ic]*w[ic];
+            float RReq011 = v[ic]*w[ic];
 
-            float RReq210 = RReq200*v;
-            float RReq201 = RReq200*w;
-            float RReq021 = RReq020*w;
-            float RReq120 = RReq020*u;
-            float RReq102 = RReq002*u;
-            float RReq012 = RReq002*v;
+            float RReq210 = RReq200*v[ic];
+            float RReq201 = RReq200*w[ic];
+            float RReq021 = RReq020*w[ic];
+            float RReq120 = RReq020*u[ic];
+            float RReq102 = RReq002*u[ic];
+            float RReq012 = RReq002*v[ic];
 
             float RReq220 = RReq200*RReq020;
             float RReq202 = RReq200*RReq002;
@@ -1224,7 +1275,7 @@ __kernel void k_streamingCollision // Pull
                 RR101 += cx[q]*cz[q]*ft[q];
                 RR011 += cy[q]*cz[q]*ft[q];
             }
-            float invRho = 1.f/rho;
+            float invRho = 1.f/rho[ic];
             RR200 *= invRho;
             RR020 *= invRho;
             RR002 *= invRho;
@@ -1239,12 +1290,12 @@ __kernel void k_streamingCollision // Pull
             float RRneq101 = RR101 -RReq101;
             float RRneq011 = RR011 -RReq011;
 
-            float RRneq210 = v*RRneq200 +2.f*u*RRneq110;
-            float RRneq201 = w*RRneq200 +2.f*u*RRneq101;
-            float RRneq021 = w*RRneq020 +2.f*v*RRneq011;
-            float RRneq120 = u*RRneq020 +2.f*v*RRneq110;
-            float RRneq102 = u*RRneq002 +2.f*w*RRneq101;
-            float RRneq012 = v*RRneq002 +2.f*w*RRneq011;
+            float RRneq210 = v[ic]*RRneq200 +2.f*u[ic]*RRneq110;
+            float RRneq201 = w[ic]*RRneq200 +2.f*u[ic]*RRneq101;
+            float RRneq021 = w[ic]*RRneq020 +2.f*v[ic]*RRneq011;
+            float RRneq120 = u[ic]*RRneq020 +2.f*v[ic]*RRneq110;
+            float RRneq102 = u[ic]*RRneq002 +2.f*w[ic]*RRneq101;
+            float RRneq012 = v[ic]*RRneq002 +2.f*w[ic]*RRneq011;
 
             float RRneq220 = RReq020*RRneq200 +RReq200*RRneq020 +4.f*RReq110*RRneq110;
             float RRneq202 = RReq002*RRneq200 +RReq200*RRneq002 +4.f*RReq101*RRneq101;
@@ -1290,36 +1341,36 @@ __kernel void k_streamingCollision // Pull
             float RMcoll101 = RRcoll101;
             float RMcoll011 = RRcoll011;
 
-            float RMcoll210 = RRcoll210 +sqrCs*v;
-            float RMcoll201 = RRcoll201 +sqrCs*w;
-            float RMcoll021 = RRcoll021 +sqrCs*w;
-            float RMcoll120 = RRcoll120 +sqrCs*u;
-            float RMcoll102 = RRcoll102 +sqrCs*u;
-            float RMcoll012 = RRcoll012 +sqrCs*v;
+            float RMcoll210 = RRcoll210 +sqrCs*v[ic];
+            float RMcoll201 = RRcoll201 +sqrCs*w[ic];
+            float RMcoll021 = RRcoll021 +sqrCs*w[ic];
+            float RMcoll120 = RRcoll120 +sqrCs*u[ic];
+            float RMcoll102 = RRcoll102 +sqrCs*u[ic];
+            float RMcoll012 = RRcoll012 +sqrCs*v[ic];
 
             float RMcoll220 = RRcoll220 +sqrCs*(RRcoll200 +RRcoll020) +quadCs;
             float RMcoll202 = RRcoll202 +sqrCs*(RRcoll200 +RRcoll002) +quadCs;
             float RMcoll022 = RRcoll022 +sqrCs*(RRcoll020 +RRcoll002) +quadCs;
 
-            fTmp[ 0*elements +ic] = rho*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022) +rho*wt[0]*3.0f*dpdx*cx[0];
-            fTmp[ 1*elements +ic] = 0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202) +rho*wt[1]*3.0f*dpdx*cx[1];
-            fTmp[ 2*elements +ic] = rho*(-u +RMcoll120 +RMcoll102) +0.5f*rho*(u +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202) +rho*wt[2]*3.0f*dpdx*cx[2];
-            fTmp[ 3*elements +ic] = 0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022) +rho*wt[3]*3.0f*dpdx*cx[3];
-            fTmp[ 4*elements +ic] = rho*(-v +RMcoll210 +RMcoll012) +0.5f*rho*(v +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022) +rho*wt[4]*3.0f*dpdx*cx[4];
-            fTmp[ 5*elements +ic] = 0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022) +rho*wt[5]*3.0f*dpdx*cx[5];
-            fTmp[ 6*elements +ic] = rho*(-w +RMcoll201 +RMcoll021) +0.5f*rho*(w +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022) +rho*wt[6]*3.0f*dpdx*cx[4];
-            fTmp[ 7*elements +ic] = 0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[7]*3.0f*dpdx*cx[7];
-            fTmp[ 8*elements +ic] = 0.5f*rho*(-RMcoll210 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[8]*3.0f*dpdx*cx[8];
-            fTmp[ 9*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll210) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[9]*3.0f*dpdx*cx[9];
-            fTmp[10*elements +ic] = 0.5f*rho*(-RMcoll110 -RMcoll120) +0.25f*rho*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho*wt[10]*3.0f*dpdx*cx[10];
-            fTmp[11*elements +ic] = 0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[11]*3.0f*dpdx*cx[11];
-            fTmp[12*elements +ic] = 0.5f*rho*(-RMcoll201 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[12]*3.0f*dpdx*cx[12];
-            fTmp[13*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll201) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[13]*3.0f*dpdx*cx[13];
-            fTmp[14*elements +ic] = 0.5f*rho*(-RMcoll101 -RMcoll102) +0.25f*rho*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho*wt[14]*3.0f*dpdx*cx[14];
-            fTmp[15*elements +ic] = 0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[15]*3.0f*dpdx*cx[15];
-            fTmp[16*elements +ic] = 0.5f*rho*(-RMcoll021 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[16]*3.0f*dpdx*cx[16];
-            fTmp[17*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll021) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[17]*3.0f*dpdx*cx[17];
-            fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[18]*3.0f*dpdx*cx[18];
+            fTmp[ 0*elements +ic] = rho[ic]*(1.f -RMcoll200 -RMcoll020 -RMcoll002 +RMcoll220 +RMcoll202 +RMcoll022) +rho[ic]*wt[0]*3.0f*dpdx*cx[0];
+            fTmp[ 1*elements +ic] = 0.5f*rho[ic]*(u[ic] +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202) +rho[ic]*wt[1]*3.0f*dpdx*cx[1];
+            fTmp[ 2*elements +ic] = rho[ic]*(-u[ic] +RMcoll120 +RMcoll102) +0.5f*rho[ic]*(u[ic] +RMcoll200 -RMcoll120 -RMcoll102 -RMcoll220 -RMcoll202) +rho[ic]*wt[2]*3.0f*dpdx*cx[2];
+            fTmp[ 3*elements +ic] = 0.5f*rho[ic]*(v[ic] +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022) +rho[ic]*wt[3]*3.0f*dpdx*cx[3];
+            fTmp[ 4*elements +ic] = rho[ic]*(-v[ic] +RMcoll210 +RMcoll012) +0.5f*rho[ic]*(v[ic] +RMcoll020 -RMcoll210 -RMcoll012 -RMcoll220 -RMcoll022) +rho[ic]*wt[4]*3.0f*dpdx*cx[4];
+            fTmp[ 5*elements +ic] = 0.5f*rho[ic]*(w[ic] +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022) +rho[ic]*wt[5]*3.0f*dpdx*cx[5];
+            fTmp[ 6*elements +ic] = rho[ic]*(-w[ic] +RMcoll201 +RMcoll021) +0.5f*rho[ic]*(w[ic] +RMcoll002 -RMcoll201 -RMcoll021 -RMcoll202 -RMcoll022) +rho[ic]*wt[6]*3.0f*dpdx*cx[4];
+            fTmp[ 7*elements +ic] = 0.25f*rho[ic]*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho[ic]*wt[7]*3.0f*dpdx*cx[7];
+            fTmp[ 8*elements +ic] = 0.5f*rho[ic]*(-RMcoll210 -RMcoll120) +0.25f*rho[ic]*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho[ic]*wt[8]*3.0f*dpdx*cx[8];
+            fTmp[ 9*elements +ic] = 0.5f*rho[ic]*(-RMcoll110 -RMcoll210) +0.25f*rho[ic]*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho[ic]*wt[9]*3.0f*dpdx*cx[9];
+            fTmp[10*elements +ic] = 0.5f*rho[ic]*(-RMcoll110 -RMcoll120) +0.25f*rho[ic]*(RMcoll110 +RMcoll210 +RMcoll120 +RMcoll220) +rho[ic]*wt[10]*3.0f*dpdx*cx[10];
+            fTmp[11*elements +ic] = 0.25f*rho[ic]*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho[ic]*wt[11]*3.0f*dpdx*cx[11];
+            fTmp[12*elements +ic] = 0.5f*rho[ic]*(-RMcoll201 -RMcoll102) +0.25f*rho[ic]*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho[ic]*wt[12]*3.0f*dpdx*cx[12];
+            fTmp[13*elements +ic] = 0.5f*rho[ic]*(-RMcoll101 -RMcoll201) +0.25f*rho[ic]*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho[ic]*wt[13]*3.0f*dpdx*cx[13];
+            fTmp[14*elements +ic] = 0.5f*rho[ic]*(-RMcoll101 -RMcoll102) +0.25f*rho[ic]*(RMcoll101 +RMcoll201 +RMcoll102 +RMcoll202) +rho[ic]*wt[14]*3.0f*dpdx*cx[14];
+            fTmp[15*elements +ic] = 0.25f*rho[ic]*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho[ic]*wt[15]*3.0f*dpdx*cx[15];
+            fTmp[16*elements +ic] = 0.5f*rho[ic]*(-RMcoll021 -RMcoll012) +0.25f*rho[ic]*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho[ic]*wt[16]*3.0f*dpdx*cx[16];
+            fTmp[17*elements +ic] = 0.5f*rho[ic]*(-RMcoll011 -RMcoll021) +0.25f*rho[ic]*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho[ic]*wt[17]*3.0f*dpdx*cx[17];
+            fTmp[18*elements +ic] = 0.5f*rho[ic]*(-RMcoll011 -RMcoll012) +0.25f*rho[ic]*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho[ic]*wt[18]*3.0f*dpdx*cx[18];
             //--
         }
 
@@ -1431,62 +1482,51 @@ __kernel void k_streamingCollision // Pull
                 }
             }
         }
+    }
+}
 
-        //-- IBM
-        if(neiSolid[ic] == 1)
+__kernel void k_Uwall // Pull
+(
+    __global float* rho,
+    __global float* u, __global float* v, __global float* w,
+    __global float* movingSTLcList,
+    __global float* uMovingWall, __global float* vMovingWall, __global float* wMovingWall,
+    const int nMovingSTL,
+    const int nx, const int ny, const int nz
+)
+{
+    int iMSTL = get_global_id(0);
+
+    uMovingWall[iMSTL] = 0.f;
+    vMovingWall[iMSTL] = 0.f;
+    wMovingWall[iMSTL] = 0.f;
+
+    int i = (int)(movingSTLcList[3*iMSTL]);
+    int j = (int)(movingSTLcList[3*iMSTL+1]);
+    int k = (int)(movingSTLcList[3*iMSTL+2]);
+
+    if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
+    {
+        int icM = index1d(i,j,k,nx,ny);
+
+        for(int iBox = 0; iBox < 8; iBox++)
         {
-            float Gx = 0.f;
-            float Gy = 0.f;
-            float Gz = 0.f;
-            float rhoOrign;
-            for(int iNear = 1; iNear < 27; iNear++)
+            int icBoxPoint = icBox(icM, iBox, nx, ny, nz);
+
+            if(icBoxPoint != -1)
             {
-                int icN = icNear(ic, iNear, nx, ny, nz);
-                if(icN != 1)
-                {
-                    if(solid[icN] == 1)
-                    {
-                        float uOrign;
-                        float vOrign;
-                        float wOrign;
-                        float rhoNear;
-                        float uNear;
-                        float vNear;
-                        float wNear;
-                        float fOrign[19];
-                        float fNear[19];
+                int iBox = ic2i(icBoxPoint,nx,ny);
+                int jBox = ic2j(icBoxPoint,nx,ny); 
+                int kBox = ic2k(icBoxPoint,nx,ny); 
+
+                float delta =   (1.f -fabs(iBox -movingSTLcList[3*iMSTL]))
+                                *(1.f -fabs(jBox -movingSTLcList[3*iMSTL+1]))
+                                *(1.f -fabs(kBox -movingSTLcList[3*iMSTL+2]));
                 
-                        for(int q = 0; q < 19; q++)
-                        {
-                            int qic = idf(q, ic, nx, ny, nz);
-                            int qicN = idf(q, icN, nx, ny, nz);
-                            fOrign[q] = fTmp[qic];
-                            fNear[q] = fTmp[qicN];
-                        }
-                        cal_rhoUVW(fOrign, &rhoOrign, &uOrign, &vOrign, &wOrign);
-                        cal_rhoUVW(fNear, &rhoNear, &uNear, &vNear, &wNear);
-
-                        const float sdf0 = sdf[ic];
-                        const float sdf1 = sdf[icN];
-                        const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
-                        
-                        float uWall = uOrign*(1.f -qf) +qf*uNear;
-                        float vWall = vOrign*(1.f -qf) +qf*vNear;
-                        float wWall = wOrign*(1.f -qf) +qf*wNear;
-
-                        Gx += -uWall*(1.f -qf);
-                        Gy += -vWall*(1.f -qf);
-                        Gz += -wWall*(1.f -qf);
-                    }
-                }
-            }
-
-            for(int q = 0; q < 19; q++)
-            {
-                int qic = idf(q, ic, nx, ny, nz);
-                fTmp[qic] += rhoOrign*wt[q]*3.0f*(Gx*cx[q] +Gy*cy[q] +Gz*cz[q]);
+                uMovingWall[iMSTL] += u[icBoxPoint]*delta;
+                vMovingWall[iMSTL] += v[icBoxPoint]*delta;
+                wMovingWall[iMSTL] += w[icBoxPoint]*delta;
             }
         }
-        //--
     }
 }
