@@ -545,6 +545,20 @@ void cal_rhoUVW(const float* f, float* rho, float* u, float* v, float* w)
     *w /= *rho;
 }
 
+#pragma OPENCL EXTENSION cl_khr_global_int32_base_atomics : enable
+float atom_add_float(__global float* const address, const float value)
+{
+  uint oldval, newval, readback;
+  
+  *(float*)&oldval = *address;
+  *(float*)&newval = (*(float*)&oldval + value);
+  while ((readback = atom_cmpxchg((__global uint*)address, oldval, newval)) != oldval) {
+    oldval = readback;
+    *(float*)&newval = (*(float*)&oldval + value);
+  }
+  return *(float*)&oldval;
+}
+
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
@@ -555,6 +569,7 @@ __kernel void k_streamingCollision // Pull
    __global float* tauSGS,
    __global float* rho,
    __global float* u, __global float* v, __global float* w,
+   __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
    const unsigned elements,
    const float omega,
    const float dpdx,
@@ -1483,6 +1498,9 @@ __kernel void k_streamingCollision // Pull
             }
         }
     }
+    GxIBM[ic] = 0.f;
+    GyIBM[ic] = 0.f;
+    GzIBM[ic] = 0.f;
 }
 
 __kernel void k_Gwall // Pull
@@ -1536,4 +1554,46 @@ __kernel void k_Gwall // Pull
     GxMovingWall[iMSTL] = u0 -uMovingWall;
     GyMovingWall[iMSTL] = v0 -vMovingWall;
     GzMovingWall[iMSTL] = w0 -wMovingWall;
+}
+
+__kernel void k_Gibm // Pull
+(
+    __global float* rho,
+    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
+    __global float* movingSTLcList,
+    __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
+    const int nMovingSTL,
+    const int nx, const int ny, const int nz
+)
+{
+    int iMSTL = get_global_id(0);
+
+    int i = (int)(movingSTLcList[3*iMSTL]);
+    int j = (int)(movingSTLcList[3*iMSTL+1]);
+    int k = (int)(movingSTLcList[3*iMSTL+2]);
+
+    if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
+    {
+        int icM = index1d(i,j,k,nx,ny);
+
+        for(int iBox = 0; iBox < 8; iBox++)
+        {
+            int icBoxPoint = icBox(icM, iBox, nx, ny, nz);
+
+            if(icBoxPoint != -1)
+            {
+                int iBox = ic2i(icBoxPoint,nx,ny);
+                int jBox = ic2j(icBoxPoint,nx,ny); 
+                int kBox = ic2k(icBoxPoint,nx,ny); 
+
+                float delta =   (1.f -fabs(iBox -movingSTLcList[3*iMSTL]))
+                                *(1.f -fabs(jBox -movingSTLcList[3*iMSTL+1]))
+                                *(1.f -fabs(kBox -movingSTLcList[3*iMSTL+2]));
+                
+                GxIBM[icBoxPoint] = atom_add_float(&GxIBM[icBoxPoint],GxMovingWall[iMSTL]*delta);
+                GyIBM[icBoxPoint] = atom_add_float(&GyIBM[icBoxPoint],GyMovingWall[iMSTL]*delta);
+                GzIBM[icBoxPoint] = atom_add_float(&GzIBM[icBoxPoint],GzMovingWall[iMSTL]*delta);
+            }
+        }
+    }
 }

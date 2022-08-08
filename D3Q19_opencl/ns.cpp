@@ -216,6 +216,10 @@ int main()
     std::vector<float> GxMovingWall(nMovingSTL);
     std::vector<float> GyMovingWall(nMovingSTL);
     std::vector<float> GzMovingWall(nMovingSTL);
+
+    std::vector<float> GxIBM(elements);
+    std::vector<float> GyIBM(elements);
+    std::vector<float> GzIBM(elements);
     // --
 
 
@@ -266,7 +270,12 @@ int main()
     cl::Buffer GxMovingWall_d(context, GxMovingWall.begin(), GxMovingWall.end(), true);
     cl::Buffer GyMovingWall_d(context, GyMovingWall.begin(), GyMovingWall.end(), true);
     cl::Buffer GzMovingWall_d(context, GzMovingWall.begin(), GzMovingWall.end(), true);
+    cl::Buffer GxIBM_d(context, GxIBM.begin(), GxIBM.end(), true);
+    cl::Buffer GyIBM_d(context, GyIBM.begin(), GyIBM.end(), true);
+    cl::Buffer GzIBM_d(context, GzIBM.begin(), GzIBM.end(), true);
     
+
+
     // Create the kernel functor of streamingCollision
     cl::KernelFunctor
     <
@@ -277,6 +286,7 @@ int main()
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer,
         cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
         const float,
@@ -296,6 +306,17 @@ int main()
         const int,
         const int, const int, const int
     > k_Gwall(program, "k_Gwall");
+
+    // Create the kernel functor of Gibm
+    cl::KernelFunctor
+    <
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        const int,
+        const int, const int, const int
+    > k_Gibm(program, "k_Gibm");
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -318,6 +339,7 @@ int main()
             tauSGS_d,
             rho_d,
             u_d, v_d, w_d,
+            GxIBM_d, GyIBM_d, GzIBM_d,
             elements,
             omega,
             dpdx,
@@ -345,6 +367,23 @@ int main()
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
+        }
+
+        {
+        util::Timer timer;
+        k_Gibm
+        (
+            cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+            rho_d,
+            GxIBM_d, GyIBM_d, GzIBM_d,
+            movingSTLcList_d,
+            GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+            nMovingSTL,
+            nx, ny, nz
+        );
+        queue.finish();
+        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
         }
         
         std::swap(fTmp_d,f_d);
