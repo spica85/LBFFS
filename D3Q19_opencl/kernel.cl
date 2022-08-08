@@ -1485,21 +1485,25 @@ __kernel void k_streamingCollision // Pull
     }
 }
 
-__kernel void k_Uwall // Pull
+__kernel void k_Gwall // Pull
 (
     __global float* rho,
     __global float* u, __global float* v, __global float* w,
     __global float* movingSTLcList,
-    __global float* uMovingWall, __global float* vMovingWall, __global float* wMovingWall,
+    __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
     const int nMovingSTL,
     const int nx, const int ny, const int nz
 )
 {
     int iMSTL = get_global_id(0);
 
-    uMovingWall[iMSTL] = 0.f;
-    vMovingWall[iMSTL] = 0.f;
-    wMovingWall[iMSTL] = 0.f;
+    float u0 = 0.f;
+    float v0 = 0.f;
+    float w0 = 0.f;
+
+    float uMovingWall = 0.f;
+    float vMovingWall = 0.f;
+    float wMovingWall = 0.f;
 
     int i = (int)(movingSTLcList[3*iMSTL]);
     int j = (int)(movingSTLcList[3*iMSTL+1]);
@@ -1523,10 +1527,13 @@ __kernel void k_Uwall // Pull
                                 *(1.f -fabs(jBox -movingSTLcList[3*iMSTL+1]))
                                 *(1.f -fabs(kBox -movingSTLcList[3*iMSTL+2]));
                 
-                uMovingWall[iMSTL] += u[icBoxPoint]*delta;
-                vMovingWall[iMSTL] += v[icBoxPoint]*delta;
-                wMovingWall[iMSTL] += w[icBoxPoint]*delta;
+                uMovingWall += u[icBoxPoint]*delta;
+                vMovingWall += v[icBoxPoint]*delta;
+                wMovingWall += w[icBoxPoint]*delta;
             }
         }
     }
+    GxMovingWall[iMSTL] = u0 -uMovingWall;
+    GyMovingWall[iMSTL] = v0 -vMovingWall;
+    GzMovingWall[iMSTL] = w0 -wMovingWall;
 }

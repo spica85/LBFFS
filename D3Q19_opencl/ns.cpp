@@ -213,9 +213,9 @@ int main()
         movingSTLcList[iMSTL*3+1] = movingSTLc[1][iMSTL];
         movingSTLcList[iMSTL*3+2] = movingSTLc[2][iMSTL];
     }
-    std::vector<float> uMovingWall(nMovingSTL);
-    std::vector<float> vMovingWall(nMovingSTL);
-    std::vector<float> wMovingWall(nMovingSTL);
+    std::vector<float> GxMovingWall(nMovingSTL);
+    std::vector<float> GyMovingWall(nMovingSTL);
+    std::vector<float> GzMovingWall(nMovingSTL);
     // --
 
 
@@ -263,9 +263,9 @@ int main()
     cl::Buffer v_d(context, v.begin(), v.end(), true);
     cl::Buffer w_d(context, w.begin(), w.end(), true);
     cl::Buffer movingSTLcList_d(context, movingSTLcList.begin(), movingSTLcList.end(), true);
-    cl::Buffer uMovingWall_d(context, uMovingWall.begin(), uMovingWall.end(), true);
-    cl::Buffer vMovingWall_d(context, vMovingWall.begin(), vMovingWall.end(), true);
-    cl::Buffer wMovingWall_d(context, wMovingWall.begin(), wMovingWall.end(), true);
+    cl::Buffer GxMovingWall_d(context, GxMovingWall.begin(), GxMovingWall.end(), true);
+    cl::Buffer GyMovingWall_d(context, GyMovingWall.begin(), GyMovingWall.end(), true);
+    cl::Buffer GzMovingWall_d(context, GzMovingWall.begin(), GzMovingWall.end(), true);
     
     // Create the kernel functor of streamingCollision
     cl::KernelFunctor
@@ -286,7 +286,7 @@ int main()
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
-    // Create the kernel functor of Uwall
+    // Create the kernel functor of Gwall
     cl::KernelFunctor
     <
         cl::Buffer,
@@ -295,7 +295,7 @@ int main()
         cl::Buffer, cl::Buffer, cl::Buffer,
         const int,
         const int, const int, const int
-    > k_Uwall(program, "k_Uwall");  
+    > k_Gwall(program, "k_Gwall");
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -332,19 +332,19 @@ int main()
 
         {
         util::Timer timer;
-        k_Uwall
+        k_Gwall
         (
             cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
             rho_d,
             u_d, v_d, w_d,
             movingSTLcList_d,
-            uMovingWall_d, vMovingWall_d, wMovingWall_d,
+            GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
             nMovingSTL,
             nx, ny, nz
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        printf("\nThe kernel of Uawll ran in %lf m seconds\n", rtime);
+        printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
         }
         
         std::swap(fTmp_d,f_d);
