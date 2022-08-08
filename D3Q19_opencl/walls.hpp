@@ -16,12 +16,13 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
     std::ifstream STLfile(STLname);
     if(!STLfile)
     {
-        std::cout << "\nSTL (walls.stl) was not read\n" << std::endl;
+        std::cout << "\nSTL (" << STLname << ") was not read\n" << std::endl;
+        nSTL = 0;
         return;
     }
     else
     {
-        std::cout << "\nSTL (walls.stl) was read" << std::endl;
+        std::cout << "\nSTL (" << STLname << ") was read" << std::endl;
     }
 
     std::vector<std::string> lines;
