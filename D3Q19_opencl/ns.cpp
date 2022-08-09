@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <chrono>
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <omp.h>
 
 #include "D3Q19.hpp"
@@ -220,6 +223,18 @@ int main()
     std::vector<float> GxIBM(elements);
     std::vector<float> GyIBM(elements);
     std::vector<float> GzIBM(elements);
+
+    float uMovingTrans = 0.f/c;
+    float vMovingTrans = 0.f/c;
+    float wMovingTrans = 0.f/c;
+
+    float rotOmega = 2.f*M_PI/360.f*10.f/(c/L);
+    float rotX = 2.f/L;
+    float rotY = 1.f/L;
+    float rotZ = 0.f/L;
+    float rotAxisX = 0.f;
+    float rotAxisY = 0.f;
+    float rotAxisZ = 1.f;
     // --
 
 
@@ -304,7 +319,11 @@ int main()
         cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         const int,
-        const int, const int, const int
+        const int, const int, const int,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float
     > k_Gwall(program, "k_Gwall");
 
     // Create the kernel functor of Gibm
@@ -315,7 +334,11 @@ int main()
         cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         const int,
-        const int, const int, const int
+        const int, const int, const int,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float
     > k_Gibm(program, "k_Gibm");
 
     // Create the kernel functor of Force
@@ -359,7 +382,7 @@ int main()
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
+        // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
         }
 
         {
@@ -372,11 +395,15 @@ int main()
             movingSTLcList_d,
             GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
             nMovingSTL,
-            nx, ny, nz
+            nx, ny, nz,
+            uMovingTrans, vMovingTrans, wMovingTrans,
+            rotX, rotY, rotZ,
+            rotAxisX, rotAxisY, rotAxisZ,
+            rotOmega
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
+        // printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
         }
 
         {
@@ -389,11 +416,15 @@ int main()
             movingSTLcList_d,
             GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
             nMovingSTL,
-            nx, ny, nz
+            nx, ny, nz,
+            uMovingTrans, vMovingTrans, wMovingTrans,
+            rotX, rotY, rotZ,
+            rotAxisX, rotAxisY, rotAxisZ,
+            rotOmega
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
+        // printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
         }
 
         {
@@ -409,7 +440,7 @@ int main()
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
+        // printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
         }
         
         std::swap(fTmp_d,f_d);

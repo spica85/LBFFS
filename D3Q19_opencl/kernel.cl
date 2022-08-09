@@ -559,6 +559,92 @@ float atom_add_float(__global float* const address, const float value)
   return *(float*)&oldval;
 }
 
+void Urot
+(
+    const float wallX, const float wallY, const float wallZ, 
+    const float rotX, const float rotY, const float rotZ, 
+    const float rotAxisX, const float rotAxisY, const float rotAxisZ, 
+    const float rotOmega, 
+    float* uRot, float* vRot, float* wRot
+)
+{
+    const float magRotAxis = sqrt(rotAxisX*rotAxisX +rotAxisY*rotAxisY +rotAxisZ*rotAxisZ);
+    const float e0_x = rotAxisX;
+    const float e0_y = rotAxisY;
+    const float e0_z = rotAxisZ;
+
+    const float OX_x = wallX - rotX;
+    const float OX_y = wallY - rotY;
+    const float OX_z = wallZ - rotZ;
+
+    const float OXdotE0 = (OX_x*e0_x +OX_y*e0_y +OX_x*e0_z);
+    const float OOp_x = OXdotE0*e0_x;
+    const float OOp_y = OXdotE0*e0_y;
+    const float OOp_z = OXdotE0*e0_z;
+
+    const float OpX_x = OX_x -OOp_x;
+    const float OpX_y = OX_y -OOp_y;
+    const float OpX_z = OX_z -OOp_z;
+    const float magOpX = sqrt(OpX_x*OpX_x +OpX_y*OpX_y +OpX_z*OpX_z);
+
+    const float e1_x = OpX_x/magOpX;
+    const float e1_y = OpX_y/magOpX;
+    const float e1_z = OpX_z/magOpX;
+
+    const float e2_x = e0_y*e1_z -e0_z*e1_y;
+    const float e2_y = e0_z*e1_x -e0_x*e1_z;
+    const float e2_z = e0_x*e1_y -e0_y*e1_x;
+
+    
+    const float r = sqrt((OX_x -OOp_x)*(OX_x -OOp_x) +(OX_y -OOp_y)*(OX_y -OOp_y) +(OX_z -OOp_z)*(OX_z -OOp_z));
+    *uRot = r*rotOmega*e2_x;
+    *vRot = r*rotOmega*e2_y;
+    *wRot = r*rotOmega*e2_z;
+}
+
+void Xrot
+(
+    const float wallX, const float wallY, const float wallZ, 
+    const float rotX, const float rotY, const float rotZ, 
+    const float rotAxisX, const float rotAxisY, const float rotAxisZ, 
+    const float rotOmega, 
+    float* Xrot_x, float* Xrot_y, float* Xrot_z
+)
+{
+    const float magRotAxis = sqrt(rotAxisX*rotAxisX +rotAxisY*rotAxisY +rotAxisZ*rotAxisZ);
+    const float e0_x = rotAxisX;
+    const float e0_y = rotAxisY;
+    const float e0_z = rotAxisZ;
+
+    const float OX_x = wallX - rotX;
+    const float OX_y = wallY - rotY;
+    const float OX_z = wallZ - rotZ;
+
+    const float OXdotE0 = (OX_x*e0_x +OX_y*e0_y +OX_x*e0_z);
+    const float OOp_x = OXdotE0*e0_x;
+    const float OOp_y = OXdotE0*e0_y;
+    const float OOp_z = OXdotE0*e0_z;
+
+    const float OpX_x = OX_x -OOp_x;
+    const float OpX_y = OX_y -OOp_y;
+    const float OpX_z = OX_z -OOp_z;
+    const float magOpX = sqrt(OpX_x*OpX_x +OpX_y*OpX_y +OpX_z*OpX_z);
+
+    const float e1_x = OpX_x/magOpX;
+    const float e1_y = OpX_y/magOpX;
+    const float e1_z = OpX_z/magOpX;
+
+    const float e2_x = e0_y*e1_z -e0_z*e1_y;
+    const float e2_y = e0_z*e1_x -e0_x*e1_z;
+    const float e2_z = e0_x*e1_y -e0_y*e1_x;
+
+    
+    const float r = sqrt((OX_x -OOp_x)*(OX_x -OOp_x) +(OX_y -OOp_y)*(OX_y -OOp_y) +(OX_z -OOp_z)*(OX_z -OOp_z));
+    *Xrot_x = rotX +OOp_x +r*(cos(rotOmega)*e1_x +sin(rotOmega)*e2_x);
+    *Xrot_y = rotY +OOp_y +r*(cos(rotOmega)*e1_y +sin(rotOmega)*e2_y);
+    *Xrot_z = rotZ +OOp_z +r*(cos(rotOmega)*e1_z +sin(rotOmega)*e2_z);
+}
+
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
@@ -1510,22 +1596,39 @@ __kernel void k_Gwall
     __global float* movingSTLcList,
     __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
     const int nMovingSTL,
-    const int nx, const int ny, const int nz
+    const int nx, const int ny, const int nz,
+    const float uMovingTrans, const float vMovingTrans, const float wMovingTrans,
+    const float rotX, const float rotY, const float rotZ,
+    const float rotAxisX, const float rotAxisY, const float rotAxisZ,
+    const float rotOmega
 )
 {
     int iMSTL = get_global_id(0);
 
-    float u0 = 0.f;
-    float v0 = 0.f;
-    float w0 = 0.f;
+    float u0 = uMovingTrans;
+    float v0 = vMovingTrans;
+    float w0 = wMovingTrans;
 
     float uMovingWall = 0.f;
     float vMovingWall = 0.f;
     float wMovingWall = 0.f;
 
-    int i = (int)(movingSTLcList[3*iMSTL]);
-    int j = (int)(movingSTLcList[3*iMSTL+1]);
-    int k = (int)(movingSTLcList[3*iMSTL+2]);
+    float wallX = movingSTLcList[3*iMSTL];
+    float wallY = movingSTLcList[3*iMSTL+1];
+    float wallZ = movingSTLcList[3*iMSTL+2];
+
+    int i = (int)(wallX);
+    int j = (int)(wallY);
+    int k = (int)(wallZ);
+
+    float uMovingRot = 0.f;
+    float vMovingRot = 0.f;
+    float wMovingRot = 0.f;
+    Urot(wallX, wallY, wallZ, rotX, rotY, rotZ, rotAxisX, rotAxisY, rotAxisZ, rotOmega, &uMovingRot, &vMovingRot, &wMovingRot);
+
+    u0 += uMovingRot;
+    v0 += vMovingRot;
+    w0 += wMovingRot;
 
     if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
     {
@@ -1541,9 +1644,9 @@ __kernel void k_Gwall
                 int jBox = ic2j(icBoxPoint,nx,ny); 
                 int kBox = ic2k(icBoxPoint,nx,ny); 
 
-                float delta =   (1.f -fabs(iBox -movingSTLcList[3*iMSTL]))
-                                *(1.f -fabs(jBox -movingSTLcList[3*iMSTL+1]))
-                                *(1.f -fabs(kBox -movingSTLcList[3*iMSTL+2]));
+                float delta =   (1.f -fabs(iBox -wallX))
+                                *(1.f -fabs(jBox -wallY))
+                                *(1.f -fabs(kBox -wallZ));
                 
                 uMovingWall += u[icBoxPoint]*delta;
                 vMovingWall += v[icBoxPoint]*delta;
@@ -1563,7 +1666,11 @@ __kernel void k_Gibm
     __global float* movingSTLcList,
     __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
     const int nMovingSTL,
-    const int nx, const int ny, const int nz
+    const int nx, const int ny, const int nz,
+    const float uMovingTrans, const float vMovingTrans, const float wMovingTrans,
+    const float rotX, const float rotY, const float rotZ,
+    const float rotAxisX, const float rotAxisY, const float rotAxisZ,
+    const float rotOmega
 )
 {
     int iMSTL = get_global_id(0);
@@ -1571,6 +1678,10 @@ __kernel void k_Gibm
     int i = (int)(movingSTLcList[3*iMSTL]);
     int j = (int)(movingSTLcList[3*iMSTL+1]);
     int k = (int)(movingSTLcList[3*iMSTL+2]);
+
+    float u0 = uMovingTrans;
+    float v0 = vMovingTrans;
+    float w0 = wMovingTrans;
 
     if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
     {
@@ -1596,6 +1707,19 @@ __kernel void k_Gibm
             }
         }
     }
+    
+    movingSTLcList[3*iMSTL] += u0;
+    movingSTLcList[3*iMSTL+1] += v0;
+    movingSTLcList[3*iMSTL+2] += w0;
+
+    float wallX = movingSTLcList[3*iMSTL];
+    float wallY = movingSTLcList[3*iMSTL+1];
+    float wallZ = movingSTLcList[3*iMSTL+2];
+
+    Xrot(wallX, wallY, wallZ, rotX, rotY, rotZ, rotAxisX, rotAxisY, rotAxisZ, rotOmega, &wallX, &wallY, &wallZ);
+    movingSTLcList[3*iMSTL] = wallX;
+    movingSTLcList[3*iMSTL+1] = wallY;
+    movingSTLcList[3*iMSTL+2] = wallZ;
 }
 
 __kernel void k_Force
