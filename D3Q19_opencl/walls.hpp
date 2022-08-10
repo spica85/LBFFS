@@ -17,7 +17,10 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
     if(!STLfile)
     {
         std::cout << "\nSTL (" << STLname << ") was not read\n" << std::endl;
-        nSTL = 0;
+        nSTL = 1;
+        STLc[0].push_back(0.f);
+        STLc[1].push_back(0.f);
+        STLc[2].push_back(0.f);
         return;
     }
     else
@@ -95,6 +98,7 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
         STLc[2].push_back((STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f);
     }
 
+    std::cout << "Number of elements of " << STLname << ": " << nSTL << std::endl;
 }
 
 void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, std::vector<std::vector<float> >& STLc, std::vector<std::vector<float> >& STLnormal, const int nx, const int ny, const int nz, const bool boundary)

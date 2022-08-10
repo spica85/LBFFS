@@ -171,7 +171,6 @@ int main()
     std::vector<float> Fwz(nx*ny*nz,0.0f);
 
     readSTL(STLname, STLnormal, STLv0, STLv1, STLv2, nSTL, STLc, L);
-    std::cout << "Number of elements of STL: " << nSTL << std::endl;
     //--
 
     //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
@@ -208,7 +207,7 @@ int main()
     std::vector<std::vector<float> > movingSTLc(3);
 
     readSTL(movingSTLname, movingSTLnormal, movingSTLv0, movingSTLv1, movingSTLv2, nMovingSTL, movingSTLc, L);
-    std::cout << "Number of elements of moving STL: " << nMovingSTL << std::endl;
+
     std::vector<float> movingSTLcList(3*nMovingSTL);
     for(int iMSTL = 0; iMSTL < nMovingSTL; iMSTL++)
     {
@@ -384,65 +383,67 @@ int main()
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
         }
-
+    
+        if(nMovingSTL > 1)
         {
-        util::Timer timer;
-        k_Gwall
-        (
-            cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
-            rho_d,
-            u_d, v_d, w_d,
-            movingSTLcList_d,
-            GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
-            nMovingSTL,
-            nx, ny, nz,
-            uMovingTrans, vMovingTrans, wMovingTrans,
-            rotX, rotY, rotZ,
-            rotAxisX, rotAxisY, rotAxisZ,
-            rotOmega
-        );
-        queue.finish();
-        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
-        }
+            {
+            util::Timer timer;
+            k_Gwall
+            (
+                cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+                rho_d,
+                u_d, v_d, w_d,
+                movingSTLcList_d,
+                GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+                nMovingSTL,
+                nx, ny, nz,
+                uMovingTrans, vMovingTrans, wMovingTrans,
+                rotX, rotY, rotZ,
+                rotAxisX, rotAxisY, rotAxisZ,
+                rotOmega
+            );
+            queue.finish();
+            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+            // printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
+            }
 
-        {
-        util::Timer timer;
-        k_Gibm
-        (
-            cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
-            rho_d,
-            GxIBM_d, GyIBM_d, GzIBM_d,
-            movingSTLcList_d,
-            GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
-            nMovingSTL,
-            nx, ny, nz,
-            uMovingTrans, vMovingTrans, wMovingTrans,
-            rotX, rotY, rotZ,
-            rotAxisX, rotAxisY, rotAxisZ,
-            rotOmega
-        );
-        queue.finish();
-        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
-        }
+            {
+            util::Timer timer;
+            k_Gibm
+            (
+                cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+                rho_d,
+                GxIBM_d, GyIBM_d, GzIBM_d,
+                movingSTLcList_d,
+                GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+                nMovingSTL,
+                nx, ny, nz,
+                uMovingTrans, vMovingTrans, wMovingTrans,
+                rotX, rotY, rotZ,
+                rotAxisX, rotAxisY, rotAxisZ,
+                rotOmega
+            );
+            queue.finish();
+            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+            // printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
+            }
 
-        {
-        util::Timer timer;
-        k_Force
-        (
-            cl::EnqueueArgs(queue,cl::NDRange(elements)),
-            fTmp_d,
-            solid_d,
-            rho_d,
-            GxIBM_d, GyIBM_d, GzIBM_d,
-            elements
-        );
-        queue.finish();
-        double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-        // printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
+            {
+            util::Timer timer;
+            k_Force
+            (
+                cl::EnqueueArgs(queue,cl::NDRange(elements)),
+                fTmp_d,
+                solid_d,
+                rho_d,
+                GxIBM_d, GyIBM_d, GzIBM_d,
+                elements
+            );
+            queue.finish();
+            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+            // printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
+            }
         }
-        
         std::swap(fTmp_d,f_d);
     }
     end = std::chrono::system_clock::now();
