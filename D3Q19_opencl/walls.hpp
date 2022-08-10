@@ -17,10 +17,7 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
     if(!STLfile)
     {
         std::cout << "\nSTL (" << STLname << ") was not read\n" << std::endl;
-        nSTL = 1;
-        STLc[0].push_back(0.f);
-        STLc[1].push_back(0.f);
-        STLc[2].push_back(0.f);
+        nSTL = 0;
         return;
     }
     else

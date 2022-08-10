@@ -207,6 +207,15 @@ int main()
     std::vector<std::vector<float> > movingSTLc(3);
 
     readSTL(movingSTLname, movingSTLnormal, movingSTLv0, movingSTLv1, movingSTLv2, nMovingSTL, movingSTLc, L);
+    // -- Exception handling to avoid zero buffer size
+    if(nMovingSTL == 0)
+    {
+        nMovingSTL = 1;
+        movingSTLc[0].push_back(0.f);
+        movingSTLc[1].push_back(0.f);
+        movingSTLc[2].push_back(0.f);
+    }
+    // --
 
     std::vector<float> movingSTLcList(3*nMovingSTL);
     for(int iMSTL = 0; iMSTL < nMovingSTL; iMSTL++)
