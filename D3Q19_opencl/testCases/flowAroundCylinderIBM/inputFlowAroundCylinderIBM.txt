@@ -1,0 +1,31 @@
+Fwrite true
+restart false
+nThreads 1
+writeBinary true
+startTimeStep 0
+endTimeStep 1000000
+outInterval 10000
+nx 1200
+ny 400
+nz 1
+Lx 6.0
+uMax 1.0
+rho0 1.0
+U0 0.02
+nu 0.001
+dpdx 0.0
+LES false
+forceCoeffs true
+Dref 0.1
+
+uMovingTrans 0.f
+vMovingTrans 0.f
+wMovingTrans 0.f
+
+rotOmega 1.67f
+rotX 1.5f
+rotY 1.f
+rotZ 0.f
+rotAxisX 0.f
+rotAxisY 0.f
+rotAxisZ 1.f

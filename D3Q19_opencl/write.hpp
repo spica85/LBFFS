@@ -4,12 +4,18 @@ if(Fwrite && nextOutTime < nt +1)
     cl::copy(queue, Fwx_d, Fwx.begin(), Fwx.end());
     cl::copy(queue, Fwy_d, Fwy.begin(), Fwy.end());
     cl::copy(queue, Fwz_d, Fwz.begin(), Fwz.end());
+    cl::copy(queue, GxIBM_d, GxIBM.begin(), GxIBM.end());
+    cl::copy(queue, GyIBM_d, GyIBM.begin(), GyIBM.end());
+    cl::copy(queue, GzIBM_d, GzIBM.begin(), GzIBM.end());
     cl::copy(queue, tauSGS_d, tauSGS.begin(), tauSGS.end());
     rho_av = 0.f;
     int eleFluid = 0;
     float SumFwx = 0.f;
     float SumFwy = 0.f;
     float SumFwz = 0.f;
+    float SumGxIBM = 0.f;
+    float SumGyIBM = 0.f;
+    float SumGzIBM = 0.f;
 
     for(int ic =0; ic < elements; ic++)
     {
@@ -20,6 +26,9 @@ if(Fwrite && nextOutTime < nt +1)
             SumFwx += Fwx[ic];
             SumFwy += Fwy[ic];
             SumFwz += Fwz[ic];
+            SumGxIBM += GxIBM[ic];
+            SumGyIBM += GyIBM[ic];
+            SumGzIBM += GzIBM[ic];
             eleFluid++;
             // std::cout << "eleFluid: " << eleFluid
             //           << ", rho_av: " << rho_av
@@ -58,6 +67,7 @@ if(Fwrite && nextOutTime < nt +1)
     if(forceCoeffs)
     {
         std::cout << "Cx: " << SumFwx*c*c*L*L/(0.5*rho_av*uMax*uMax*Dref*L) << ", Cy: " << SumFwy*c*c*L*L/(0.5*rho_av*uMax*uMax*Dref*L) << ", Cz: " << SumFwz*c*c*L*L/(0.5*rho_av*uMax*uMax*Dref*L) << std::endl;
+        std::cout << "CxIBM: " << -SumGxIBM*c*c*L*L/(0.5*rho_av*uMax*uMax*Dref*L) << ", CyIBM: " << -SumGyIBM*c*c*L*L/(0.5*rho_av*uMax*uMax*Dref*L) << ", CzIBM: " << -SumGzIBM*c*c*L*L/(0.5*rho_av*uMax*uMax*Dref*L) << std::endl;
     }
     //--
 

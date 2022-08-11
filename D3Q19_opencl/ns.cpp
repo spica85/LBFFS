@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <chrono>
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <omp.h>
 
 #include "D3Q19.hpp"
@@ -168,7 +171,6 @@ int main()
     std::vector<float> Fwz(nx*ny*nz,0.0f);
 
     readSTL(STLname, STLnormal, STLv0, STLv1, STLv2, nSTL, STLc, L);
-    std::cout << "Number of elements of STL: " << nSTL << std::endl;
     //--
 
     //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
@@ -194,6 +196,58 @@ int main()
     // setBwalls(bWallsC, bWallsNormal, boundary1, boundary2, boundary3, nx, ny, nz);
     // setSDF(sdf, sdfIni, dr, p, bWallsC, bWallsNormal, nx, ny, nz, true);
     //--
+
+    //-- Reading and settings of moving STL
+    const std::string movingSTLname("movingWalls.stl");
+    std::vector<std::vector<float> > movingSTLnormal(3);
+    std::vector<std::vector<float> > movingSTLv0(3);
+    std::vector<std::vector<float> > movingSTLv1(3);
+    std::vector<std::vector<float> > movingSTLv2(3);
+    int nMovingSTL;
+    std::vector<std::vector<float> > movingSTLc(3);
+
+    readSTL(movingSTLname, movingSTLnormal, movingSTLv0, movingSTLv1, movingSTLv2, nMovingSTL, movingSTLc, L);
+    // -- Exception handling to avoid zero buffer size
+    if(nMovingSTL == 0)
+    {
+        nMovingSTL = 1;
+        movingSTLc[0].push_back(0.f);
+        movingSTLc[1].push_back(0.f);
+        movingSTLc[2].push_back(0.f);
+    }
+    // --
+
+    std::vector<float> movingSTLcList(3*nMovingSTL);
+    for(int iMSTL = 0; iMSTL < nMovingSTL; iMSTL++)
+    {
+        movingSTLcList[iMSTL*3] = movingSTLc[0][iMSTL];
+        movingSTLcList[iMSTL*3+1] = movingSTLc[1][iMSTL];
+        movingSTLcList[iMSTL*3+2] = movingSTLc[2][iMSTL];
+    }
+    std::vector<float> GxMovingWall(nMovingSTL);
+    std::vector<float> GyMovingWall(nMovingSTL);
+    std::vector<float> GzMovingWall(nMovingSTL);
+
+    std::vector<float> GxIBM(elements);
+    std::vector<float> GyIBM(elements);
+    std::vector<float> GzIBM(elements);
+
+    float uMovingTrans = 0.f;
+    float vMovingTrans = 0.f;
+    float wMovingTrans = 0.f;
+
+    float rotOmega = 0.f;
+    float rotX = 0.f;
+    float rotY = 0.f;
+    float rotZ = 0.f;
+    float rotAxisX = 0.f;
+    float rotAxisY = 0.f;
+    float rotAxisZ = 0.f;
+    if(nMovingSTL != 1)
+    {
+        readMotions(uMovingTrans,vMovingTrans,wMovingTrans,rotOmega,rotX,rotY,rotZ,rotAxisX,rotAxisY,rotAxisZ,c,L);
+    }
+    // --
 
 
 
@@ -229,13 +283,26 @@ int main()
     cl::Buffer boundary1_d(context, boundary1.begin(), boundary1.end(), true);
     cl::Buffer boundary2_d(context, boundary2.begin(), boundary2.end(), true);
     cl::Buffer boundary3_d(context, boundary3.begin(), boundary3.end(), true);
-    cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
     cl::Buffer sdf_d(context, sdf.begin(), sdf.end(), true);
     cl::Buffer solid_d(context, solid.begin(), solid.end(), true);
     cl::Buffer neiSolid_d(context, neiSolid.begin(), neiSolid.end(), true);
 
     cl::Buffer tauSGS_d(context, tauSGS.begin(), tauSGS.end(), true);
+
+    cl::Buffer rho_d(context, rho.begin(), rho.end(), true);
+    cl::Buffer u_d(context, u.begin(), u.end(), true);
+    cl::Buffer v_d(context, v.begin(), v.end(), true);
+    cl::Buffer w_d(context, w.begin(), w.end(), true);
+    cl::Buffer movingSTLcList_d(context, movingSTLcList.begin(), movingSTLcList.end(), true);
+    cl::Buffer GxMovingWall_d(context, GxMovingWall.begin(), GxMovingWall.end(), true);
+    cl::Buffer GyMovingWall_d(context, GyMovingWall.begin(), GyMovingWall.end(), true);
+    cl::Buffer GzMovingWall_d(context, GzMovingWall.begin(), GzMovingWall.end(), true);
+    cl::Buffer GxIBM_d(context, GxIBM.begin(), GxIBM.end(), true);
+    cl::Buffer GyIBM_d(context, GyIBM.begin(), GyIBM.end(), true);
+    cl::Buffer GzIBM_d(context, GzIBM.begin(), GzIBM.end(), true);
     
+
+
     // Create the kernel functor of streamingCollision
     cl::KernelFunctor
     <
@@ -245,6 +312,9 @@ int main()
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
         const unsigned,
         const float,
         const float,
@@ -252,6 +322,46 @@ int main()
         const int, const int, const int,
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
+
+    // Create the kernel functor of Gwall
+    cl::KernelFunctor
+    <
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        const int,
+        const int, const int, const int,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float
+    > k_Gwall(program, "k_Gwall");
+
+    // Create the kernel functor of Gibm
+    cl::KernelFunctor
+    <
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        const int,
+        const int, const int, const int,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float, const float, const float,
+        const float
+    > k_Gibm(program, "k_Gibm");
+
+    // Create the kernel functor of Force
+    cl::KernelFunctor
+    <
+        cl::Buffer,
+        cl::Buffer,
+        cl::Buffer,
+        cl::Buffer, cl::Buffer, cl::Buffer,
+        const unsigned
+    > k_Force(program, "k_Force");
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -272,6 +382,9 @@ int main()
             u0_d, v0_d, w0_d,
             Fwx_d, Fwy_d, Fwz_d,
             tauSGS_d,
+            rho_d,
+            u_d, v_d, w_d,
+            GxIBM_d, GyIBM_d, GzIBM_d,
             elements,
             omega,
             dpdx,
@@ -283,7 +396,67 @@ int main()
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
         }
-        
+    
+        if(nMovingSTL > 1)
+        {
+            {
+            util::Timer timer;
+            k_Gwall
+            (
+                cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+                rho_d,
+                u_d, v_d, w_d,
+                movingSTLcList_d,
+                GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+                nMovingSTL,
+                nx, ny, nz,
+                uMovingTrans, vMovingTrans, wMovingTrans,
+                rotX, rotY, rotZ,
+                rotAxisX, rotAxisY, rotAxisZ,
+                rotOmega
+            );
+            queue.finish();
+            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+            // printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
+            }
+
+            {
+            util::Timer timer;
+            k_Gibm
+            (
+                cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+                rho_d,
+                GxIBM_d, GyIBM_d, GzIBM_d,
+                movingSTLcList_d,
+                GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+                nMovingSTL,
+                nx, ny, nz,
+                uMovingTrans, vMovingTrans, wMovingTrans,
+                rotX, rotY, rotZ,
+                rotAxisX, rotAxisY, rotAxisZ,
+                rotOmega
+            );
+            queue.finish();
+            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+            // printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
+            }
+
+            {
+            util::Timer timer;
+            k_Force
+            (
+                cl::EnqueueArgs(queue,cl::NDRange(elements)),
+                fTmp_d,
+                solid_d,
+                rho_d,
+                GxIBM_d, GyIBM_d, GzIBM_d,
+                elements
+            );
+            queue.finish();
+            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+            // printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
+            }
+        }
         std::swap(fTmp_d,f_d);
     }
     end = std::chrono::system_clock::now();

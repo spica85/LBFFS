@@ -11,17 +11,21 @@
 #include <omp.h>
 #include "input.hpp"
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2, int& nSTL, std::vector<std::vector<float> >& STLc, float L)
 {
     std::ifstream STLfile(STLname);
     if(!STLfile)
     {
-        std::cout << "\nSTL (walls.stl) was not read\n" << std::endl;
+        std::cout << "\nSTL (" << STLname << ") was not read\n" << std::endl;
+        nSTL = 0;
         return;
     }
     else
     {
-        std::cout << "\nSTL (walls.stl) was read" << std::endl;
+        std::cout << "\nSTL (" << STLname << ") was read" << std::endl;
     }
 
     std::vector<std::string> lines;
@@ -94,6 +98,7 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
         STLc[2].push_back((STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f);
     }
 
+    std::cout << "Number of elements of " << STLname << ": " << nSTL << std::endl;
 }
 
 void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, std::vector<std::vector<float> >& STLc, std::vector<std::vector<float> >& STLnormal, const int nx, const int ny, const int nz, const bool boundary)
@@ -324,6 +329,51 @@ void setQf(std::vector<float>& qf, std::vector<unsigned char>& neiSolid, std::ve
             }
         }
     }
+}
+
+void readMotions
+(
+    float& uMovingTrans, float& vMovingTrans, float& wMovingTrans,
+    float& rotOmega,
+    float& rotX, float& rotY, float& rotZ,
+    float& rotAxisX, float& rotAxisY, float& rotAxisZ,
+    const float c, const float L
+)
+{
+    std::string inputFileName("input.txt");
+    std::vector<std::string> lines;
+    std::ifstream inputFile(inputFileName);
+    if(!inputFile)
+    {
+        std::cerr << "Could not open input.txt" << std::endl;
+        exit(EXIT_FAILURE);
+    }
+
+    readToLines(inputFile, lines);
+
+    std::string uMovingTransStr("uMovingTrans");
+    uMovingTrans = lookup<float>(lines, uMovingTransStr)/c;
+    std::string vMovingTransStr("vMovingTrans");
+    vMovingTrans = lookup<float>(lines, vMovingTransStr)/c;
+    std::string wMovingTransStr("wMovingTrans");
+    wMovingTrans = lookup<float>(lines, wMovingTransStr)/c;
+
+    std::string rotOmegaStr("rotOmega");// rpm
+    rotOmega = lookup<float>(lines, rotOmegaStr)*2.f*M_PI/60.f/(c/L);// rad/s
+    std::string rotXStr("rotX");
+    rotX = lookup<float>(lines, rotXStr)/L;
+    std::string rotYStr("rotY");
+    rotY = lookup<float>(lines, rotYStr)/L;
+    std::string rotZStr("rotZ");
+    rotZ = lookup<float>(lines, rotZStr)/L;
+    std::string rotAxisXStr("rotAxisX");
+    rotAxisX = lookup<float>(lines, rotAxisXStr);
+    std::string rotAxisYStr("rotAxisY");
+    rotAxisY = lookup<float>(lines, rotAxisYStr);
+    std::string rotAxisZStr("rotAxisZ");
+    rotAxisZ = lookup<float>(lines, rotAxisZStr);
+
+    inputFile.close();
 }
 
 
