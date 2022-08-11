@@ -232,17 +232,21 @@ int main()
     std::vector<float> GyIBM(elements);
     std::vector<float> GzIBM(elements);
 
-    float uMovingTrans = 0.f/c;
-    float vMovingTrans = 0.f/c;
-    float wMovingTrans = 0.f/c;
+    float uMovingTrans = 0.f;
+    float vMovingTrans = 0.f;
+    float wMovingTrans = 0.f;
 
-    float rotOmega = 2.f*M_PI/360.f*10.f/(c/L);
-    float rotX = 2.f/L;
-    float rotY = 1.f/L;
-    float rotZ = 0.f/L;
+    float rotOmega = 0.f;
+    float rotX = 0.f;
+    float rotY = 0.f;
+    float rotZ = 0.f;
     float rotAxisX = 0.f;
     float rotAxisY = 0.f;
-    float rotAxisZ = 1.f;
+    float rotAxisZ = 0.f;
+    if(nMovingSTL != 1)
+    {
+        readMotions(uMovingTrans,vMovingTrans,wMovingTrans,rotOmega,rotX,rotY,rotZ,rotAxisX,rotAxisY,rotAxisZ,c,L);
+    }
     // --
 
 
