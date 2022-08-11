@@ -10,6 +10,7 @@ LBFFSは格子ボルツマン法に基づく流体シミュレーションソフ
 * STLファイルによる壁境界の設定
 * 反射波を抑制する流出境界条件 [Geier et al., Comput. Math. Appl. (2015), Appendix F]
 * 流出境界からの反射波を抑制するスポンジゾーン
+* 埋め込み境界法
 
 ## Google Colaboratoryでの実行スクリプト  
 [Sample](runScriptOnColab.ipynb)
