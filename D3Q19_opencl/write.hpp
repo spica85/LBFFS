@@ -1,13 +1,17 @@
 if(Fwrite && nextOutTime < nt +1)
 {
     cl::copy(queue, f_d, f.begin(), f.end());
-    cl::copy(queue, Fwx_d, Fwx.begin(), Fwx.end());
-    cl::copy(queue, Fwy_d, Fwy.begin(), Fwy.end());
-    cl::copy(queue, Fwz_d, Fwz.begin(), Fwz.end());
-    cl::copy(queue, GxIBM_d, GxIBM.begin(), GxIBM.end());
-    cl::copy(queue, GyIBM_d, GyIBM.begin(), GyIBM.end());
-    cl::copy(queue, GzIBM_d, GzIBM.begin(), GzIBM.end());
     cl::copy(queue, tauSGS_d, tauSGS.begin(), tauSGS.end());
+
+    if(forceCoeffs)
+    {
+        cl::copy(queue, Fwx_d, Fwx.begin(), Fwx.end());
+        cl::copy(queue, Fwy_d, Fwy.begin(), Fwy.end());
+        cl::copy(queue, Fwz_d, Fwz.begin(), Fwz.end());
+        cl::copy(queue, GxIBM_d, GxIBM.begin(), GxIBM.end());
+        cl::copy(queue, GyIBM_d, GyIBM.begin(), GyIBM.end());
+        cl::copy(queue, GzIBM_d, GzIBM.begin(), GzIBM.end());
+    }
     rho_av = 0.f;
     int eleFluid = 0;
     float SumFwx = 0.f;
@@ -23,12 +27,15 @@ if(Fwrite && nextOutTime < nt +1)
         if(solid[ic] == 0)
         {
             rho_av += rho[ic] -1.f;
-            SumFwx += Fwx[ic];
-            SumFwy += Fwy[ic];
-            SumFwz += Fwz[ic];
-            SumGxIBM += GxIBM[ic];
-            SumGyIBM += GyIBM[ic];
-            SumGzIBM += GzIBM[ic];
+            if(forceCoeffs)
+            {
+                SumFwx += Fwx[ic];
+                SumFwy += Fwy[ic];
+                SumFwz += Fwz[ic];
+                SumGxIBM += GxIBM[ic];
+                SumGyIBM += GyIBM[ic];
+                SumGzIBM += GzIBM[ic];
+            }
             eleFluid++;
             // std::cout << "eleFluid: " << eleFluid
             //           << ", rho_av: " << rho_av
