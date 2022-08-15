@@ -111,20 +111,240 @@ inline int reflectQ(const int q)
     // exit(EXIT_FAILURE);    
 }
 
+inline int reflectOrMirrorQ(const int q, const int boundary1, const int boundary2, const int boundary3)
+{
+    if(q == 0)
+    {
+        return 0;
+    }
+    else if(q == 1)
+    {
+        return 2;
+    }
+    else if(q == 2)
+    {
+        return 1;
+    }
+    else if(q == 3)
+    {
+        return 4;
+    }
+    else if(q == 4)
+    {
+        return 3;
+    }
+    else if(q == 5)
+    {
+        return 6;
+    }
+    else if(q == 6)
+    {
+        return 5;
+    }
+    else if(q == 7)
+    {
+        if(boundary1 == 4)
+        {
+            return 10;
+        }
+        else if(boundary2 == 4)
+        {
+            return 9;
+        }
+        else
+        {
+            return 8;
+        }
+    }
+    else if(q == 8)
+    {   
+        if(boundary1 == 4)
+        {
+            return 9;
+        }
+        else if(boundary2 == 4)
+        {
+            return 10;
+        }
+        else
+        {
+            return 7;
+        }
+    }
+    else if(q == 9)
+    {
+        if(boundary1 == 4)
+        {
+            return 8;
+        }
+        else if(boundary2 == 4)
+        {
+            return 7;
+        }
+        else
+        {
+            return 10;
+        }
+    }
+    else if(q == 10)
+    {
+        if(boundary1 == 4)
+        {
+            return 7;
+        }
+        else if(boundary2 == 4)
+        {
+            return 8;
+        }
+        else
+        {
+            return 9;
+        }
+    }
+    else if(q == 11)
+    {
+        if(boundary1 == 4)
+        {
+            return 14;
+        }
+        else if(boundary3 == 4)
+        {
+            return 13;
+        }
+        else
+        {
+            return 12;
+        }
+    }
+    else if(q == 12)
+    {
+        if(boundary1 == 4)
+        {
+            return 13;
+        }
+        else if(boundary3 == 4)
+        {
+            return 14;
+        }
+        else
+        {
+            return 11;
+        }
+    }
+    else if(q == 13)
+    {
+        if(boundary1 == 4)
+        {
+            return 12;
+        }
+        else if(boundary3 == 4)
+        {
+            return 11;
+        }
+        else
+        {
+            return 14;
+        }
+    }
+    else if(q == 14)
+    {
+        if(boundary1 == 4)
+        {
+            return 11;
+        }
+        else if(boundary3 == 4)
+        {
+            return 12;
+        }
+        else
+        {
+            return 13;
+        }
+    }
+    else if(q == 15)
+    {
+        if(boundary2 == 4)
+        {
+            return 18;
+        }
+        else if(boundary3 == 4)
+        {
+            return 17;
+        }
+        else
+        {
+            return 16;
+        }
+    }
+    else if(q == 16)
+    {
+        if(boundary2 == 4)
+        {
+            return 17;
+        }
+        else if(boundary3 == 4)
+        {
+            return 18;
+        }
+        else
+        {
+            return 15;
+        }
+    }
+    else if(q == 17)
+    {
+        if(boundary2 == 4)
+        {
+            return 16;
+        }
+        else if(boundary3 == 4)
+        {
+            return 15;
+        }
+        else
+        {
+            return 18;
+        }
+    }
+    else if(q == 18)
+    {
+        if(boundary2 == 4)
+        {
+            return 15;
+        }
+        else if(boundary3 == 4)
+        {
+            return 16;
+        }
+        else
+        {
+            return 17;
+        }
+    }
+    // std::cerr << "Error q = [0:18], q = " << q << std::endl;
+    // exit(EXIT_FAILURE);    
+}
+
 inline int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int boundary1, const int boundary2, const int boundary3)
 {
     int ic = index1d(i, j, k, nx, ny);
+
+    bool isnotWall1 = (boundary1 == 1 || boundary1 == 2) ? false : true;
+    bool isnotWall2 = (boundary2 == 1 || boundary2 == 2) ? false : true;
+    bool isnotWall3 = (boundary3 == 1 || boundary3 == 2) ? false : true;
+
+
     if(q == 0)
     {
         return index1d(i,j,k,nx,ny);
     }
     else if(q == 1)
     {
-        return i != 0 ? index1d(i-1,j,k,nx,ny) : (boundary1 != 1 ? index1d(nx-1,j,k,nx,ny) : -1);
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : (isnotWall1 ? index1d(nx-1,j,k,nx,ny) : -1);
     }
     else if(q == 2)
     {
-        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : (boundary1 != 1 ? index1d(0,j,k,nx,ny) : -1);
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : (isnotWall1 ? index1d(0,j,k,nx,ny) : -1);
     }
     else if(q == 3)
     {
@@ -134,7 +354,7 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else
         {
-            return boundary2 != 1 ? index1d(i,ny-1,k,nx,ny) : -1;
+            return isnotWall2 ? index1d(i,ny-1,k,nx,ny) : -1;
         }
     }
     else if(q == 4)
@@ -145,7 +365,7 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else
         {
-            return boundary2 != 1 ? index1d(i,0,k,nx,ny) : -1;
+            return isnotWall2 ? index1d(i,0,k,nx,ny) : -1;
         }
     }
     else if(q == 5)
@@ -156,7 +376,7 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else
         {
-            return boundary3 != 1 ? index1d(i,j,nz-1,nx,ny) : -1;
+            return isnotWall3 ? index1d(i,j,nz-1,nx,ny) : -1;
         }
     }
     else if(q == 6)
@@ -167,36 +387,36 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else
         {
-            return boundary3 != 1 ? index1d(i,j,0,nx,ny) : -1;
+            return isnotWall3 ? index1d(i,j,0,nx,ny) : -1;
         }
     }
     else if(q == 7)
     {
         return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
-               (i == 0 && j != 0) ? (boundary1 != 1 ? index1d(nx-1, j-1, k, nx, ny) : -1) :
-               (i != 0 && j == 0) ? (boundary2 != 1 ? index1d(i-1, ny-1, k, nx, ny) : -1) :
-               ((boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, ny-1, k, nx, ny) : -1);
+               (i == 0 && j != 0) ? (isnotWall1 ? index1d(nx-1, j-1, k, nx, ny) : -1) :
+               (i != 0 && j == 0) ? (isnotWall2 ? index1d(i-1, ny-1, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(nx-1, ny-1, k, nx, ny) : -1);
     }
     else if(q == 8)
     {
         return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
-               (i == nx-1 && j != ny-1) ? (boundary1 != 1 ? index1d(0, j+1, k, nx, ny) : -1) :
-               (i != nx-1 && j == ny-1) ? (boundary2 != 1 ? index1d(i+1, 0, k, nx, ny) : -1) :
-               ((boundary1 != 1 && boundary2 != 1) ? index1d(0, 0, k, nx, ny) : -1);
+               (i == nx-1 && j != ny-1) ? (isnotWall1 ? index1d(0, j+1, k, nx, ny) : -1) :
+               (i != nx-1 && j == ny-1) ? (isnotWall2 ? index1d(i+1, 0, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(0, 0, k, nx, ny) : -1);
     }
     else if(q == 9)
     {
         return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
-               (i == 0 && j != ny-1) ? (boundary1 != 1 ? index1d(nx-1, j+1, k, nx, ny) : -1):
-               (i != 0 && j == ny-1) ? (boundary2 != 1 ? index1d(i-1, 0, k, nx, ny) : -1) :
-               ((boundary1 != 1 && boundary2 != 1) ? index1d(nx-1, 0, k, nx, ny) : -1);
+               (i == 0 && j != ny-1) ? (isnotWall1 ? index1d(nx-1, j+1, k, nx, ny) : -1):
+               (i != 0 && j == ny-1) ? (isnotWall2 ? index1d(i-1, 0, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(nx-1, 0, k, nx, ny) : -1);
     }
     else if(q == 10)
     {
         return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
-               (i == nx-1 && j != 0) ? (boundary1 != 1 ? index1d(0, j-1, k, nx, ny) : -1) :
-               (i != nx-1 && j == 0) ? (boundary2 != 1 ? index1d(i+1, ny-1, k, nx, ny) : -1) :
-               ((boundary1 != 1 && boundary2 != 1) ? index1d(0, ny-1, k, nx, ny) : -1);
+               (i == nx-1 && j != 0) ? (isnotWall1 ? index1d(0, j-1, k, nx, ny) : -1) :
+               (i != nx-1 && j == 0) ? (isnotWall2 ? index1d(i+1, ny-1, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(0, ny-1, k, nx, ny) : -1);
     }
     else if(q == 11)
     {
@@ -206,15 +426,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i == 0 && k != 0)
         {
-            return boundary1 != 1 ? index1d(nx-1, j, k-1, nx, ny) : -1;
+            return isnotWall1 ? index1d(nx-1, j, k-1, nx, ny) : -1;
         }
         else if(i != 0 && k == 0)
         {
-            return boundary3 != 1 ? index1d(i-1, j, nz-1, nx, ny) : -1;
+            return isnotWall3 ? index1d(i-1, j, nz-1, nx, ny) : -1;
         }
         else
         {
-            return (boundary1 != 1 && boundary3 != 1) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
+            return (isnotWall1 && isnotWall3) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
         }
     }
     else if(q == 12)
@@ -225,15 +445,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i == nx-1 && k != nz-1)
         {
-            return boundary1 != 1 ? index1d(0, j, k+1, nx, ny) : -1;
+            return isnotWall1 ? index1d(0, j, k+1, nx, ny) : -1;
         }
         else if(i != nx-1 && k == nz-1)
         {
-            return boundary3 != 1 ? index1d(i+1, j, 0, nx, ny) : -1;
+            return isnotWall3 ? index1d(i+1, j, 0, nx, ny) : -1;
         }
         else
         {
-            return (boundary1 != 1 && boundary3 != 1) ? index1d(0, j, 0, nx, ny) : -1;
+            return (isnotWall1 && isnotWall3) ? index1d(0, j, 0, nx, ny) : -1;
         }
     }
     else if(q == 13)
@@ -244,15 +464,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i == 0 && k != nz-1)
         {
-            return boundary1 != 1 ? index1d(nx-1, j, k+1, nx, ny) : -1;
+            return isnotWall1 ? index1d(nx-1, j, k+1, nx, ny) : -1;
         }
         else if(i != 0 && k == nz-1)
         {
-            return boundary3 != 1 ? index1d(i-1, j, 0, nx, ny) : -1;
+            return isnotWall3 ? index1d(i-1, j, 0, nx, ny) : -1;
         }
         else
         {
-            return (boundary1 != 1 && boundary3 != 1) ? index1d(nx-1, j, 0, nx, ny) : -1;
+            return (isnotWall1 && isnotWall3) ? index1d(nx-1, j, 0, nx, ny) : -1;
         }
     }
     else if(q == 14)
@@ -263,15 +483,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(i == nx-1 && k != 0)
         {
-            return boundary1 != 1 ? index1d(0, j, k-1, nx, ny) : -1;
+            return isnotWall1 ? index1d(0, j, k-1, nx, ny) : -1;
         }
         else if(i != nx-1 && k == 0)
         {
-            return boundary3 != 1 ? index1d(i+1, j, nz-1, nx, ny) : -1;
+            return isnotWall3 ? index1d(i+1, j, nz-1, nx, ny) : -1;
         }
         else
         {
-            return (boundary1 != 1 && boundary3 != 1) ? index1d(0, j, nz-1, nx, ny) : -1;
+            return (isnotWall1 && isnotWall3) ? index1d(0, j, nz-1, nx, ny) : -1;
         }
     }
     else if(q == 15)
@@ -282,15 +502,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == 0 && k != 0)
         {
-            return boundary2 != 1 ? index1d(i, ny-1, k-1, nx, ny) : -1;
+            return isnotWall2 ? index1d(i, ny-1, k-1, nx, ny) : -1;
         }
         else if(j != 0 && k == 0)
         {
-            return boundary3 != 1 ? index1d(i, j-1, nz-1, nx, ny) : -1;
+            return isnotWall3 ? index1d(i, j-1, nz-1, nx, ny) : -1;
         }
         else
         {
-            return (boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
+            return (isnotWall2 && isnotWall3) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
         }
     }
     else if(q == 16)
@@ -301,15 +521,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == ny-1 && k != nz-1)
         {
-            return boundary2 != 1 ? index1d(i, 0, k+1, nx, ny) : -1;
+            return isnotWall2 ? index1d(i, 0, k+1, nx, ny) : -1;
         }
         else if(j != ny-1 && k == nz-1)
         {
-            return boundary3 != 1 ? index1d(i, j+1, 0, nx, ny) : -1;
+            return isnotWall3 ? index1d(i, j+1, 0, nx, ny) : -1;
         }
         else
         {
-            return (boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, 0, nx, ny) : -1;
+            return (isnotWall2 && isnotWall3) ? index1d(i, 0, 0, nx, ny) : -1;
         }
     }
     else if(q == 17)
@@ -320,15 +540,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == 0 && k != nz-1)
         {
-            return boundary2 != 1 ? index1d(i, ny-1, k+1, nx, ny) : -1;
+            return isnotWall2 ? index1d(i, ny-1, k+1, nx, ny) : -1;
         }
         else if(j != 0 && k == nz-1)
         {
-            return boundary3 != 1 ? index1d(i, j-1, 0, nx, ny) : -1;
+            return isnotWall3 ? index1d(i, j-1, 0, nx, ny) : -1;
         }
         else
         {
-            return (boundary2 != 1 && boundary3 != 1) ? index1d(i, ny-1, 0, nx, ny) : -1;
+            return (isnotWall2 && isnotWall3) ? index1d(i, ny-1, 0, nx, ny) : -1;
         }
     }
     else if(q == 18)
@@ -339,15 +559,15 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
         }
         else if(j == ny-1 && k != 0)
         {
-            return boundary2 != 1 ? index1d(i, 0, k-1, nx, ny) : -1;
+            return isnotWall2 ? index1d(i, 0, k-1, nx, ny) : -1;
         }
         else if(j != ny-1 && k == 0)
         {
-            return boundary3 != 1 ? index1d(i, j+1, nz-1, nx, ny) : -1;
+            return isnotWall3 ? index1d(i, j+1, nz-1, nx, ny) : -1;
         }
         else
         {
-            return (boundary2 != 1 && boundary3 != 1) ? index1d(i, 0, nz-1, nx, ny) : -1;
+            return (isnotWall2 && isnotWall3) ? index1d(i, 0, nz-1, nx, ny) : -1;
         }
     }
     else
@@ -691,9 +911,9 @@ __kernel void k_streamingCollision // Pull
                 int upQID = idf(q, upID[q], nx, ny, nz);
                 ft[q] = f[upQID];
             }
-            else // Bounce-Back for boundary wall
+            else // Bounce-Back or Symmetry for boundary wall
             {
-                int qbb = reflectQ(q);
+                int qbb = reflectOrMirrorQ(q,boundary1[ic],boundary2[ic],boundary3[ic]);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
                 const float rhow = rho_av;
                 if(q == 1)

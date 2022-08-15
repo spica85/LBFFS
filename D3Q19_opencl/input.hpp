@@ -193,6 +193,10 @@ int BCnameToNum(std::string name)
     {
         return 3;
     }
+    else if(name == "Symmetry")
+    {
+        return 4;
+    }
     else
     {
         std::cerr << "Please select from Cyclic, BounceBack, Equilibrium, and Outlet" << std::endl;
