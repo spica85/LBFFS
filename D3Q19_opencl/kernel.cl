@@ -1114,11 +1114,11 @@ void Xrot
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
-   __global int* boundary1, __global int* boundary2, __global int* boundary3,
-   __global float* sdf, __global unsigned char* solid, __global unsigned char* neiSolid, 
-   __global float* u0, __global float* v0, __global float* w0,
+   __global int* boundary1List, __global int* boundary2List, __global int* boundary3List,
+   __global float* sdfList, __global unsigned char* solidList, __global unsigned char* neiSolidList, 
+   __global float* u0List, __global float* v0List, __global float* w0List,
    __global float* Fwx, __global float* Fwy, __global float* Fwz,
-   __global float* tauSGS,
+   __global float* tauSGSList,
    __global float* rhoList,
    __global float* uList, __global float* vList, __global float* wList,
    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
@@ -1131,7 +1131,7 @@ __kernel void k_streamingCollision // Pull
 )
 {
     int ic = get_global_id(0);
-    if(solid[ic] == 0)
+    if(solidList[ic] == 0)
     {
         int i = ic2i(ic,nx,ny);
         int j = ic2j(ic,nx,ny);
@@ -1147,11 +1147,19 @@ __kernel void k_streamingCollision // Pull
         float ft[19];
         int upID[19];
         ft[0] = f[ic];
+
+        const int boundary1 = boundary1List[ic];
+        const int boundary2 = boundary2List[ic];
+        const int boundary3 = boundary3List[ic];
+        const float sdf = sdfList[ic];
+        const float u0 = u0List[ic];
+        const float v0 = v0List[ic];
+        const float w0 = w0List[ic];
         for(int q = 1; q < 19; q++)
         {
             int qic = q*elements +ic;
 
-            upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,boundary1[ic],boundary2[ic],boundary3[ic]);
+            upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,boundary1,boundary2,boundary3);
             if(upID[q] != -1) // Streaming
             {   
                 int upQID = idf(q, upID[q], nx, ny, nz);
@@ -1159,80 +1167,80 @@ __kernel void k_streamingCollision // Pull
             }
             else // Bounce-Back or Symmetry for boundary wall
             {
-                int qbb = reflectOrMirrorQ(q,boundary1[ic],boundary2[ic],boundary3[ic]);
+                int qbb = reflectOrMirrorQ(q,boundary1,boundary2,boundary3);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
                 const float rhow = rho_av;
                 if(q == 1)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*u0[ic]/18.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*u0/18.0f;
                 }
                 else if(q == 2)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*u0[ic]/18.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*u0/18.0f;
                 }
                 else if(q == 3)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*v0[ic]/18.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*v0/18.0f;
                 }
                 else if(q == 4)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*v0[ic]/18.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*v0/18.0f;
                 }
                 else if(q == 5)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*w0[ic]/18.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*w0/18.0f;
                 }
                 else if(q == 6)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*w0[ic]/18.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*w0/18.0f;
                 }
                 else if(q == 7)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0+v0)/36.0f;
                 }
                 else if(q == 8)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+v0[ic])/36.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0+v0)/36.0f;
                 }
                 else if(q == 9)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0-v0)/36.0f;
                 }
                 else if(q == 10)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-v0[ic])/36.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0-v0)/36.0f;
                 }
                 else if(q == 11)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0+w0)/36.0f;
                 }
                 else if(q == 12)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]+w0[ic])/36.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0+w0)/36.0f;
                 }
                 else if(q == 13)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*(u0-w0)/36.0f;
                 }
                 else if(q == 14)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0[ic]-w0[ic])/36.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*(u0-w0)/36.0f;
                 }
                 else if(q == 15)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*(v0+w0)/36.0f;
                 }
                 else if(q == 16)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]+w0[ic])/36.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*(v0+w0)/36.0f;
                 }
                 else if(q == 17)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                    ft[q] = f[bbQID] +6.0f*rhow*(v0-w0)/36.0f;
                 }
                 else if(q == 18)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*(v0[ic]-w0[ic])/36.0f;
+                    ft[q] = f[bbQID] -6.0f*rhow*(v0-w0)/36.0f;
                 }
                 // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
             }
@@ -1247,11 +1255,12 @@ __kernel void k_streamingCollision // Pull
             for(int q = 0; q < 19; q++)
             {
                 int qic = q*elements +ic;
-                rho += f[qic];
+                const float fq = f[qic];
+                rho += fq;
 
-                u += f[qic]*cx[q];
-                v += f[qic]*cy[q];
-                w += f[qic]*cz[q];
+                u += fq*cx[q];
+                v += fq*cy[q];
+                w += fq*cz[q];
             }
             u /= rho;
             v /= rho;
@@ -1264,12 +1273,12 @@ __kernel void k_streamingCollision // Pull
 
             for(int q = 1; q < 19; q++)
             {
-                if(neiSolid[ic] == 1)
+                if(neiSolidList[ic] == 1)
                 {
-                    if(solid[upID[q]] == 1)
+                    if(solidList[upID[q]] == 1)
                     {
-                        const float sdf0 = sdf[ic];
-                        const float sdf1 = sdf[upID[q]];
+                        const float sdf0 = sdf;
+                        const float sdf1 = sdfList[upID[q]];
                         const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
 
                         int qbb = reflectQ(q);
@@ -1283,7 +1292,7 @@ __kernel void k_streamingCollision // Pull
                         // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
 
                         float tau = 1.f/omega;
-                        float omegaEff = 1.f/(tau +tauSGS[ic]);
+                        float omegaEff = 1.f/(tau +tauSGSList[ic]);
                         
                         if(qf <= 0.5f)
                         {
@@ -1317,7 +1326,7 @@ __kernel void k_streamingCollision // Pull
         //-- Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
         for(int q = 0; q < 19; q++)
         {
-            if(boundary1[ic] == 3 || boundary2[ic] == 3 || boundary3[ic] == 3)
+            if(boundary1 == 3 || boundary2 == 3 || boundary3 == 3)
             {
                 int i = ic2i(ic,nx,ny);
                 int j = ic2j(ic,nx,ny);
@@ -1325,7 +1334,7 @@ __kernel void k_streamingCollision // Pull
 
                 if(i == 0)
                 {
-                    if(boundary1[ic] == 3)
+                    if(boundary1 == 3)
                     {
                         if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
                         {                            
@@ -1338,7 +1347,7 @@ __kernel void k_streamingCollision // Pull
                 }
                 if(i == nx-1)
                 {
-                    if(boundary1[ic] == 3)
+                    if(boundary1 == 3)
                     {
                         if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
                         {
@@ -1351,7 +1360,7 @@ __kernel void k_streamingCollision // Pull
                 }
                 if(j == 0)
                 {
-                    if(boundary2[ic] == 3)
+                    if(boundary2 == 3)
                     {
                         if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
                         {
@@ -1364,7 +1373,7 @@ __kernel void k_streamingCollision // Pull
                 }
                 if(j == ny-1)
                 {
-                    if(boundary2[ic] == 3)
+                    if(boundary2 == 3)
                     {
                         if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
                         {
@@ -1377,7 +1386,7 @@ __kernel void k_streamingCollision // Pull
                 }
                 if(k == 0)
                 {
-                    if(boundary3[ic] == 3)
+                    if(boundary3 == 3)
                     {
                         if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
                         {
@@ -1390,7 +1399,7 @@ __kernel void k_streamingCollision // Pull
                 }
                 if(k == nz-1)
                 {
-                    if(boundary3[ic] == 3)
+                    if(boundary3 == 3)
                     {
                         if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17)
                         {
@@ -1453,16 +1462,16 @@ __kernel void k_streamingCollision // Pull
             // float Cs = 0.2f;// 0.1--0.2
             // float Cs = 0.33f;// 0.1--0.2
 
-            tauSGS[ic] = LES*0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
+            float tauSGS = LES*0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
             // tauSGS[ic] = LES*0.5f*(-tau +sqrt(tau*tau +18.f*sqrt(2.f)*Cs*Cs*sqrtPIPI/rho));
             // tauSGS[ic] = 3.f*(Cs*Cs)*sqrt(2.f)*sqrtPIPI*0.5f/rho*3.0f/tau;
 
             //-- Damping of nuSGS (tauSGS) near wall
-            const float y = sdf[ic];
+            const float y = sdf;
             if(y != 10000.f && y > 0.f)
             {
                 const float kappa = 0.41f;
-                tauSGS[ic] *= pow(min(1.f, kappa*y/Cs),2.f); // Treatment in Fluent
+                tauSGS *= pow(min(1.f, kappa*y/Cs),2.f); // Treatment in Fluent
 
                 // //-- van Driest damping function
                 // const float Aplus = 26.f;
@@ -1495,57 +1504,58 @@ __kernel void k_streamingCollision // Pull
             int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
             const float spzWidth = 0.1f;
             
-            if(boundary1[icX0] == 3)
+            if(boundary1List[icX0] == 3)
             {
                 if(i < nx*spzWidth)
                 {
                     const float fx = i/(nx*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS[ic]) +fx*tau;
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary1[icXE] == 3)
+            if(boundary1List[icXE] == 3)
             {
                 if(i > nx*(1.f -spzWidth))
                 {
                     const float fx = (nx-i)/(nx*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS[ic]) +fx*tau;
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary2[icY0] == 3)
+            if(boundary2List[icY0] == 3)
             {
                 if(j < ny*spzWidth)
                 {
                     const float fx = j/(ny*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS[ic]) +fx*tau;
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary2[icYE] == 3)
+            if(boundary2List[icYE] == 3)
             {
                 if(j > ny*(1.f -spzWidth))
                 {
                     const float fx = (ny-j)/(ny*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS[ic]) +fx*tau;
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary3[icZ0] == 3)
+            if(boundary3List[icZ0] == 3)
             {
                 if(k < nz*spzWidth)
                 {
                     const float fx = k/(nz*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS[ic]) +fx*tau;
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary3[icZE] == 3)
+            if(boundary3List[icZE] == 3)
             {
                 if(k > nz*(1.f -spzWidth))
                 {
                     const float fx = (nz-k)/(nz*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS[ic]) +fx*tau;
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
             //--
             
-            float omegaEff = 1.f/(tau +tauSGS[ic]);
+            float omegaEff = 1.f/(tau +tauSGS);
+            tauSGSList[ic] = tauSGS;
 
             const float sqrCs = 1.f/3.f;
             const float quadCs = 1.f/9.f;
@@ -1944,20 +1954,20 @@ __kernel void k_streamingCollision // Pull
         }
 
         //-- Equilibrium Boundary
-        if(boundary1[ic] == 2 || boundary2[ic] == 2 || boundary3[ic] == 2)
+        if(boundary1 == 2 || boundary2 == 2 || boundary3 == 2)
         {
             int i = ic2i(ic,nx,ny);
             int j = ic2j(ic,nx,ny);
             int k = ic2k(ic,nx,ny);
 
             const float rhow = rho_av;
-            const float u = u0[ic];
-            const float v = v0[ic];
-            const float w = w0[ic];
+            const float u = u0;
+            const float v = v0;
+            const float w = w0;
 
             if(i == 0)
             {
-                if(boundary1[ic] == 2)
+                if(boundary1 == 2)
                 {
                     for(int q = 0; q < 19; q++)
                     {
@@ -1973,7 +1983,7 @@ __kernel void k_streamingCollision // Pull
             }
             if(i == nx-1)
             {
-                if(boundary1[ic] == 2)
+                if(boundary1 == 2)
                 {   for(int q = 0; q < 19; q++)
                     {
                         if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
@@ -1988,7 +1998,7 @@ __kernel void k_streamingCollision // Pull
             }
             if(j == 0)
             {
-                if(boundary2[ic] == 2)
+                if(boundary2 == 2)
                 {
                     for(int q = 0; q < 19; q++)
                     {
@@ -2004,7 +2014,7 @@ __kernel void k_streamingCollision // Pull
             }
             if(j == ny-1)
             {
-                if(boundary2[ic] == 2)
+                if(boundary2 == 2)
                 {
                     for(int q = 0; q < 19; q++)
                     {
@@ -2020,7 +2030,7 @@ __kernel void k_streamingCollision // Pull
             }
             if(k == 0)
             {
-                if(boundary3[ic] == 2)
+                if(boundary3 == 2)
                 {
                     for(int q = 0; q < 19; q++)
                     {
@@ -2036,7 +2046,7 @@ __kernel void k_streamingCollision // Pull
             }
             if(k == nz-1)
             {
-                if(boundary3[ic] == 2)
+                if(boundary3 == 2)
                 {
                     for(int q = 0; q < 19; q++)
                     {
