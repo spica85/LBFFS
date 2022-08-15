@@ -174,7 +174,7 @@ void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const f
     }
 }
 
-void setSolid(std::vector<unsigned char>& solid, std::vector<float>& sdf, const float sdfIni, const int nx, const int ny, const int nz)
+void setSolid(std::vector<unsigned char>& solid, std::vector<float>& sdf, const float sdfIni, const int nx, const int ny, const int nz, const bool fluid)
 {
     const int elements = sdf.size();
 
@@ -212,6 +212,14 @@ void setSolid(std::vector<unsigned char>& solid, std::vector<float>& sdf, const 
                 }
             }
         }
+    }
+
+    if(!fluid)
+    {
+        for(int ic = 0; ic < elements; ic++)
+        {            
+            solid[ic] = (solid[ic] == 1) ? 0 : 1;
+        }        
     }
 }
 

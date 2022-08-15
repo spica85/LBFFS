@@ -181,7 +181,7 @@ int main()
     setSDF(sdf, sdfIni, dr, p, STLc, STLnormal, nx, ny, nz, false);
     
     std::vector<unsigned char> solid(elements,0);
-    setSolid(solid, sdf, sdfIni, nx, ny, nz);
+    setSolid(solid, sdf, sdfIni, nx, ny, nz, true);
 
     const float qfIni = 0.5f;
     std::vector<float> qf(19*nx*ny*nz,qfIni);

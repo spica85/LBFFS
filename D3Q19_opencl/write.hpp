@@ -381,6 +381,84 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }
 
+    // GxIBM output
+    {
+        writeFile << "SCALARS GxIBM float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(GxIBM[ic]));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << (float)(GxIBM[ic]) << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // GyIBM output
+    {
+        writeFile << "SCALARS GyIBM float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(GyIBM[ic]));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << (float)(GyIBM[ic]) << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // GzIBM output
+    {
+        writeFile << "SCALARS GzIBM float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(GzIBM[ic]));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << (float)(GzIBM[ic]) << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
     writeFile.close();
 
     // Writing for restart
