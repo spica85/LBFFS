@@ -170,7 +170,7 @@ int main()
     std::vector<float> Fwy(nx*ny*nz,0.0f);
     std::vector<float> Fwz(nx*ny*nz,0.0f);
 
-    readSTL(STLname, STLnormal, STLv0, STLv1, STLv2, nSTL, STLc, L);
+    const int isReadWalls = readSTL(STLname, STLnormal, STLv0, STLv1, STLv2, nSTL, STLc, L);
     //--
 
     //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
@@ -206,9 +206,9 @@ int main()
     int nMovingSTL;
     std::vector<std::vector<float> > movingSTLc(3);
 
-    readSTL(movingSTLname, movingSTLnormal, movingSTLv0, movingSTLv1, movingSTLv2, nMovingSTL, movingSTLc, L);
+    const int isReadMovingWalls = readSTL(movingSTLname, movingSTLnormal, movingSTLv0, movingSTLv1, movingSTLv2, nMovingSTL, movingSTLc, L);
     // -- Exception handling to avoid zero buffer size
-    if(nMovingSTL == 0)
+    if(isReadMovingWalls == 0)
     {
         nMovingSTL = 1;
         movingSTLc[0].push_back(0.f);
@@ -228,9 +228,9 @@ int main()
     std::vector<float> GyMovingWall(nMovingSTL);
     std::vector<float> GzMovingWall(nMovingSTL);
 
-    std::vector<float> GxIBM(elements);
-    std::vector<float> GyIBM(elements);
-    std::vector<float> GzIBM(elements);
+    std::vector<float> GxIBM(elements,0.f);
+    std::vector<float> GyIBM(elements,0.f);
+    std::vector<float> GzIBM(elements,0.f);
 
     float uMovingTrans = 0.f;
     float vMovingTrans = 0.f;
@@ -320,7 +320,8 @@ int main()
         const float,
         const float,
         const int, const int, const int,
-        const float
+        const float,
+        const int
     > k_streamingCollision(program, "k_streamingCollision");  
 
     // Create the kernel functor of Gwall
@@ -390,7 +391,8 @@ int main()
             dpdx,
             rho_av,
             nx, ny, nz,
-            LES
+            LES,
+            isReadMovingWalls
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;

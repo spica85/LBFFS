@@ -14,14 +14,14 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2, int& nSTL, std::vector<std::vector<float> >& STLc, float L)
+int readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2, int& nSTL, std::vector<std::vector<float> >& STLc, float L)
 {
     std::ifstream STLfile(STLname);
     if(!STLfile)
     {
         std::cout << "\nSTL (" << STLname << ") was not read\n" << std::endl;
         nSTL = 0;
-        return;
+        return 0;
     }
     else
     {
@@ -99,6 +99,7 @@ void readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnor
     }
 
     std::cout << "Number of elements of " << STLname << ": " << nSTL << std::endl;
+    return 1;
 }
 
 void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, std::vector<std::vector<float> >& STLc, std::vector<std::vector<float> >& STLnormal, const int nx, const int ny, const int nz, const bool boundary)

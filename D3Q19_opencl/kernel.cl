@@ -1127,7 +1127,8 @@ __kernel void k_streamingCollision // Pull
    const float dpdx,
    const float rho_av,
    const int nx, const int ny, const int nz,
-   const float LES
+   const float LES,
+   const int isReadMovingWalls
 )
 {
     int ic = get_global_id(0);
@@ -1167,7 +1168,7 @@ __kernel void k_streamingCollision // Pull
             }
             else // Bounce-Back or Symmetry for boundary wall
             {
-                int qbb = reflectOrMirrorQ(q,boundary1,boundary2,boundary3);
+                int qbb = (boundary1 == 4 || boundary2 == 4 || boundary3 == 4) ? reflectOrMirrorQ(q,boundary1,boundary2,boundary3) : reflectQ(q);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
                 const float rhow = rho_av;
                 if(q == 1)
@@ -1423,10 +1424,11 @@ __kernel void k_streamingCollision // Pull
             
             for(int q = 0; q < 19; q++)
             {
-                rho += ft[q];
-                u += ft[q]*cx[q];
-                v += ft[q]*cy[q];
-                w += ft[q]*cz[q];
+                float ftq = ft[q];
+                rho += ftq;
+                u += ftq*cx[q];
+                v += ftq*cy[q];
+                w += ftq*cz[q];
             }
             u /= rho;
             v /= rho;
@@ -1947,10 +1949,16 @@ __kernel void k_streamingCollision // Pull
             fTmp[17*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll021) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[17]*3.0f*dpdx*cx[17];
             fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[18]*3.0f*dpdx*cx[18];
             //--
-            rhoList[ic] = rho;
-            uList[ic] = u;
-            vList[ic] = v;
-            wList[ic] = w;
+            if(isReadMovingWalls == 1)
+            {
+                rhoList[ic] = rho;
+                uList[ic] = u;
+                vList[ic] = v;
+                wList[ic] = w;
+                GxIBM[ic] = 0.f;
+                GyIBM[ic] = 0.f;
+                GzIBM[ic] = 0.f;
+            }
         }
 
         //-- Equilibrium Boundary
@@ -2062,9 +2070,6 @@ __kernel void k_streamingCollision // Pull
             }
         }
     }
-    GxIBM[ic] = 0.f;
-    GyIBM[ic] = 0.f;
-    GzIBM[ic] = 0.f;
 }
 
 __kernel void k_Gwall
