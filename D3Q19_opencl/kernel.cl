@@ -1879,7 +1879,8 @@ __kernel void k_streamingCollision // Pull
             float RRneq022 = RReq002*RRneq020 +RReq020*RRneq002 +4.f*RReq011*RRneq011;
 
             // float omegaB = 0.985f;
-            float omegaB = 1.f;
+            // float omegaB = 1.f;
+            float omegaB = 0.5f;
             float omegaM = (omegaB - omegaEff)/3.f;
             float omegaP = omegaM +omegaEff;
 
