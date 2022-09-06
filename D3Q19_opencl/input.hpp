@@ -199,7 +199,7 @@ int BCnameToNum(std::string name)
     }
     else
     {
-        std::cerr << "Please select from Cyclic, BounceBack, Equilibrium, and Outlet" << std::endl;
+        std::cerr << "Please select from Cyclic, BounceBack, Equilibrium, Symmetry, and Outlet" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
