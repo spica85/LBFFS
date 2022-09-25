@@ -1511,7 +1511,6 @@ __kernel void k_streamingCollision // Pull
             int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
             int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
             int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
-            printf("spzWidth: %.1f", spzWidth);
             
             if(boundary1List[icX0] == 3)
             {
