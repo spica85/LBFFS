@@ -60,8 +60,9 @@ int main()
     bool forceCoeffs;
     float Dref;
     float spzWidth;
+    float omegaB;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, spzWidth);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, spzWidth, omegaB);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -323,6 +324,7 @@ int main()
         const int, const int, const int,
         const float,
         const int,
+        const float,
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
@@ -395,7 +397,8 @@ int main()
             nx, ny, nz,
             LES,
             isReadMovingWalls,
-            spzWidth
+            spzWidth,
+            omegaB
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;

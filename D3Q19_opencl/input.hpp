@@ -112,7 +112,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref, float& spzWidth)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref, float& spzWidth, float& omegaB)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -197,9 +197,11 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
         Dref = 1.f;
     }
 
-    
     std::string spzWidthStr("spzWidth");
     spzWidth = lookupOrDefault<float>(lines, spzWidthStr, 0.1f);
+
+    std::string omegaBStr("omegaB");
+    omegaB = lookupOrDefault<float>(lines, omegaBStr, 0.1f);
 
     inputFile.close();
 }

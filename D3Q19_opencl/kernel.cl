@@ -1129,7 +1129,8 @@ __kernel void k_streamingCollision // Pull
    const int nx, const int ny, const int nz,
    const float LES,
    const int isReadMovingWalls,
-   const float spzWidth
+   const float spzWidth,
+   const float omegaB
 )
 {
     int ic = get_global_id(0);
@@ -1718,7 +1719,6 @@ __kernel void k_streamingCollision // Pull
             // K202 -= (K200*K002 +2.f*K101*K101);
             // K022 -= (K020*K002 +2.f*K011*K011);
 
-            // float omegaB = 1.f;
             // float omegaM = (omegaB - omegaEff)/3.f;
             // float omegaP = omegaM +omegaEff;
             // float Kcoll200 = K200 -omegaP*(K200 -sqrCs) -omegaM*(K020 -sqrCs) -omegaM*(K002 -sqrCs);
@@ -1884,9 +1884,6 @@ __kernel void k_streamingCollision // Pull
             float RRneq202 = RReq002*RRneq200 +RReq200*RRneq002 +4.f*RReq101*RRneq101;
             float RRneq022 = RReq002*RRneq020 +RReq020*RRneq002 +4.f*RReq011*RRneq011;
 
-            // float omegaB = 0.985f;
-            // float omegaB = 1.f;
-            float omegaB = 0.5f;
             float omegaM = (omegaB - omegaEff)/3.f;
             float omegaP = omegaM +omegaEff;
 
