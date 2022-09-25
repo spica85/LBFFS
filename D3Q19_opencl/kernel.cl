@@ -1338,11 +1338,12 @@ __kernel void k_streamingCollision // Pull
                     if(boundary1 == 3)
                     {
                         if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
-                        {                            
+                        {
                             int innerID = index1d(1,j,k,nx,ny);
+                            float u = uList[ic];
                             int qinic = idf(q, innerID, nx, ny, nz);
                             int qic = idf(q, ic, nx, ny, nz);
-                            ft[q] = sqrt(3.f)*f[qinic] +(1.f -sqrt(3.f))*f[qic];
+                            ft[q] = (1.f/sqrt(3.f) -u)*f[qinic] +(1.f -(1.f/sqrt(3.f) -u))*f[qic];
                         }
                     }
                 }
@@ -1353,9 +1354,10 @@ __kernel void k_streamingCollision // Pull
                         if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
                         {
                             int innerID = index1d(nx-2,j,k,nx,ny);
+                            float u = uList[ic];
                             int qinic = idf(q, innerID, nx, ny, nz);
                             int qic = idf(q, ic, nx, ny, nz);
-                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                            ft[q] = (1.f/sqrt(3.f) -u)*f[qinic] +(1.f -(1.f/sqrt(3.f) -u))*f[qic];
                         }
                     }
                 }
@@ -1366,9 +1368,10 @@ __kernel void k_streamingCollision // Pull
                         if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
                         {
                             int innerID = index1d(i,1,k,nx,ny);
+                            float v = vList[ic];
                             int qinic = idf(q, innerID, nx, ny, nz);
                             int qic = idf(q, ic, nx, ny, nz);
-                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                            ft[q] = (1.f/sqrt(3.f) -v)*f[qinic] +(1.f -(1.f/sqrt(3.f) -v))*f[qic];
                         }
                     }
                 }
@@ -1379,9 +1382,10 @@ __kernel void k_streamingCollision // Pull
                         if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
                         {
                             int innerID = index1d(i,ny-2,k,nx,ny);
+                            float v = vList[ic];
                             int qinic = idf(q, innerID, nx, ny, nz);
                             int qic = idf(q, ic, nx, ny, nz);
-                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                            ft[q] = (1.f/sqrt(3.f) -v)*f[qinic] +(1.f -(1.f/sqrt(3.f) -v))*f[qic];
                         }
                     }
                 }
@@ -1392,9 +1396,10 @@ __kernel void k_streamingCollision // Pull
                         if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
                         {
                             int innerID = index1d(i,j,1,nx,ny);
+                            float w = wList[ic];
                             int qinic = idf(q, innerID, nx, ny, nz);
                             int qic = idf(q, ic, nx, ny, nz);
-                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                            ft[q] = (1.f/sqrt(3.f) -w)*f[qinic] +(1.f -(1.f/sqrt(3.f) -w))*f[qic];
                         }
                     }
                 }
@@ -1405,9 +1410,10 @@ __kernel void k_streamingCollision // Pull
                         if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17)
                         {
                             int innerID = index1d(i,j,nz-2,nx,ny);
+                            float w = wList[ic];
                             int qinic = idf(q, innerID, nx, ny, nz);
                             int qic = idf(q, ic, nx, ny, nz);
-                            ft[q] = f[qinic]/sqrt(3.f) +(1.f -1.f/sqrt(3.f))*f[qic];
+                            ft[q] = (1.f/sqrt(3.f) -w)*f[qinic] +(1.f -(1.f/sqrt(3.f) -w))*f[qic];
                         }
                     }
                 }
@@ -1950,8 +1956,6 @@ __kernel void k_streamingCollision // Pull
             fTmp[17*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll021) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[17]*3.0f*dpdx*cx[17];
             fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[18]*3.0f*dpdx*cx[18];
             //--
-            if(isReadMovingWalls == 1)
-            {
                 rhoList[ic] = rho;
                 uList[ic] = u;
                 vList[ic] = v;
@@ -1959,7 +1963,6 @@ __kernel void k_streamingCollision // Pull
                 GxIBM[ic] = 0.f;
                 GyIBM[ic] = 0.f;
                 GzIBM[ic] = 0.f;
-            }
         }
 
         //-- Equilibrium Boundary
