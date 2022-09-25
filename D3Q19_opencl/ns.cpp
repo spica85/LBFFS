@@ -59,8 +59,9 @@ int main()
     float LES;
     bool forceCoeffs;
     float Dref;
+    float spzWidth;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, spzWidth);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -321,7 +322,8 @@ int main()
         const float,
         const int, const int, const int,
         const float,
-        const int
+        const int,
+        const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
     // Create the kernel functor of Gwall
@@ -392,7 +394,8 @@ int main()
             rho_av,
             nx, ny, nz,
             LES,
-            isReadMovingWalls
+            isReadMovingWalls,
+            spzWidth
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;

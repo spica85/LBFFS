@@ -62,6 +62,31 @@ template int lookup<int>(std::vector<std::string>& lines, std::string& str);
 template double lookup<double>(std::vector<std::string>& lines, std::string& str);
 template std::string lookup<std::string>(std::vector<std::string>& lines, std::string& str);
 
+template<typename Type> Type lookupOrDefault(std::vector<std::string>& lines, std::string& str, Type defaultValue)
+{
+    for(auto itr = std::begin(lines); itr != std::end(lines); ++itr)
+    {
+        if(*itr == str)
+        {
+            ++itr;
+            Type i = returnWrapper<Type>(*itr);
+            --itr;
+            ++itr;
+            std::cout <<
+                str << ": " << i << std::endl;
+            --itr;
+            return i;
+        }
+    }
+    return defaultValue;
+}
+
+template bool lookupOrDefault<bool>(std::vector<std::string>& lines, std::string& str, bool defaultValue);
+template int lookupOrDefault<int>(std::vector<std::string>& lines, std::string& str, int defaultValue);
+template double lookupOrDefault<double>(std::vector<std::string>& lines, std::string& str, double defaultValue);
+template std::string lookupOrDefault<std::string>(std::vector<std::string>& lines, std::string& str, std::string defaultValue);
+
+
 void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 {
     std::string line;
@@ -87,7 +112,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref, float& spzWidth)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -171,6 +196,10 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     {
         Dref = 1.f;
     }
+
+    
+    std::string spzWidthStr("spzWidth");
+    spzWidth = lookupOrDefault<float>(lines, spzWidthStr, 0.1f);
 
     inputFile.close();
 }

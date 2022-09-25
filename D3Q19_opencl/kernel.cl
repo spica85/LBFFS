@@ -1128,7 +1128,8 @@ __kernel void k_streamingCollision // Pull
    const float rho_av,
    const int nx, const int ny, const int nz,
    const float LES,
-   const int isReadMovingWalls
+   const int isReadMovingWalls,
+   const float spzWidth
 )
 {
     int ic = get_global_id(0);
@@ -1510,7 +1511,7 @@ __kernel void k_streamingCollision // Pull
             int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
             int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
             int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
-            const float spzWidth = 0.1f;
+            printf("spzWidth: %.1f", spzWidth);
             
             if(boundary1List[icX0] == 3)
             {
