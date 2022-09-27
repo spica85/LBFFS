@@ -250,6 +250,45 @@ int main()
         readMotions(uMovingTrans,vMovingTrans,wMovingTrans,rotOmega,rotX,rotY,rotZ,rotAxisX,rotAxisY,rotAxisZ,c,L);
     }
     // --
+    const std::string inletSTLname("inlets.stl");
+    std::vector<std::vector<float> > inletSTLnormal(3);
+    std::vector<std::vector<float> > inletSTLv0(3);
+    std::vector<std::vector<float> > inletSTLv1(3);
+    std::vector<std::vector<float> > inletSTLv2(3);
+    int nInletSTL;
+    std::vector<std::vector<float> > inletSTLc(3);
+
+    const int isReadInlets = readSTL(inletSTLname, inletSTLnormal, inletSTLv0, inletSTLv1, inletSTLv2, nInletSTL, inletSTLc, L);
+
+    for(int iInletSTL = 0; iInletSTL < nInletSTL; iInletSTL++)
+    {
+        int i = int(inletSTLc[0][iInletSTL]);
+        int j = int(inletSTLc[1][iInletSTL]);
+        int k = int(inletSTLc[2][iInletSTL]);
+
+        int ic = index1d(i,j,k,nx,ny);
+
+        float absNormalX = abs(inletSTLnormal[0][iInletSTL]);
+        float absNormalY = abs(inletSTLnormal[1][iInletSTL]);
+        float absNormalZ = abs(inletSTLnormal[2][iInletSTL]);
+        float maxNormal = fmax(fmax(absNormalX,absNormalY),absNormalZ);
+        if(absNormalX == maxNormal)
+        {
+            boundary1[ic] = BCnameToNum("BounceBack");
+            u0[ic] = 1.f/c;
+        }
+        else if(absNormalY == maxNormal)
+        {
+            boundary2[ic] = BCnameToNum("BounceBack");
+            v0[ic] = 1.f/c;
+        }
+        else if(absNormalZ == maxNormal)
+        {
+            boundary3[ic] = BCnameToNum("BounceBack");
+            w0[ic] = 1.f/c;
+        }
+    }
+    // --
 
 
 

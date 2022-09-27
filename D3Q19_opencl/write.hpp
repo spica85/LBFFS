@@ -91,8 +91,8 @@ if(Fwrite && nextOutTime < nt +1)
     writeFile << "DATASET STRUCTURED_POINTS\n";
     writeFile << "DIMENSIONS " << nx << " " << ny << " " << nz << "\n";
 
-    // writeFile << "ORIGIN " << 0.0 << " " << 0.0 << " " << 0.0 << "\n";
-    writeFile << "ORIGIN " << L/2 << " " << L/2 << " " << L/2 << "\n";
+    writeFile << "ORIGIN " << 0.0 << " " << 0.0 << " " << 0.0 << "\n";
+    //writeFile << "ORIGIN " << L/2 << " " << L/2 << " " << L/2 << "\n";
     writeFile << "SPACING " << L << " " << L << " " << L << "\n\n";
 
 
