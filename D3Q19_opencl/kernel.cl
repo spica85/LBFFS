@@ -1121,15 +1121,14 @@ __kernel void k_streamingCollision // Pull
    __global float* tauSGSList,
    __global float* rhoList,
    __global float* uList, __global float* vList, __global float* wList,
+   __global float* omega,
    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
    const unsigned elements,
-   const float omega,
    const float dpdx,
    const float rho_av,
    const int nx, const int ny, const int nz,
    const float LES,
    const int isReadMovingWalls,
-   const float spzWidth,
    const float omegaB
 )
 {
@@ -1294,7 +1293,7 @@ __kernel void k_streamingCollision // Pull
                         float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
                         // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
 
-                        float tau = 1.f/omega;
+                        float tau = 1.f/omega[ic];
                         float omegaEff = 1.f/(tau +tauSGSList[ic]);
                         
                         if(qf <= 0.5f)
@@ -1443,7 +1442,7 @@ __kernel void k_streamingCollision // Pull
             w /= rho;
 
             //-- LES viscosity
-            float tau = 1.f/omega;
+            float tau = 1.f/omega[ic];
             
             float PIxx = 0.f;
             float PIxy = 0.f;
@@ -1505,63 +1504,63 @@ __kernel void k_streamingCollision // Pull
                 // //--
             }
 
-            //-- spongeZone
-            int icX0 = index1d(0,ny/2,nz/2,nx,ny);
-            int icXE = index1d(nx-1,ny/2,nz/2,nx,ny);
-            int icY0 = index1d(nx/2,0,nz/2,nx,ny);
-            int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
-            int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
-            int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
+            // //-- spongeZone
+            // int icX0 = index1d(0,ny/2,nz/2,nx,ny);
+            // int icXE = index1d(nx-1,ny/2,nz/2,nx,ny);
+            // int icY0 = index1d(nx/2,0,nz/2,nx,ny);
+            // int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
+            // int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
+            // int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
             
-            if(boundary1List[icX0] == 3)
-            {
-                if(i < nx*spzWidth)
-                {
-                    const float fx = i/(nx*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-                }
-            }
-            if(boundary1List[icXE] == 3)
-            {
-                if(i > nx*(1.f -spzWidth))
-                {
-                    const float fx = (nx-i)/(nx*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-                }
-            }
-            if(boundary2List[icY0] == 3)
-            {
-                if(j < ny*spzWidth)
-                {
-                    const float fx = j/(ny*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-                }
-            }
-            if(boundary2List[icYE] == 3)
-            {
-                if(j > ny*(1.f -spzWidth))
-                {
-                    const float fx = (ny-j)/(ny*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-                }
-            }
-            if(boundary3List[icZ0] == 3)
-            {
-                if(k < nz*spzWidth)
-                {
-                    const float fx = k/(nz*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-                }
-            }
-            if(boundary3List[icZE] == 3)
-            {
-                if(k > nz*(1.f -spzWidth))
-                {
-                    const float fx = (nz-k)/(nz*spzWidth);
-                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-                }
-            }
-            //--
+            // if(boundary1List[icX0] == 3)
+            // {
+            //     if(i < nx*spzWidth)
+            //     {
+            //         const float fx = i/(nx*spzWidth);
+            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+            //     }
+            // }
+            // if(boundary1List[icXE] == 3)
+            // {
+            //     if(i > nx*(1.f -spzWidth))
+            //     {
+            //         const float fx = (nx-i)/(nx*spzWidth);
+            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+            //     }
+            // }
+            // if(boundary2List[icY0] == 3)
+            // {
+            //     if(j < ny*spzWidth)
+            //     {
+            //         const float fx = j/(ny*spzWidth);
+            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+            //     }
+            // }
+            // if(boundary2List[icYE] == 3)
+            // {
+            //     if(j > ny*(1.f -spzWidth))
+            //     {
+            //         const float fx = (ny-j)/(ny*spzWidth);
+            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+            //     }
+            // }
+            // if(boundary3List[icZ0] == 3)
+            // {
+            //     if(k < nz*spzWidth)
+            //     {
+            //         const float fx = k/(nz*spzWidth);
+            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+            //     }
+            // }
+            // if(boundary3List[icZE] == 3)
+            // {
+            //     if(k > nz*(1.f -spzWidth))
+            //     {
+            //         const float fx = (nz-k)/(nz*spzWidth);
+            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+            //     }
+            // }
+            // //--
             
             float omegaEff = 1.f/(tau +tauSGS);
             tauSGSList[ic] = tauSGS;

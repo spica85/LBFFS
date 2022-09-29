@@ -59,10 +59,9 @@ int main()
     float LES;
     bool forceCoeffs;
     float Dref;
-    float spzWidth;
     float omegaB;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, spzWidth, omegaB);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -114,9 +113,10 @@ int main()
 
 
     const float deltaT = L/c; //Dimensional time step (s)
-    const float omega = 1.0/(3.0*nu +0.5);
+    const float omega0 = 1.0/(3.0*nu +0.5);
+    std::vector<float> omega(nx*ny*nz,omega0);
 
-    std::cout << "tau = " << 1.0/omega << ", taulim = " << 0.5f +uMax/c/8.0f << std::endl;
+    std::cout << "tau = " << 1.0/omega0 << ", taulim = " << 0.5f +uMax/c/8.0f << std::endl;
     std::cout << "Maximum Ma = " << (uMax/c)*sqrt(3.f) << std::endl;
 
     //-- Settings for boundary conditions
@@ -160,27 +160,23 @@ int main()
     }
 
     //-- Reading and settings of STL 
-    const std::string STLname("walls.stl");
-    std::vector<std::vector<float> > STLnormal(3);
-    std::vector<std::vector<float> > STLv0(3);
-    std::vector<std::vector<float> > STLv1(3);
-    std::vector<std::vector<float> > STLv2(3);
-    int nSTL;
-    std::vector<std::vector<float> > STLc(3);
-
+    STL wallSTL("walls.stl",L);
     std::vector<float> Fwx(nx*ny*nz,0.0f);
     std::vector<float> Fwy(nx*ny*nz,0.0f);
     std::vector<float> Fwz(nx*ny*nz,0.0f);
-
-    const int isReadWalls = readSTL(STLname, STLnormal, STLv0, STLv1, STLv2, nSTL, STLc, L);
-    //--
 
     //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
     const float sdfIni = 10000.f;
     std::vector<float> sdf(nx*ny*nz,sdfIni);
     float dr = 10.f;
     const float p = 7.f;
-    setSDF(sdf, sdfIni, dr, p, STLc, STLnormal, nx, ny, nz, false);
+
+    for(int iPatch = 0; iPatch < wallSTL.patch.size(); iPatch++)
+    {
+        const std::unique_ptr<STLpatch>& patch = wallSTL.patch[iPatch];
+
+        setSDF(sdf, sdfIni, dr, p, patch->STLc, patch->STLnormal, nx, ny, nz, false);
+    }
     
     std::vector<unsigned char> solid(elements,0);
     setSolid(solid, sdf, sdfIni, nx, ny, nz, true);
@@ -249,43 +245,99 @@ int main()
     {
         readMotions(uMovingTrans,vMovingTrans,wMovingTrans,rotOmega,rotX,rotY,rotZ,rotAxisX,rotAxisY,rotAxisZ,c,L);
     }
+
     // --
-    const std::string inletSTLname("inlets.stl");
-    std::vector<std::vector<float> > inletSTLnormal(3);
-    std::vector<std::vector<float> > inletSTLv0(3);
-    std::vector<std::vector<float> > inletSTLv1(3);
-    std::vector<std::vector<float> > inletSTLv2(3);
-    int nInletSTL;
-    std::vector<std::vector<float> > inletSTLc(3);
+        STL inletSTL("inlets.stl",L);
+        for(int iPatch = 0; iPatch < inletSTL.patch.size(); iPatch++)
+        {
+            const std::unique_ptr<STLpatch>& patch = inletSTL.patch[iPatch];
+            int patchBoundary1;
+            int patchBoundary2;
+            int patchBoundary3;
+            float patchU0;
+            float patchV0;
+            float patchW0;
 
-    const int isReadInlets = readSTL(inletSTLname, inletSTLnormal, inletSTLv0, inletSTLv1, inletSTLv2, nInletSTL, inletSTLc, L);
+            inputBoundaryCondition(patch->patchName,patchBoundary1,patchBoundary2,patchBoundary3,patchU0,patchV0,patchW0,c);
 
-    for(int iInletSTL = 0; iInletSTL < nInletSTL; iInletSTL++)
+            for(int iInletSTL = 0; iInletSTL < patch->nSize(); iInletSTL++)
+            {
+                int i = int(patch->STLc[0][iInletSTL]);
+                int j = int(patch->STLc[1][iInletSTL]);
+                int k = int(patch->STLc[2][iInletSTL]);
+
+                int ic = index1d(i,j,k,nx,ny);
+
+                boundary1[ic] = patchBoundary1;
+                boundary2[ic] = patchBoundary2;
+                boundary3[ic] = patchBoundary3;
+                u0[ic] = patchU0;
+                v0[ic] = patchV0;
+                w0[ic] = patchW0;
+            }
+        }
+    // --
+
+    // --
+    STL outletSTL("outlets.stl",L);
+    for(int iPatch = 0; iPatch < outletSTL.patch.size(); iPatch++)
     {
-        int i = int(inletSTLc[0][iInletSTL]);
-        int j = int(inletSTLc[1][iInletSTL]);
-        int k = int(inletSTLc[2][iInletSTL]);
+        const std::unique_ptr<STLpatch>& patch = outletSTL.patch[iPatch];
+        int patchBoundary1;
+        int patchBoundary2;
+        int patchBoundary3;
+        float patchU0;
+        float patchV0;
+        float patchW0;
 
-        int ic = index1d(i,j,k,nx,ny);
+        inputBoundaryCondition(patch->patchName,patchBoundary1,patchBoundary2,patchBoundary3,patchU0,patchV0,patchW0,c);
+        int spzWidth = inputSpzWidth(patch->patchName, L);
 
-        float absNormalX = abs(inletSTLnormal[0][iInletSTL]);
-        float absNormalY = abs(inletSTLnormal[1][iInletSTL]);
-        float absNormalZ = abs(inletSTLnormal[2][iInletSTL]);
-        float maxNormal = fmax(fmax(absNormalX,absNormalY),absNormalZ);
-        if(absNormalX == maxNormal)
+        for(int iOutletSTL = 0; iOutletSTL < patch->nSize(); iOutletSTL++)
         {
-            boundary1[ic] = BCnameToNum("BounceBack");
-            u0[ic] = 1.f/c;
-        }
-        else if(absNormalY == maxNormal)
-        {
-            boundary2[ic] = BCnameToNum("BounceBack");
-            v0[ic] = 1.f/c;
-        }
-        else if(absNormalZ == maxNormal)
-        {
-            boundary3[ic] = BCnameToNum("BounceBack");
-            w0[ic] = 1.f/c;
+            int i = int(patch->STLc[0][iOutletSTL]);
+            int j = int(patch->STLc[1][iOutletSTL]);
+            int k = int(patch->STLc[2][iOutletSTL]);
+
+            int ic = index1d(i,j,k,nx,ny);
+
+            boundary1[ic] = patchBoundary1;
+            boundary2[ic] = patchBoundary2;
+            boundary3[ic] = patchBoundary3;
+            u0[ic] = patchU0;
+            v0[ic] = patchV0;
+            w0[ic] = patchW0;
+
+            if(patchBoundary1 == BCnameToNum("Outlet"))
+            {
+                for(int iSpz = fmax(i-spzWidth,0); iSpz < fmin(i+spzWidth, nx); iSpz++)
+                {
+                    int icSpz = index1d(iSpz,j,k,nx,ny);
+                    float fx = (i-spzWidth < 0) ? float(iSpz)/spzWidth : float((nx-1)-iSpz)/spzWidth;
+                    float tau = fx*(1.f/omega0) + (1.f-fx);
+                    omega[icSpz] = 1.f/tau;
+                }
+            }
+            if(patchBoundary2 == BCnameToNum("Outlet"))
+            {   
+                for(int jSpz = fmax(j-spzWidth,0); jSpz < fmin(j+spzWidth, ny); jSpz++)
+                {
+                    int icSpz = index1d(i,jSpz,k,nx,ny);
+                    float fx = (j-spzWidth < 0) ? float(icSpz)/spzWidth : float((ny-1)-icSpz)/spzWidth;
+                    float tau = fx*(1.f/omega0) + (1.f-fx);
+                    omega[icSpz] = 1.f/tau;
+                }
+            }
+            if(patchBoundary3 == BCnameToNum("Outlet"))
+            {
+                for(int kSpz = fmax(k-spzWidth,0); kSpz < fmin(k+spzWidth, nz); kSpz++)
+                {
+                    int icSpz = index1d(i,j,kSpz,nx,ny);
+                    float fx = (k-spzWidth < 0) ? float(icSpz)/spzWidth : float((nz-1)-icSpz)/spzWidth;
+                    float tau = fx*(1.f/omega0) + (1.f-fx);
+                    omega[icSpz] = 1.f/tau;
+                }
+            }
         }
     }
     // --
@@ -334,6 +386,7 @@ int main()
     cl::Buffer u_d(context, u.begin(), u.end(), true);
     cl::Buffer v_d(context, v.begin(), v.end(), true);
     cl::Buffer w_d(context, w.begin(), w.end(), true);
+    cl::Buffer omega_d(context, omega.begin(), omega.end(), true);
     cl::Buffer movingSTLcList_d(context, movingSTLcList.begin(), movingSTLcList.end(), true);
     cl::Buffer GxMovingWall_d(context, GxMovingWall.begin(), GxMovingWall.end(), true);
     cl::Buffer GyMovingWall_d(context, GyMovingWall.begin(), GyMovingWall.end(), true);
@@ -356,14 +409,13 @@ int main()
         cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
+        cl::Buffer,
         const unsigned,
-        const float,
         const float,
         const float,
         const int, const int, const int,
         const float,
         const int,
-        const float,
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
@@ -428,15 +480,14 @@ int main()
             tauSGS_d,
             rho_d,
             u_d, v_d, w_d,
+            omega_d,
             GxIBM_d, GyIBM_d, GzIBM_d,
             elements,
-            omega,
             dpdx,
             rho_av,
             nx, ny, nz,
             LES,
             isReadMovingWalls,
-            spzWidth,
             omegaB
         );
         queue.finish();
