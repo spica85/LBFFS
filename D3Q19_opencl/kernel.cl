@@ -1146,7 +1146,7 @@ __kernel void k_streamingCollision // Pull
         float cy[19] = {0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f};
         float cz[19] = {0.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f,  1.0f};
 
-        float ft[19];
+        float ft[19] = {0.f};
         int upID[19];
         ft[0] = f[ic];
 
@@ -1171,81 +1171,134 @@ __kernel void k_streamingCollision // Pull
             {
                 int qbb = (boundary1 == 4 || boundary2 == 4 || boundary3 == 4) ? reflectOrMirrorQ(q,boundary1,boundary2,boundary3) : reflectQ(q);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
-                const float rhow = rho_av;
-                if(q == 1)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*u0/18.0f;
-                }
-                else if(q == 2)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*u0/18.0f;
-                }
-                else if(q == 3)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*v0/18.0f;
-                }
-                else if(q == 4)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*v0/18.0f;
-                }
-                else if(q == 5)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*w0/18.0f;
-                }
-                else if(q == 6)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*w0/18.0f;
-                }
-                else if(q == 7)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0+v0)/36.0f;
-                }
-                else if(q == 8)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0+v0)/36.0f;
-                }
-                else if(q == 9)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0-v0)/36.0f;
-                }
-                else if(q == 10)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0-v0)/36.0f;
-                }
-                else if(q == 11)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0+w0)/36.0f;
-                }
-                else if(q == 12)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0+w0)/36.0f;
-                }
-                else if(q == 13)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0-w0)/36.0f;
-                }
-                else if(q == 14)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0-w0)/36.0f;
-                }
-                else if(q == 15)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(v0+w0)/36.0f;
-                }
-                else if(q == 16)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(v0+w0)/36.0f;
-                }
-                else if(q == 17)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(v0-w0)/36.0f;
-                }
-                else if(q == 18)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(v0-w0)/36.0f;
-                }
-                // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
+                ft[q] = f[bbQID];
             }
+        }
+
+        // -- Zou-He velocity and pressure BC --
+        int corner = 0;
+        if
+        (
+            i == 0 && j == 0
+            ||
+            i == 0 && j == ny-1
+            ||
+            i == nx-1 && j == 0
+            ||
+            i == nx-1 && j == ny-1
+        )
+        {
+            if(nz-1 == 0)
+            {
+                corner = 1;
+            }
+            else
+            {
+            if
+            (
+                i == 0 && k == 0
+                ||
+                i == 0 && k == nz-1
+                ||
+                i == nx-1 && k == 0
+                ||
+                i == nx-1 && k == nz-1
+                ||
+                j == 0 && k == 0
+                ||
+                j == 0 && k == nz-1
+                ||
+                j == ny-1 && k == 0
+                ||
+                j == ny-1 && k == nz-1
+            )
+                {
+                    corner = 1;   
+                }
+            }
+        }
+
+        if(corner == 0)
+        {
+        if(i == 0 && boundary1 == 1)
+        {
+            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[10]+ft[8]+ft[14]+ft[12]))/(1.f-u0);
+            ft[1] += rhow*u0/3.f;
+            float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+            float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+            Nyx = 0.f;
+            Nzx = 0.f;
+            ft[7]  += rhow*(u0+v0)/6.f -Nyx;
+            ft[9]  += rhow*(u0-v0)/6.f +Nyx;
+            ft[11] += rhow*(u0+w0)/6.f -Nzx;
+            ft[13] += rhow*(u0-w0)/6.f +Nzx;
+        }
+        else if(i == nx-1 && boundary1 == 1)
+        {
+            float rhow =(ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]))/(1.f+u0);
+            ft[2] += -rhow*u0/3.f;
+            float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+            float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+            Nyx = 0.f;
+            Nzx = 0.f;
+            ft[8]  += -rhow*(u0+v0)/6.f +Nyx;
+            ft[10] += -rhow*(u0-v0)/6.f -Nyx;
+            ft[12] += -rhow*(u0+w0)/6.f +Nzx;
+            ft[14] += -rhow*(u0-w0)/6.f -Nzx;
+        }
+        if(j == 0 && boundary2 == 1)
+        {
+            // printf("u0: %.1f", u0);
+            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[9]+ft[8]+ft[18]+ft[16]))/(1.f-v0);
+            ft[3] += rhow*v0/3.f;
+            float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+            float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+            Nxy = 0.f;
+            Nzy = 0.f;
+            ft[7]  +=  rhow*(v0+u0)/6.f -Nxy;
+            ft[10] += rhow*(v0-u0)/6.f +Nxy;
+            ft[15] += rhow*(v0+w0)/6.f -Nzy;
+            ft[17] += rhow*(v0-w0)/6.f +Nzy;
+        }
+        else if(j == ny-1 && boundary2 == 1)
+        {
+            float rhow =(ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[3]+ft[7]+ft[10]+ft[15]+ft[17]))/(1.f+v0);
+            ft[4] += -rhow*v0/3.f;
+            float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+            float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+            Nxy = 0.f;
+            Nzy = 0.f;
+            ft[8]  += -rhow*(v0+u0)/6.f +Nxy;
+            ft[9]  += -rhow*(v0-u0)/6.f -Nxy;
+            ft[16] += -rhow*(v0+w0)/6.f +Nzy;
+            ft[18] += -rhow*(v0-w0)/6.f -Nzy;
+        }
+        if(k == 0 && boundary3 == 1)
+        {
+            float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]))/(1.f-w0);
+            ft[5] += rhow*w0/3.f;
+            float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+            float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+            Nxz = 0.f;
+            Nyz = 0.f;
+            ft[11] += rhow*(w0+u0)/6.f -Nxz;
+            ft[14] += rhow*(w0-u0)/6.f +Nxz;
+            ft[15] += rhow*(w0+v0)/6.f -Nyz;
+            ft[18] += rhow*(w0-v0)/6.f +Nyz;
+        }
+        else if(k == nz-1 && boundary3 == 1)
+        {
+            float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[14]+ft[11]+ft[18]+ft[15]))/(1.f+w0);
+            ft[6] += -rhow*w0/3.f;
+            float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+            float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+            Nxz = 0.f;
+            Nyz = 0.f;
+            ft[12] += -rhow*(w0+u0)/6.f +Nxz;
+            ft[13] += -rhow*(w0-u0)/6.f -Nxz;
+            ft[16] += -rhow*(w0+v0)/6.f +Nyz;
+            ft[17] += -rhow*(w0-v0)/6.f -Nyz;
+        }
         }
 
         //-- Bounce-Back for internal walls
@@ -1504,63 +1557,64 @@ __kernel void k_streamingCollision // Pull
                 // //--
             }
 
-            // //-- spongeZone
-            // int icX0 = index1d(0,ny/2,nz/2,nx,ny);
-            // int icXE = index1d(nx-1,ny/2,nz/2,nx,ny);
-            // int icY0 = index1d(nx/2,0,nz/2,nx,ny);
-            // int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
-            // int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
-            // int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
+            //-- spongeZone
+            float spzWidth = 0.3f;
+            int icX0 = index1d(0,ny/2,nz/2,nx,ny);
+            int icXE = index1d(nx-1,ny/2,nz/2,nx,ny);
+            int icY0 = index1d(nx/2,0,nz/2,nx,ny);
+            int icYE = index1d(nx/2,ny-1,nz/2,nx,ny);
+            int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
+            int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
             
-            // if(boundary1List[icX0] == 3)
-            // {
-            //     if(i < nx*spzWidth)
-            //     {
-            //         const float fx = i/(nx*spzWidth);
-            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-            //     }
-            // }
-            // if(boundary1List[icXE] == 3)
-            // {
-            //     if(i > nx*(1.f -spzWidth))
-            //     {
-            //         const float fx = (nx-i)/(nx*spzWidth);
-            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-            //     }
-            // }
-            // if(boundary2List[icY0] == 3)
-            // {
-            //     if(j < ny*spzWidth)
-            //     {
-            //         const float fx = j/(ny*spzWidth);
-            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-            //     }
-            // }
-            // if(boundary2List[icYE] == 3)
-            // {
-            //     if(j > ny*(1.f -spzWidth))
-            //     {
-            //         const float fx = (ny-j)/(ny*spzWidth);
-            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-            //     }
-            // }
-            // if(boundary3List[icZ0] == 3)
-            // {
-            //     if(k < nz*spzWidth)
-            //     {
-            //         const float fx = k/(nz*spzWidth);
-            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-            //     }
-            // }
-            // if(boundary3List[icZE] == 3)
-            // {
-            //     if(k > nz*(1.f -spzWidth))
-            //     {
-            //         const float fx = (nz-k)/(nz*spzWidth);
-            //         tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
-            //     }
-            // }
-            // //--
+            if(boundary1List[icX0] == 3)
+            {
+                if(i < nx*spzWidth)
+                {
+                    const float fx = i/(nx*spzWidth);
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+                }
+            }
+            if(boundary1List[icXE] == 3)
+            {
+                if(i > nx*(1.f -spzWidth))
+                {
+                    const float fx = (nx-i)/(nx*spzWidth);
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+                }
+            }
+            if(boundary2List[icY0] == 3)
+            {
+                if(j < ny*spzWidth)
+                {
+                    const float fx = j/(ny*spzWidth);
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+                }
+            }
+            if(boundary2List[icYE] == 3)
+            {
+                if(j > ny*(1.f -spzWidth))
+                {
+                    const float fx = (ny-j)/(ny*spzWidth);
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+                }
+            }
+            if(boundary3List[icZ0] == 3)
+            {
+                if(k < nz*spzWidth)
+                {
+                    const float fx = k/(nz*spzWidth);
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+                }
+            }
+            if(boundary3List[icZE] == 3)
+            {
+                if(k > nz*(1.f -spzWidth))
+                {
+                    const float fx = (nz-k)/(nz*spzWidth);
+                    tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
+                }
+            }
+            //--
             
             float omegaEff = 1.f/(tau +tauSGS);
             tauSGSList[ic] = tauSGS;
