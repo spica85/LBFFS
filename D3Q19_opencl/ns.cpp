@@ -292,6 +292,7 @@ int main()
 
         inputBoundaryCondition(patch->patchName,patchBoundary1,patchBoundary2,patchBoundary3,patchU0,patchV0,patchW0,c);
         int spzWidth = inputSpzWidth(patch->patchName, L);
+        float tau0 = 0.55f;
 
         for(int iOutletSTL = 0; iOutletSTL < patch->nSize(); iOutletSTL++)
         {
@@ -308,33 +309,36 @@ int main()
             v0[ic] = patchV0;
             w0[ic] = patchW0;
 
-            if(patchBoundary1 == BCnameToNum("Outlet"))
+            if(patchBoundary1 != BCnameToNum("Cyclic"))
             {
                 for(int iSpz = fmax(i-spzWidth,0); iSpz < fmin(i+spzWidth, nx); iSpz++)
                 {
                     int icSpz = index1d(iSpz,j,k,nx,ny);
                     float fx = (i-spzWidth < 0) ? float(iSpz)/spzWidth : float((nx-1)-iSpz)/spzWidth;
-                    float tau = fx*(1.f/omega0) + (1.f-fx);
+                    fx = 1.f -cos(0.5f*M_PI*fx);
+                    float tau = fx*(1.f/omega0) + (1.f-fx)*tau0;
                     omega[icSpz] = 1.f/tau;
                 }
             }
-            if(patchBoundary2 == BCnameToNum("Outlet"))
+            if(patchBoundary2 != BCnameToNum("Cyclic"))
             {   
                 for(int jSpz = fmax(j-spzWidth,0); jSpz < fmin(j+spzWidth, ny); jSpz++)
                 {
                     int icSpz = index1d(i,jSpz,k,nx,ny);
-                    float fx = (j-spzWidth < 0) ? float(icSpz)/spzWidth : float((ny-1)-icSpz)/spzWidth;
-                    float tau = fx*(1.f/omega0) + (1.f-fx);
+                    float fx = (j-spzWidth < 0) ? float(jSpz)/spzWidth : float((ny-1)-jSpz)/spzWidth;
+                    fx = 1.f -cos(0.5f*M_PI*fx);
+                    float tau = fx*(1.f/omega0) + (1.f-fx)*tau0;
                     omega[icSpz] = 1.f/tau;
                 }
             }
-            if(patchBoundary3 == BCnameToNum("Outlet"))
+            if(patchBoundary3 != BCnameToNum("Cyclic"))
             {
                 for(int kSpz = fmax(k-spzWidth,0); kSpz < fmin(k+spzWidth, nz); kSpz++)
                 {
                     int icSpz = index1d(i,j,kSpz,nx,ny);
-                    float fx = (k-spzWidth < 0) ? float(icSpz)/spzWidth : float((nz-1)-icSpz)/spzWidth;
-                    float tau = fx*(1.f/omega0) + (1.f-fx);
+                    float fx = (k-spzWidth < 0) ? float(kSpz)/spzWidth : float((nz-1)-kSpz)/spzWidth;
+                    fx = 1.f -cos(0.5f*M_PI*fx);
+                    float tau = fx*(1.f/omega0) + (1.f-fx)*tau0;
                     omega[icSpz] = 1.f/tau;
                 }
             }
