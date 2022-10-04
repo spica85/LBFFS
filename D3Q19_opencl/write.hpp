@@ -2,6 +2,7 @@ if(Fwrite && nextOutTime < nt +1)
 {
     cl::copy(queue, f_d, f.begin(), f.end());
     cl::copy(queue, tauSGS_d, tauSGS.begin(), tauSGS.end());
+    cl::copy(queue, omega_d, omega.begin(), omega.end());
 
     if(forceCoeffs)
     {
@@ -459,6 +460,32 @@ if(Fwrite && nextOutTime < nt +1)
                     else
                     {
                         writeFile << (float)(GzIBM[ic]) << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // omega output
+    {
+        writeFile << "SCALARS omega float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(omega[ic]));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << (float)(omega[ic]) << "\n";
                     }
                 }
             }
