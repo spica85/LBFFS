@@ -21,4 +21,4 @@ nu 1.512e-5f
 dpdx 0.0
 LES true
 forceCoeffs false
-omegaB 0.3
+omegaB 0.1

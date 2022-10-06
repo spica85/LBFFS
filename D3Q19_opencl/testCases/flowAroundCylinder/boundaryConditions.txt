@@ -14,16 +14,16 @@ nxMaxW0 0.0
 
 
 nyMinBoundary1 Cyclic
-nyMinBoundary2 BounceBack
+nyMinBoundary2 Symmetry
 nyMinBoundary3 Cyclic
-nyMinU0 1.0
+nyMinU0 0.0
 nyMinV0 0.0
 nyMinW0 0.0
 
 nyMaxBoundary1 Cyclic
-nyMaxBoundary2 BounceBack
+nyMaxBoundary2 Symmetry
 nyMaxBoundary3 Cyclic
-nyMaxU0 1.0
+nyMaxU0 0.0
 nyMaxV0 0.0
 nyMaxW0 0.0
 
