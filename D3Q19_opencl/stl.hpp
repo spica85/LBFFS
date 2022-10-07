@@ -85,10 +85,6 @@ int readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnorm
 
 class STLpatch
 {
-    std::vector<std::vector<float> > STLv0;
-    std::vector<std::vector<float> > STLv1;
-    std::vector<std::vector<float> > STLv2;
-
     void setPoint(std::vector<std::vector<float> >& point, float x, float y, float z)
     {
         point[0].push_back(x);
@@ -96,8 +92,29 @@ class STLpatch
         point[2].push_back(z);
     }
 
+    bool pointInElement(const float x, const float y, const float x1, const float y1, const float x2, const float y2)
+    {
+        float s = (x*y2 -x2*y)/(x1*y2 -x2*y1);
+        float t = (x*y1 -x1*y)/(x2*y1 -x1*y2);
+
+        if(s+t >= 0.f && s+t <= 1.f)
+        {
+            if(s >= 0.f && s <= 1.f)
+            {
+                if(t >= 0.f && t <= 1.f)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public:
     const std::string patchName;
+    std::vector<std::vector<float> > STLv0;
+    std::vector<std::vector<float> > STLv1;
+    std::vector<std::vector<float> > STLv2;
     std::vector<std::vector<float> > STLnormal;
     std::vector<std::vector<float> > STLc;
 
@@ -202,6 +219,144 @@ class STLpatch
     int nSize()
     {
         return STLv0[0].size();
+    }
+
+    void findPoints(std::vector<int>& points, const int nx, const int ny, const int nz)
+    {
+        for(int id = 0; id < nSize(); id++)
+        {
+            float maxNormal = fmax(abs(STLnormal[0][id]), fmax(abs(STLnormal[1][id]), abs(STLnormal[2][id])));
+
+            if(abs(STLnormal[0][id]) == maxNormal) // xPlane
+            {
+                if(int(STLc[0][id]) == 0 || int(STLc[0][id])+1 == 0) // i = 0
+                {
+                    for(int j = 0; j < ny; j++)
+                    {
+                        for(int k = 0; k < nz; k++)
+                        {
+                            float x = float(j) -STLv0[1][id];
+                            float y = float(k) -STLv0[2][id];
+                            float x1 = STLv1[1][id] -STLv0[1][id];
+                            float y1 = STLv1[2][id] -STLv0[2][id];
+                            float x2 = STLv2[1][id] -STLv0[1][id];
+                            float y2 = STLv2[2][id] -STLv0[2][id];
+
+                            if(pointInElement(x, y, x1, y1, x2, y2))
+                            {
+                                points.push_back(index1d(0,j,k,nx,ny));
+                            }
+                        }
+                    }
+                }
+                else if(int(STLc[0][id]) == nx-1 || int(STLc[0][id])+1 == nx-1) // i = nx-1
+                {
+                    for(int j = 0; j < ny; j++)
+                    {
+                        for(int k = 0; k < nz; k++)
+                        {
+                            float x = float(j) -STLv0[1][id];
+                            float y = float(k) -STLv0[2][id];
+                            float x1 = STLv1[1][id] -STLv0[1][id];
+                            float y1 = STLv1[2][id] -STLv0[2][id];
+                            float x2 = STLv2[1][id] -STLv0[1][id];
+                            float y2 = STLv2[2][id] -STLv0[2][id];
+
+                            if(pointInElement(x, y, x1, y1, x2, y2))
+                            {
+                                points.push_back(index1d(nx-1,j,k,nx,ny));
+                            }
+                        }
+                    }
+                }
+            }
+            else if(abs(STLnormal[1][id]) == maxNormal) // yPlane
+            {
+                if(int(STLc[1][id]) == 0 || int(STLc[1][id])+1 == 0) // j = 0
+                {
+                    for(int i = 0; i < nx; i++)
+                    {
+                        for(int k = 0; k < nz; k++)
+                        {
+                            float x = float(i) -STLv0[0][id];
+                            float y = float(k) -STLv0[2][id];
+                            float x1 = STLv1[0][id] -STLv0[0][id];
+                            float y1 = STLv1[2][id] -STLv0[2][id];
+                            float x2 = STLv2[0][id] -STLv0[0][id];
+                            float y2 = STLv2[2][id] -STLv0[2][id];
+
+                            if(pointInElement(x, y, x1, y1, x2, y2))
+                            {
+                                points.push_back(index1d(i,0,k,nx,ny));
+                            }
+                        }
+                    }
+                }
+                else if(int(STLc[1][id]) == ny-1 || int(STLc[1][id])+1 == ny-1) // j = ny-1
+                {
+                    for(int i = 0; i < nx; i++)
+                    {
+                        for(int k = 0; k < nz; k++)
+                        {
+                            float x = float(i) -STLv0[0][id];
+                            float y = float(k) -STLv0[2][id];
+                            float x1 = STLv1[0][id] -STLv0[0][id];
+                            float y1 = STLv1[2][id] -STLv0[2][id];
+                            float x2 = STLv2[0][id] -STLv0[0][id];
+                            float y2 = STLv2[2][id] -STLv0[2][id];
+
+                            if(pointInElement(x, y, x1, y1, x2, y2))
+                            {
+                                points.push_back(index1d(i,ny-1,k,nx,ny));
+                            }
+                        }
+                    }
+                }
+            }
+            else // zPlane
+            {
+                if(int(STLc[2][id]) == 0 || int(STLc[2][id])+1 == 0) // k = 0
+                {
+                    for(int i = 0; i < nx; i++)
+                    {
+                        for(int j = 0; j < ny; j++)
+                        {
+                            float x = float(i) -STLv0[0][id];
+                            float y = float(j) -STLv0[1][id];
+                            float x1 = STLv1[0][id] -STLv0[0][id];
+                            float y1 = STLv1[1][id] -STLv0[1][id];
+                            float x2 = STLv2[0][id] -STLv0[0][id];
+                            float y2 = STLv2[1][id] -STLv0[1][id];
+
+                            if(pointInElement(x, y, x1, y1, x2, y2))
+                            {
+                                points.push_back(index1d(i,j,0,nx,ny));
+                            }
+                        }
+                    }
+                }
+                else if(int(STLc[2][id]) == nz-1 || int(STLc[2][id])+1 == nz-1) // k = nz-1
+                {
+                    for(int i = 0; i < nx; i++)
+                    {
+                        for(int j = 0; j < ny; j++)
+                        {
+                            float x = float(i) -STLv0[0][id];
+                            float y = float(j) -STLv0[1][id];
+                            float x1 = STLv1[0][id] -STLv0[0][id];
+                            float y1 = STLv1[1][id] -STLv0[1][id];
+                            float x2 = STLv2[0][id] -STLv0[0][id];
+                            float y2 = STLv2[1][id] -STLv0[1][id];
+
+                            if(pointInElement(x, y, x1, y1, x2, y2))
+                            {
+                                points.push_back(index1d(i,j,nz-1,nx,ny));
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 };
 

@@ -15,41 +15,68 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, std::vector<std::vector<float> >& STLc, std::vector<std::vector<float> >& STLnormal, const int nx, const int ny, const int nz, const bool boundary)
+void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, const std::unique_ptr<STLpatch>& patch, const int nx, const int ny, const int nz, const bool boundary)
 {
+    std::vector<std::vector<float> >& STLc = patch->STLc;
+    std::vector<std::vector<float> >& STLv0 = patch->STLv0;
+    std::vector<std::vector<float> >& STLv1 = patch->STLv1;
+    std::vector<std::vector<float> >& STLv2 = patch->STLv2;
+    std::vector<std::vector<float> >& STLnormal = patch->STLnormal;
     const int drn = int(dr);
     const int nSTL = STLc[0].size();
 
     std::vector<int> nearSTL;
     for(int iSTL = 0; iSTL < nSTL; iSTL++)
     {
-        int i = int(STLc[0][iSTL]);
-        int j = int(STLc[1][iSTL]);
-        int k = int(STLc[2][iSTL]);
-        // if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
+        int i;
+        int j;
+        int k;
+        for(int iv = 0; iv < 3; iv++)
         {
-            for(int ii = -drn; ii <= drn; ii++)
+            if(iv == 0)
             {
-                int iNear = i + ii;
-                if(0 <= iNear && iNear <= nx-1)
+                i = int(STLv0[0][iSTL]);
+                j = int(STLv0[1][iSTL]);
+                k = int(STLv0[2][iSTL]);
+            }
+            else if(iv == 1)
+            {
+                i = int(STLv1[0][iSTL]);
+                j = int(STLv1[1][iSTL]);
+                k = int(STLv1[2][iSTL]);
+            }
+            else
+            {
+                i = int(STLv2[0][iSTL]);
+                j = int(STLv2[1][iSTL]);
+                k = int(STLv2[2][iSTL]);
+            }
+            
+            // if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
+            {
+                for(int ii = -drn; ii <= drn; ii++)
                 {
-                    for(int jj = -drn; jj <= drn; jj++)
+                    int iNear = i + ii;
+                    if(0 <= iNear && iNear <= nx-1)
                     {
-                        int jNear = j + jj;
-                        if(0 <= jNear && jNear <= ny-1)
+                        for(int jj = -drn; jj <= drn; jj++)
                         {
-                            for(int kk = -drn; kk <= drn; kk++)
+                            int jNear = j + jj;
+                            if(0 <= jNear && jNear <= ny-1)
                             {
-                                int kNear = k + kk;
-                                if(0 <= kNear && kNear <= nz-1)
+                                for(int kk = -drn; kk <= drn; kk++)
                                 {
-                                    int ic = index1d(iNear,jNear,kNear,nx,ny);
-                                    nearSTL.push_back(ic);
+                                    int kNear = k + kk;
+                                    if(0 <= kNear && kNear <= nz-1)
+                                    {
+                                        int ic = index1d(iNear,jNear,kNear,nx,ny);
+                                        nearSTL.push_back(ic);
+                                    }
                                 }
                             }
                         }
-                    }
-                }   
+                    }   
+                }
             }
         }
     }

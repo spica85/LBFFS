@@ -60,8 +60,9 @@ int main()
     bool forceCoeffs;
     float Dref;
     float omegaB;
+    float spzWidth;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB, spzWidth);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -175,7 +176,8 @@ int main()
     {
         const std::unique_ptr<STLpatch>& patch = wallSTL.patch[iPatch];
 
-        setSDF(sdf, sdfIni, dr, p, patch->STLc, patch->STLnormal, nx, ny, nz, false);
+        // setSDF(sdf, sdfIni, dr, p, patch->STLc, patch->STLnormal, nx, ny, nz, false);
+        setSDF(sdf, sdfIni, dr, p, patch, nx, ny, nz, false);
     }
     
     std::vector<unsigned char> solid(elements,0);
@@ -257,16 +259,15 @@ int main()
             float patchU0;
             float patchV0;
             float patchW0;
+            std::vector<int> points;
 
             inputBoundaryCondition(patch->patchName,patchBoundary1,patchBoundary2,patchBoundary3,patchU0,patchV0,patchW0,c);
 
-            for(int iInletSTL = 0; iInletSTL < patch->nSize(); iInletSTL++)
-            {
-                int i = int(patch->STLc[0][iInletSTL]);
-                int j = int(patch->STLc[1][iInletSTL]);
-                int k = int(patch->STLc[2][iInletSTL]);
+            patch->findPoints(points,nx,ny,nz);
 
-                int ic = index1d(i,j,k,nx,ny);
+            for(int id = 0; id < points.size(); id++)
+            {
+                int ic = points[id];
 
                 boundary1[ic] = patchBoundary1;
                 boundary2[ic] = patchBoundary2;
@@ -289,18 +290,20 @@ int main()
         float patchU0;
         float patchV0;
         float patchW0;
+        std::vector<int> points;
 
         inputBoundaryCondition(patch->patchName,patchBoundary1,patchBoundary2,patchBoundary3,patchU0,patchV0,patchW0,c);
         int spzWidth = inputSpzWidth(patch->patchName, L);
         float tau0 = 0.55f;
 
-        for(int iOutletSTL = 0; iOutletSTL < patch->nSize(); iOutletSTL++)
-        {
-            int i = int(patch->STLc[0][iOutletSTL]);
-            int j = int(patch->STLc[1][iOutletSTL]);
-            int k = int(patch->STLc[2][iOutletSTL]);
+        patch->findPoints(points,nx,ny,nz);
 
-            int ic = index1d(i,j,k,nx,ny);
+        for(int id = 0; id < points.size(); id++)
+        {
+            int ic = points[id];
+            int i = ic2i(ic,nx,ny);
+            int j = ic2j(ic,nx,ny);
+            int k = ic2k(ic,nx,ny);
 
             boundary1[ic] = patchBoundary1;
             boundary2[ic] = patchBoundary2;
@@ -420,6 +423,7 @@ int main()
         const int, const int, const int,
         const float,
         const int,
+        const float,
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
@@ -492,7 +496,8 @@ int main()
             nx, ny, nz,
             LES,
             isReadMovingWalls,
-            omegaB
+            omegaB,
+            spzWidth
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
