@@ -1129,7 +1129,8 @@ __kernel void k_streamingCollision // Pull
    const int nx, const int ny, const int nz,
    const float LES,
    const int isReadMovingWalls,
-   const float omegaB
+   const float omegaB,
+   const float spzWidth
 )
 {
     int ic = get_global_id(0);
@@ -1224,10 +1225,10 @@ __kernel void k_streamingCollision // Pull
         {
             float rhow = u0 >= 0.f ? (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[10]+ft[8]+ft[14]+ft[12]))/(1.f-u0) : 1.f;
             ft[1] += rhow*u0/3.f;
-            float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
-            float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
-            Nyx = 0.f;
-            Nzx = 0.f;
+            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+            float Nyx = 0.f;
+            float Nzx = 0.f;
             ft[7]  += rhow*(u0+v0)/6.f -Nyx;
             ft[9]  += rhow*(u0-v0)/6.f +Nyx;
             ft[11] += rhow*(u0+w0)/6.f -Nzx;
@@ -1237,10 +1238,10 @@ __kernel void k_streamingCollision // Pull
         {
             float rhow = u0 <= 0.f ? (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]))/(1.f+u0) : 1.f;
             ft[2] += -rhow*u0/3.f;
-            float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
-            float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
-            Nyx = 0.f;
-            Nzx = 0.f;
+            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+            float Nyx = 0.f;
+            float Nzx = 0.f;
             ft[8]  += -rhow*(u0+v0)/6.f +Nyx;
             ft[10] += -rhow*(u0-v0)/6.f -Nyx;
             ft[12] += -rhow*(u0+w0)/6.f +Nzx;
@@ -1250,10 +1251,10 @@ __kernel void k_streamingCollision // Pull
         {
             float rhow = v0 >= 0.f ? (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[9]+ft[8]+ft[18]+ft[16]))/(1.f-v0) : 1.f;
             ft[3] += rhow*v0/3.f;
-            float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
-            float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
-            Nxy = 0.f;
-            Nzy = 0.f;
+            // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+            // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+            float Nxy = 0.f;
+            float Nzy = 0.f;
             ft[7]  +=  rhow*(v0+u0)/6.f -Nxy;
             ft[10] += rhow*(v0-u0)/6.f +Nxy;
             ft[15] += rhow*(v0+w0)/6.f -Nzy;
@@ -1276,10 +1277,10 @@ __kernel void k_streamingCollision // Pull
         {
             float rhow = w0 >= 0.f ? (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]))/(1.f-w0) : 1.f;
             ft[5] += rhow*w0/3.f;
-            float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
-            float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
-            Nxz = 0.f;
-            Nyz = 0.f;
+            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+            float Nxz = 0.f;
+            float Nyz = 0.f;
             ft[11] += rhow*(w0+u0)/6.f -Nxz;
             ft[14] += rhow*(w0-u0)/6.f +Nxz;
             ft[15] += rhow*(w0+v0)/6.f -Nyz;
@@ -1289,10 +1290,10 @@ __kernel void k_streamingCollision // Pull
         {
             float rhow = w0 <= 0.f ? (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[14]+ft[11]+ft[18]+ft[15]))/(1.f+w0) : 1.f;
             ft[6] += -rhow*w0/3.f;
-            float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
-            float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
-            Nxz = 0.f;
-            Nyz = 0.f;
+            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+            float Nxz = 0.f;
+            float Nyz = 0.f;
             ft[12] += -rhow*(w0+u0)/6.f +Nxz;
             ft[13] += -rhow*(w0-u0)/6.f -Nxz;
             ft[16] += -rhow*(w0+v0)/6.f +Nyz;
@@ -1557,7 +1558,6 @@ __kernel void k_streamingCollision // Pull
             }
 
             //-- spongeZone
-            float spzWidth = 0.3f;
             int icX0 = index1d(0,ny/2,nz/2,nx,ny);
             int icXE = index1d(nx-1,ny/2,nz/2,nx,ny);
             int icY0 = index1d(nx/2,0,nz/2,nx,ny);
