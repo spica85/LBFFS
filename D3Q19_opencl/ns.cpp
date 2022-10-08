@@ -11,8 +11,6 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include <omp.h>
-
 #include "D3Q19.hpp"
 #include "input.hpp"
 #include "walls.hpp"

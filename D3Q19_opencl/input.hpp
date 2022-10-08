@@ -8,7 +8,6 @@
 #include <string>
 #include <sstream>
 #include <stdio.h>
-#include <omp.h>
 
 template <typename Type>
 Type returnWrapper(std::string arg) {
@@ -124,9 +123,6 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
     }
 
     readToLines(inputFile, lines);
-
-    std::string nThreadsStr("nThreads");
-    omp_set_num_threads(lookup<int>(lines, nThreadsStr));
 
     std::string restartStr("restart");
     restart = lookup<bool>(lines, restartStr);
