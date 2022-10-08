@@ -17,4 +17,5 @@ find_package(Boost REQUIRED)
 find_package(OpenCL REQUIRED)
 
 include_directories(${OpenCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
-target_link_libraries(testSTL ${OpenCL_LIBRARIES})
+target_link_libraries(ns.opencl ${OpenCL_LIBRARIES})
+configure_file(kernel.cl ../build/kernel.cl COPYONLY)
