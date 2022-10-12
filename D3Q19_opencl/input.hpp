@@ -212,10 +212,6 @@ int BCnameToNum(std::string name)
     {
         return 1;
     }
-    else if(name == "Equilibrium")
-    {
-        return 2;
-    }
     else if(name == "Outlet")
     {
         return 3;
@@ -223,6 +219,14 @@ int BCnameToNum(std::string name)
     else if(name == "Symmetry")
     {
         return 4;
+    }
+    else if(name == "FixedVelocity")
+    {
+        return 5;
+    }
+    else if(name == "FixedDensity")
+    {
+        return 6;
     }
     else
     {
