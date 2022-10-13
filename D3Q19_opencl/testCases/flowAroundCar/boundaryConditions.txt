@@ -1,4 +1,4 @@
-nxMinBoundary1 BounceBack
+nxMinBoundary1 FixedVelocity
 nxMinBoundary2 Cyclic
 nxMinBoundary3 Cyclic
 nxMinU0 27.7

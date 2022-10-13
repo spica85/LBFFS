@@ -1,11 +1,11 @@
-nxMinBoundary1 BounceBack
+nxMinBoundary1 FixedVelocity
 nxMinBoundary2 Cyclic
 nxMinBoundary3 Cyclic
 nxMinU0 1.0
 nxMinV0 0.0
 nxMinW0 0.0
 
-nxMaxBoundary1 Outlet
+nxMaxBoundary1 BounceBack
 nxMaxBoundary2 Cyclic
 nxMaxBoundary3 Cyclic
 nxMaxU0 0.0
@@ -14,14 +14,14 @@ nxMaxW0 0.0
 
 
 nyMinBoundary1 Cyclic
-nyMinBoundary2 Symmetry
+nyMinBoundary2 BounceBack
 nyMinBoundary3 Cyclic
 nyMinU0 0.0
 nyMinV0 0.0
 nyMinW0 0.0
 
 nyMaxBoundary1 Cyclic
-nyMaxBoundary2 Symmetry
+nyMaxBoundary2 BounceBack
 nyMaxBoundary3 Cyclic
 nyMaxU0 0.0
 nyMaxV0 0.0
@@ -41,3 +41,13 @@ nzMaxBoundary3 Cyclic
 nzMaxU0 0.0
 nzMaxV0 0.0
 nzMaxW0 0.0
+
+Extrude(Meshed)Boundary1 FixedDensity
+Extrude(Meshed)Boundary2 Cyclic
+Extrude(Meshed)Boundary3 Cyclic
+Extrude(Meshed)U0 0.0
+Extrude(Meshed)V0 0.0
+Extrude(Meshed)W0 0.0
+Extrude(Meshed)SpzWidth 1.0
+
+

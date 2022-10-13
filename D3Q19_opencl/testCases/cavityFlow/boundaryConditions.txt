@@ -21,7 +21,7 @@ nyMinV0 0.0
 nyMinW0 0.0
 
 nyMaxBoundary1 Cyclic
-nyMaxBoundary2 BounceBack
+nyMaxBoundary2 FixedVelocity
 nyMaxBoundary3 Cyclic
 nyMaxU0 1.0
 nyMaxV0 0.0
