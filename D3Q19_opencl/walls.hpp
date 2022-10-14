@@ -115,6 +115,79 @@ void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const f
     }
 }
 
+void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, std::vector<std::vector<float> >& STLc, std::vector<std::vector<float> >& STLnormal, const int nx, const int ny, const int nz, const bool boundary)
+{
+    const int drn = int(dr);
+    const int nSTL = STLc[0].size();
+
+    std::vector<int> nearSTL;
+    for(int iSTL = 0; iSTL < nSTL; iSTL++)
+    {
+        int i = int(STLc[0][iSTL]);
+        int j = int(STLc[1][iSTL]);
+        int k = int(STLc[2][iSTL]);
+        // if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
+        {
+            for(int ii = -drn; ii <= drn; ii++)
+            {
+                int iNear = i + ii;
+                if(0 <= iNear && iNear <= nx-1)
+                {
+                    for(int jj = -drn; jj <= drn; jj++)
+                    {
+                        int jNear = j + jj;
+                        if(0 <= jNear && jNear <= ny-1)
+                        {
+                            for(int kk = -drn; kk <= drn; kk++)
+                            {
+                                int kNear = k + kk;
+                                if(0 <= kNear && kNear <= nz-1)
+                                {
+                                    int ic = index1d(iNear,jNear,kNear,nx,ny);
+                                    nearSTL.push_back(ic);
+                                }
+                            }
+                        }
+                    }
+                }   
+            }
+        }
+    }
+    std::sort(nearSTL.begin(), nearSTL.end());
+    nearSTL.erase(std::unique(nearSTL.begin(), nearSTL.end()), nearSTL.end());
+
+    std::cout << "Number of near walls: " << nearSTL.size() << std::endl;
+    for(int iNSTL = 0; iNSTL < nearSTL.size(); iNSTL++)
+    {
+        int ic = nearSTL[iNSTL];
+        sdf[ic] = 0.f;
+
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+        
+        float sumD = 0.f;
+        for(int iSTL = 0; iSTL < nSTL; iSTL++)
+        {
+            const float r = sqrt
+                            (
+                                pow(float(i) -STLc[0][iSTL],2.f)
+                                +pow(float(j) -STLc[1][iSTL],2.f)
+                                +pow(float(k) -STLc[2][iSTL],2.f)
+                            );
+            if(r < dr)
+            {
+                const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
+                                +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
+                                +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
+                sumD += pow(r,-p);
+                sdf[ic] += sd*pow(r,-p);
+            }
+        }
+        sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : sdfIni;
+    }
+}
+
 void setSolid(std::vector<unsigned char>& solid, std::vector<float>& sdf, const float sdfIni, const int nx, const int ny, const int nz, const bool fluid)
 {
     const int elements = sdf.size();

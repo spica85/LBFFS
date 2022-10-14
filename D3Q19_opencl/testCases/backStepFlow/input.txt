@@ -5,9 +5,12 @@ writeBinary true
 startTimeStep 0
 endTimeStep 1000000
 outInterval 10000
-nx 1650
-ny 102
-nz 100
+#nx 1650
+#ny 102
+#nz 100
+nx 1500
+ny 91
+nz 90
 Lx 50.0
 uMax 1.0
 rho0 1.0

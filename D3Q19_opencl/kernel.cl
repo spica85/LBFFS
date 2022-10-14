@@ -1178,7 +1178,7 @@ __kernel void k_streamingCollision // Pull
 
         // -- Zou-He velocity and pressure BC --
         int corner = 0;
-        if(nz-1 == 0)
+        if(nz-1 == 0 || boundary3 == 0)
         {
             if
             (
@@ -1723,7 +1723,7 @@ __kernel void k_streamingCollision // Pull
             int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
             int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
             
-            if(boundary1List[icX0] == 3)
+            if(boundary1List[icX0] == 3 || boundary1List[icX0] == 6)
             {
                 if(i < nx*spzWidth)
                 {
@@ -1731,7 +1731,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary1List[icXE] == 3)
+            if(boundary1List[icXE] == 3 || boundary1List[icXE] == 6)
             {
                 if(i > nx*(1.f -spzWidth))
                 {
@@ -1739,7 +1739,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary2List[icY0] == 3)
+            if(boundary2List[icY0] == 3 || boundary2List[icY0] == 6)
             {
                 if(j < ny*spzWidth)
                 {
@@ -1747,7 +1747,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary2List[icYE] == 3)
+            if(boundary2List[icYE] == 3 || boundary2List[icYE] == 6)
             {
                 if(j > ny*(1.f -spzWidth))
                 {
@@ -1755,7 +1755,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary3List[icZ0] == 3)
+            if(boundary3List[icZ0] == 3 || boundary3List[icZ0] == 6)
             {
                 if(k < nz*spzWidth)
                 {
@@ -1763,7 +1763,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary3List[icZE] == 3)
+            if(boundary3List[icZE] == 3 || boundary3List[icZE] == 6)
             {
                 if(k > nz*(1.f -spzWidth))
                 {

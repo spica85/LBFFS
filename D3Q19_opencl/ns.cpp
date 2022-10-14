@@ -188,11 +188,11 @@ int main()
     //--
 
     //-- Calculation of sdf for the boundaries of the calculation region
-    // dr = 3.f;
-    // std::vector<std::vector<float> > bWallsC(3);
-    // std::vector<std::vector<float> > bWallsNormal(3);
-    // setBwalls(bWallsC, bWallsNormal, boundary1, boundary2, boundary3, nx, ny, nz);
-    // setSDF(sdf, sdfIni, dr, p, bWallsC, bWallsNormal, nx, ny, nz, true);
+    dr = 3.f;
+    std::vector<std::vector<float> > bWallsC(3);
+    std::vector<std::vector<float> > bWallsNormal(3);
+    setBwalls(bWallsC, bWallsNormal, boundary1, boundary2, boundary3, nx, ny, nz);
+    setSDF(sdf, sdfIni, dr, p, bWallsC, bWallsNormal, nx, ny, nz, true);
     //--
 
     //-- Reading and settings of moving STL
