@@ -10,96 +10,109 @@
 #include <stdio.h>
 #include <omp.h>
 #include "input.hpp"
+#include "stl.hpp"
 
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-int readSTL(const std::string STLname, std::vector<std::vector<float> >& STLnormal, std::vector<std::vector<float> >& STLv0, std::vector<std::vector<float> >& STLv1, std::vector<std::vector<float> >& STLv2, int& nSTL, std::vector<std::vector<float> >& STLc, float L)
+void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, const std::unique_ptr<STLpatch>& patch, const int nx, const int ny, const int nz, const bool boundary)
 {
-    std::ifstream STLfile(STLname);
-    if(!STLfile)
-    {
-        std::cout << "\nSTL (" << STLname << ") was not read\n" << std::endl;
-        nSTL = 0;
-        return 0;
-    }
-    else
-    {
-        std::cout << "\nSTL (" << STLname << ") was read" << std::endl;
-    }
+    std::vector<std::vector<float> >& STLc = patch->STLc;
+    std::vector<std::vector<float> >& STLv0 = patch->STLv0;
+    std::vector<std::vector<float> >& STLv1 = patch->STLv1;
+    std::vector<std::vector<float> >& STLv2 = patch->STLv2;
+    std::vector<std::vector<float> >& STLnormal = patch->STLnormal;
+    const int drn = int(dr);
+    const int nSTL = STLc[0].size();
 
-    std::vector<std::string> lines;
-    readToLines(STLfile, lines);
-
-    for(int i = 0; i < lines.size(); i++)
+    std::vector<int> nearSTL;
+    for(int iSTL = 0; iSTL < nSTL; iSTL++)
     {
-        // std::cout << i << " " << lines[i] << std::endl;
-        if(lines[i] == "facet")
+        int i;
+        int j;
+        int k;
+        for(int iv = 0; iv < 3; iv++)
         {
-            STLnormal[0].push_back(std::stof(lines[i+2]));
-            STLnormal[1].push_back(std::stof(lines[i+3]));
-            STLnormal[2].push_back(std::stof(lines[i+4]));
-            // std::cout << i << " " 
-            //     << lines[i+2] << " " 
-            //     << lines[i+3] << " " 
-            //     << lines[i+4] << " " 
-            //     << std::endl;
-            i += 4;
-        }
-        else if(lines[i] == "vertex")
-        {
-            // std::cout << i << " " 
-            //     << lines[i+1] << " " 
-            //     << lines[i+2] << " " 
-            //     << lines[i+3] << " " 
-            //     << std::endl;
-            STLv0[0].push_back(std::stof(lines[i+1]));
-            STLv0[1].push_back(std::stof(lines[i+2]));
-            STLv0[2].push_back(std::stof(lines[i+3]));
-            i += 5;
-
-            // std::cout << i << " " 
-            //     << lines[i+1] << " " 
-            //     << lines[i+2] << " " 
-            //     << lines[i+3] << " " 
-            //     << std::endl;
-            STLv1[0].push_back(std::stof(lines[i+1]));
-            STLv1[1].push_back(std::stof(lines[i+2]));
-            STLv1[2].push_back(std::stof(lines[i+3]));
-            i += 5;
-
-            // std::cout << i << " " 
-            //     << lines[i+1] << " " 
-            //     << lines[i+2] << " " 
-            //     << lines[i+3] << " " 
-            //     << std::endl;
-            STLv2[0].push_back(std::stof(lines[i+1]));
-            STLv2[1].push_back(std::stof(lines[i+2]));
-            STLv2[2].push_back(std::stof(lines[i+3]));
-            i += 3;
+            if(iv == 0)
+            {
+                i = int(STLv0[0][iSTL]);
+                j = int(STLv0[1][iSTL]);
+                k = int(STLv0[2][iSTL]);
+            }
+            else if(iv == 1)
+            {
+                i = int(STLv1[0][iSTL]);
+                j = int(STLv1[1][iSTL]);
+                k = int(STLv1[2][iSTL]);
+            }
+            else
+            {
+                i = int(STLv2[0][iSTL]);
+                j = int(STLv2[1][iSTL]);
+                k = int(STLv2[2][iSTL]);
+            }
+            
+            // if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
+            {
+                for(int ii = -drn; ii <= drn; ii++)
+                {
+                    int iNear = i + ii;
+                    if(0 <= iNear && iNear <= nx-1)
+                    {
+                        for(int jj = -drn; jj <= drn; jj++)
+                        {
+                            int jNear = j + jj;
+                            if(0 <= jNear && jNear <= ny-1)
+                            {
+                                for(int kk = -drn; kk <= drn; kk++)
+                                {
+                                    int kNear = k + kk;
+                                    if(0 <= kNear && kNear <= nz-1)
+                                    {
+                                        int ic = index1d(iNear,jNear,kNear,nx,ny);
+                                        nearSTL.push_back(ic);
+                                    }
+                                }
+                            }
+                        }
+                    }   
+                }
+            }
         }
     }
+    std::sort(nearSTL.begin(), nearSTL.end());
+    nearSTL.erase(std::unique(nearSTL.begin(), nearSTL.end()), nearSTL.end());
 
-    nSTL = STLnormal[0].size();
-    for(int i = 0; i < nSTL; i++)
+    std::cout << "Number of near walls: " << nearSTL.size() << std::endl;
+    for(int iNSTL = 0; iNSTL < nearSTL.size(); iNSTL++)
     {
-        STLv0[0][i] = STLv0[0][i]/L -0.5;
-        STLv0[1][i] = STLv0[1][i]/L -0.5;
-        STLv0[2][i] = STLv0[2][i]/L -0.5;
-        STLv1[0][i] = STLv1[0][i]/L -0.5;
-        STLv1[1][i] = STLv1[1][i]/L -0.5;
-        STLv1[2][i] = STLv1[2][i]/L -0.5;
-        STLv2[0][i] = STLv2[0][i]/L -0.5;
-        STLv2[1][i] = STLv2[1][i]/L -0.5;
-        STLv2[2][i] = STLv2[2][i]/L -0.5;
+        int ic = nearSTL[iNSTL];
+        sdf[ic] = 0.f;
 
-        STLc[0].push_back((STLv0[0][i]+STLv1[0][i]+STLv2[0][i])/3.f);
-        STLc[1].push_back((STLv0[1][i]+STLv1[1][i]+STLv2[1][i])/3.f);
-        STLc[2].push_back((STLv0[2][i]+STLv1[2][i]+STLv2[2][i])/3.f);
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+        
+        float sumD = 0.f;
+        for(int iSTL = 0; iSTL < nSTL; iSTL++)
+        {
+            const float r = sqrt
+                            (
+                                pow(float(i) -STLc[0][iSTL],2.f)
+                                +pow(float(j) -STLc[1][iSTL],2.f)
+                                +pow(float(k) -STLc[2][iSTL],2.f)
+                            );
+            if(r < dr)
+            {
+                const float sd = (float(i) -STLc[0][iSTL])*STLnormal[0][iSTL]
+                                +(float(j) -STLc[1][iSTL])*STLnormal[1][iSTL]
+                                +(float(k) -STLc[2][iSTL])*STLnormal[2][iSTL];
+                sumD += pow(r,-p);
+                sdf[ic] += sd*pow(r,-p);
+            }
+        }
+        sdf[ic] = sumD != 0.f ? sdf[ic]/sumD : sdfIni;
     }
-
-    std::cout << "Number of elements of " << STLname << ": " << nSTL << std::endl;
-    return 1;
 }
 
 void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, std::vector<std::vector<float> >& STLc, std::vector<std::vector<float> >& STLnormal, const int nx, const int ny, const int nz, const bool boundary)

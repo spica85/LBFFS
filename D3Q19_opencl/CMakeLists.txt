@@ -7,12 +7,15 @@ project(D3Q19_opencl CXX)
 # Making an execution file named ns.out from ns.cpp
 add_executable(ns.opencl ns.cpp)
 # Setting for the option of g++
-set(CMAKE_CXX_FLAGS "-O3 -fopenmp -std=c++11")
+set(CMAKE_CXX_FLAGS "-O3 -std=c++11")
+
+# For Boost
+find_package(Boost REQUIRED)
 
 # For OpenCL
 #set(OpenCL_LIBRARY /opt/amdgpu-pro/lib/x86_64-linux-gnu/libOpenCL.so) # If necessary
 find_package(OpenCL REQUIRED)
-include_directories(${OpenCL_INCLUDE_DIRS})
+
+include_directories(${OpenCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 target_link_libraries(ns.opencl ${OpenCL_LIBRARIES})
 configure_file(kernel.cl ../build/kernel.cl COPYONLY)
-

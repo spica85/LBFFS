@@ -329,9 +329,9 @@ inline int upwindID_B(const int q, const int i, const int j, const int k, const 
 {
     int ic = index1d(i, j, k, nx, ny);
 
-    bool isnotWall1 = (boundary1 == 1 || boundary1 == 4) ? false : true;
-    bool isnotWall2 = (boundary2 == 1 || boundary2 == 4) ? false : true;
-    bool isnotWall3 = (boundary3 == 1 || boundary3 == 4) ? false : true;
+    bool isnotWall1 = (boundary1 == 1 || boundary1 == 4 || boundary1 == 5 || boundary1 == 6) ? false : true;
+    bool isnotWall2 = (boundary2 == 1 || boundary2 == 4 || boundary2 == 5 || boundary2 == 6) ? false : true;
+    bool isnotWall3 = (boundary3 == 1 || boundary3 == 4 || boundary3 == 5 || boundary3 == 6) ? false : true;
 
 
     if(q == 0)
@@ -1121,16 +1121,16 @@ __kernel void k_streamingCollision // Pull
    __global float* tauSGSList,
    __global float* rhoList,
    __global float* uList, __global float* vList, __global float* wList,
+   __global float* omega,
    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
    const unsigned elements,
-   const float omega,
    const float dpdx,
    const float rho_av,
    const int nx, const int ny, const int nz,
    const float LES,
    const int isReadMovingWalls,
-   const float spzWidth,
-   const float omegaB
+   const float omegaB,
+   const float spzWidth
 )
 {
     int ic = get_global_id(0);
@@ -1147,7 +1147,7 @@ __kernel void k_streamingCollision // Pull
         float cy[19] = {0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f};
         float cz[19] = {0.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f,  1.0f};
 
-        float ft[19];
+        float ft[19] = {0.f};
         int upID[19];
         ft[0] = f[ic];
 
@@ -1172,80 +1172,290 @@ __kernel void k_streamingCollision // Pull
             {
                 int qbb = (boundary1 == 4 || boundary2 == 4 || boundary3 == 4) ? reflectOrMirrorQ(q,boundary1,boundary2,boundary3) : reflectQ(q);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
-                const float rhow = rho_av;
-                if(q == 1)
+                ft[q] = f[bbQID];
+            }
+        }
+
+        // -- Zou-He velocity and pressure BC --
+        int corner = 0;
+        if(nz-1 == 0 || boundary3 == 0)
+        {
+            if
+            (
+                i == 0 && j == 0
+                ||
+                i == 0 && j == ny-1
+                ||
+                i == nx-1 && j == 0
+                ||
+                i == nx-1 && j == ny-1
+            )
+            {
+                corner = 1;
+            }
+        }
+        else
+        {
+            if
+            (
+                i == 0 && j == 0
+                ||
+                i == 0 && j == ny-1
+                ||
+                i == nx-1 && j == 0
+                ||
+                i == nx-1 && j == ny-1
+                ||
+                i == 0 && k == 0
+                ||
+                i == 0 && k == nz-1
+                ||
+                i == nx-1 && k == 0
+                ||
+                i == nx-1 && k == nz-1
+                ||
+                j == 0 && k == 0
+                ||
+                j == 0 && k == nz-1
+                ||
+                j == ny-1 && k == 0
+                ||
+                j == ny-1 && k == nz-1
+            )
+            {
+                corner = 1;   
+            }
+        }
+
+        if(corner == 0)
+        {
+        if(i == 0 && boundary1 == 5)
+        {
+            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[10]+ft[8]+ft[14]+ft[12]))/(1.f-u0);
+            if(u0 < 0.f)
+            {
+                int innerID = index1d(1,j,k,nx,ny);
+                rhow = rhoList[innerID];
+            }
+            ft[1] += rhow*u0/3.f;
+            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+            float Nyx = 0.f;
+            float Nzx = 0.f;
+            ft[7]  += rhow*(u0+v0)/6.f -Nyx;
+            ft[9]  += rhow*(u0-v0)/6.f +Nyx;
+            ft[11] += rhow*(u0+w0)/6.f -Nzx;
+            ft[13] += rhow*(u0-w0)/6.f +Nzx;
+        }
+        else if(i == nx-1 && boundary1 == 5)
+        {
+            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]))/(1.f+u0);
+            if(u0 > 0.f)
+            {
+                int innerID = index1d(nx-2,j,k,nx,ny);
+                rhow = rhoList[ic];
+            }
+            ft[2] += -rhow*u0/3.f;
+            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+            float Nyx = 0.f;
+            float Nzx = 0.f;
+            ft[8]  += -rhow*(u0+v0)/6.f +Nyx;
+            ft[10] += -rhow*(u0-v0)/6.f -Nyx;
+            ft[12] += -rhow*(u0+w0)/6.f +Nzx;
+            ft[14] += -rhow*(u0-w0)/6.f -Nzx;
+
+            // int qList[5] = {2,8,10,12,14};
+            // for(int qid = 0; qid < 5; qid++)
+            // {
+            //     int q = qList[qid];
+            //     int qbb = reflectQ(q);
+            //     int bbQID = idf(qbb, ic, nx, ny, nz);
+            //     float rhow = 1.f;
+            //     int innerID = index1d(nx-2,j,k,nx,ny);
+            //     float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+            //     float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+            //     float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+
+            //     float uSqr =u0*u0+v0*v0+w0*w0;
+            //     float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+    
+            //     // ft[q] = -f[bbQID] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+            //     ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+            // }
+        }
+        if(j == 0 && boundary2 == 5)
+        {
+            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[9]+ft[8]+ft[18]+ft[16]))/(1.f-v0);
+            if(v0 < 0.f)
+            {
+                int innerID = index1d(i,1,k,nx,ny);
+                rhow = rhoList[innerID];
+            }
+            ft[3] += rhow*v0/3.f;
+            // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+            // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+            float Nxy = 0.f;
+            float Nzy = 0.f;
+            ft[7]  +=  rhow*(v0+u0)/6.f -Nxy;
+            ft[10] += rhow*(v0-u0)/6.f +Nxy;
+            ft[15] += rhow*(v0+w0)/6.f -Nzy;
+            ft[17] += rhow*(v0-w0)/6.f +Nzy;
+        }
+        else if(j == ny-1 && boundary2 == 5)
+        {
+            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[3]+ft[7]+ft[10]+ft[15]+ft[17]))/(1.f+v0);
+            if(v0 > 0.f)
+            {
+                int innerID = index1d(i,ny-2,k,nx,ny);
+                rhow = rhoList[innerID];
+            }
+            ft[4] += -rhow*v0/3.f;
+            float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+            float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+            Nxy = 0.f;
+            Nzy = 0.f;
+            ft[8]  += -rhow*(v0+u0)/6.f +Nxy;
+            ft[9]  += -rhow*(v0-u0)/6.f -Nxy;
+            ft[16] += -rhow*(v0+w0)/6.f +Nzy;
+            ft[18] += -rhow*(v0-w0)/6.f -Nzy;
+        }
+        if(k == 0 && boundary3 == 5)
+        {
+            float rhow =(ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]))/(1.f-w0);
+            if(w0 < 0.f)
+            {
+                int innerID = index1d(i,j,1,nx,ny);
+                rhow = rhoList[innerID];
+            }
+            ft[5] += rhow*w0/3.f;
+            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+            float Nxz = 0.f;
+            float Nyz = 0.f;
+            ft[11] += rhow*(w0+u0)/6.f -Nxz;
+            ft[14] += rhow*(w0-u0)/6.f +Nxz;
+            ft[15] += rhow*(w0+v0)/6.f -Nyz;
+            ft[18] += rhow*(w0-v0)/6.f +Nyz;
+        }
+        else if(k == nz-1 && boundary3 == 5)
+        {
+            float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[14]+ft[11]+ft[18]+ft[15]))/(1.f+w0);
+            if(w0 > 0.f)
+            {
+                int innerID = index1d(i,j,nz-2,nx,ny);
+                rhow = rhoList[innerID];
+            }
+            ft[6] += -rhow*w0/3.f;
+            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+            float Nxz = 0.f;
+            float Nyz = 0.f;
+            ft[12] += -rhow*(w0+u0)/6.f +Nxz;
+            ft[13] += -rhow*(w0-u0)/6.f -Nxz;
+            ft[16] += -rhow*(w0+v0)/6.f +Nyz;
+            ft[17] += -rhow*(w0-v0)/6.f -Nyz;
+        }
+        }
+
+
+        // FixedDensity (rhow = 1.0) by Bounce Back
+        if(corner == 0)
+        {
+            if(boundary1 == 6)
+            {
+                float rhow = 1.f;
+                int iIn = (i == 0) ? 1 : nx-2;
+                int innerID = index1d(iIn,j,k,nx,ny);
+                float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+                float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+                float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+                float uSqr =u0*u0+v0*v0+w0*w0;
+                
+                if(i == 0)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*u0/18.0f;
+                    int qList[5] = {1,7,9,11,13};
+                    
+                    for(int qid = 0; qid < 5; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-                else if(q == 2)
+                if(i == nx-1)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*u0/18.0f;
+                    int qList[5] = {2,8,10,12,14};
+                    
+                    for(int qid = 0; qid < 5; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-                else if(q == 3)
+                
+            }
+            if(boundary2 == 6)
+            {
+                float rhow = 1.f;
+                int jIn = (j == 0) ? 1 : ny-2;
+                int innerID = index1d(i,jIn,k,nx,ny);
+                float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+                float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+                float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+                float uSqr =u0*u0+v0*v0+w0*w0;
+                if(j == 0)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*v0/18.0f;
+                    int qList[5] = {3,7,10,15,17};                    
+                    for(int qid = 0; qid < 5; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-                else if(q == 4)
+                if(j == ny-1)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*v0/18.0f;
+                    int qList[5] = {4,8,9,16,18};    
+                    for(int qid = 0; qid < 5; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-                else if(q == 5)
+            }
+
+            if(boundary3 == 6)
+            {
+                float rhow = 1.f;
+                int kIn = (k == 0) ? 1: nz-2;
+                int innerID = index1d(i,j,kIn,nx,ny);
+                float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+                float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+                float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+                float uSqr =u0*u0+v0*v0+w0*w0;
+                if(k == 0 && boundary3 == 6)
                 {
-                    ft[q] = f[bbQID] +6.0f*rhow*w0/18.0f;
+                    int qList[5] = {5,11,14,15,18};
+                    for(int qid = 0; qid < 5; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-                else if(q == 6)
+                if(k == nz-1 && boundary3 == 6)
                 {
-                    ft[q] = f[bbQID] -6.0f*rhow*w0/18.0f;
+                    int qList[5] = {6,12,13,16,17};
+                    for(int qid = 0; qid < 5; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-                else if(q == 7)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0+v0)/36.0f;
-                }
-                else if(q == 8)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0+v0)/36.0f;
-                }
-                else if(q == 9)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0-v0)/36.0f;
-                }
-                else if(q == 10)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0-v0)/36.0f;
-                }
-                else if(q == 11)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0+w0)/36.0f;
-                }
-                else if(q == 12)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0+w0)/36.0f;
-                }
-                else if(q == 13)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(u0-w0)/36.0f;
-                }
-                else if(q == 14)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(u0-w0)/36.0f;
-                }
-                else if(q == 15)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(v0+w0)/36.0f;
-                }
-                else if(q == 16)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(v0+w0)/36.0f;
-                }
-                else if(q == 17)
-                {
-                    ft[q] = f[bbQID] +6.0f*rhow*(v0-w0)/36.0f;
-                }
-                else if(q == 18)
-                {
-                    ft[q] = f[bbQID] -6.0f*rhow*(v0-w0)/36.0f;
-                }
-                // ft[q] = f[bbQID] -6.0f*rhow*wt[qbb]*(cx[qbb]*u0[ic]+cy[qbb]*v0[ic]+cz[qbb]*w0[ic]);
             }
         }
 
@@ -1294,7 +1504,7 @@ __kernel void k_streamingCollision // Pull
                         float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
                         // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
 
-                        float tau = 1.f/omega;
+                        float tau = 1.f/omega[ic];
                         float omegaEff = 1.f/(tau +tauSGSList[ic]);
                         
                         if(qf <= 0.5f)
@@ -1443,7 +1653,7 @@ __kernel void k_streamingCollision // Pull
             w /= rho;
 
             //-- LES viscosity
-            float tau = 1.f/omega;
+            float tau = 1.f/omega[ic];
             
             float PIxx = 0.f;
             float PIxy = 0.f;
@@ -1513,7 +1723,7 @@ __kernel void k_streamingCollision // Pull
             int icZ0 = index1d(nx/2,ny/2,0,nx,ny);
             int icZE = index1d(nx/2,ny/2,nz-1,nx,ny);
             
-            if(boundary1List[icX0] == 3)
+            if(boundary1List[icX0] == 3 || boundary1List[icX0] == 6)
             {
                 if(i < nx*spzWidth)
                 {
@@ -1521,7 +1731,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary1List[icXE] == 3)
+            if(boundary1List[icXE] == 3 || boundary1List[icXE] == 6)
             {
                 if(i > nx*(1.f -spzWidth))
                 {
@@ -1529,7 +1739,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary2List[icY0] == 3)
+            if(boundary2List[icY0] == 3 || boundary2List[icY0] == 6)
             {
                 if(j < ny*spzWidth)
                 {
@@ -1537,7 +1747,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary2List[icYE] == 3)
+            if(boundary2List[icYE] == 3 || boundary2List[icYE] == 6)
             {
                 if(j > ny*(1.f -spzWidth))
                 {
@@ -1545,7 +1755,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary3List[icZ0] == 3)
+            if(boundary3List[icZ0] == 3 || boundary3List[icZ0] == 6)
             {
                 if(k < nz*spzWidth)
                 {
@@ -1553,7 +1763,7 @@ __kernel void k_streamingCollision // Pull
                     tau = (1.f -fx)*(1.f -tauSGS) +fx*tau;
                 }
             }
-            if(boundary3List[icZE] == 3)
+            if(boundary3List[icZE] == 3 || boundary3List[icZE] == 6)
             {
                 if(k > nz*(1.f -spzWidth))
                 {
@@ -1960,115 +2170,6 @@ __kernel void k_streamingCollision // Pull
                 GxIBM[ic] = 0.f;
                 GyIBM[ic] = 0.f;
                 GzIBM[ic] = 0.f;
-        }
-
-        //-- Equilibrium Boundary
-        if(boundary1 == 2 || boundary2 == 2 || boundary3 == 2)
-        {
-            int i = ic2i(ic,nx,ny);
-            int j = ic2j(ic,nx,ny);
-            int k = ic2k(ic,nx,ny);
-
-            const float rhow = rho_av;
-            const float u = u0;
-            const float v = v0;
-            const float w = w0;
-
-            if(i == 0)
-            {
-                if(boundary1 == 2)
-                {
-                    for(int q = 0; q < 19; q++)
-                    {
-                        if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
-                        {                            
-                            float uSqr = u*u +v*v +w*w;
-                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-
-                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
-                        }
-                    }
-                }
-            }
-            if(i == nx-1)
-            {
-                if(boundary1 == 2)
-                {   for(int q = 0; q < 19; q++)
-                    {
-                        if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
-                        {
-                            float uSqr = u*u +v*v +w*w;
-                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-
-                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
-                        }
-                    }
-                }
-            }
-            if(j == 0)
-            {
-                if(boundary2 == 2)
-                {
-                    for(int q = 0; q < 19; q++)
-                    {
-                        if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
-                        {
-                            float uSqr = u*u +v*v +w*w;
-                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-
-                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
-                        }
-                    }
-                }
-            }
-            if(j == ny-1)
-            {
-                if(boundary2 == 2)
-                {
-                    for(int q = 0; q < 19; q++)
-                    {
-                        if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
-                        {
-                            float uSqr = u*u +v*v +w*w;
-                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-
-                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
-                        }
-                    }
-                }
-            }
-            if(k == 0)
-            {
-                if(boundary3 == 2)
-                {
-                    for(int q = 0; q < 19; q++)
-                    {
-                        if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
-                        {
-                            float uSqr = u*u +v*v +w*w;
-                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-
-                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
-                        }
-                    }
-                }
-            }
-            if(k == nz-1)
-            {
-                if(boundary3 == 2)
-                {
-                    for(int q = 0; q < 19; q++)
-                    {
-                        if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17)
-                        {
-                            float uSqr = u*u +v*v +w*w;
-                            float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
-
-                            ft[q] = (1.f +3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q]*rhow;
-                        }
-                    }
-                }
-            }
         }
     }
 }

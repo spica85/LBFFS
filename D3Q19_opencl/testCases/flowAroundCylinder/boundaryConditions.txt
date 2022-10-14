@@ -1,14 +1,14 @@
-nxMinBoundary1 BounceBack
+nxMinBoundary1 FixedVelocity
 nxMinBoundary2 Cyclic
 nxMinBoundary3 Cyclic
 nxMinU0 1.0
 nxMinV0 0.0
 nxMinW0 0.0
 
-nxMaxBoundary1 Outlet
+nxMaxBoundary1 FixedDensity
 nxMaxBoundary2 Cyclic
 nxMaxBoundary3 Cyclic
-nxMaxU0 1.0
+nxMaxU0 0.0
 nxMaxV0 0.0
 nxMaxW0 0.0
 

@@ -2,6 +2,7 @@ if(Fwrite && nextOutTime < nt +1)
 {
     cl::copy(queue, f_d, f.begin(), f.end());
     cl::copy(queue, tauSGS_d, tauSGS.begin(), tauSGS.end());
+    cl::copy(queue, omega_d, omega.begin(), omega.end());
 
     if(forceCoeffs)
     {
@@ -12,7 +13,7 @@ if(Fwrite && nextOutTime < nt +1)
         cl::copy(queue, GyIBM_d, GyIBM.begin(), GyIBM.end());
         cl::copy(queue, GzIBM_d, GzIBM.begin(), GzIBM.end());
     }
-    rho_av = 0.f;
+    double rho_av_tmp = 0.f;
     int eleFluid = 0;
     float SumFwx = 0.f;
     float SumFwy = 0.f;
@@ -26,7 +27,7 @@ if(Fwrite && nextOutTime < nt +1)
         cal_rhoUVW(ic, nx, ny, nz, f, cx, cy, cz, rho[ic], u[ic], v[ic], w[ic]);
         if(solid[ic] == 0)
         {
-            rho_av += rho[ic] -1.f;
+            rho_av_tmp += rho[ic] -1.0;
             if(forceCoeffs)
             {
                 SumFwx += Fwx[ic];
@@ -43,7 +44,7 @@ if(Fwrite && nextOutTime < nt +1)
             //           << std::endl;
         }
     }
-    rho_av = rho_av/float(eleFluid) +1.f;
+    rho_av = rho_av_tmp/float(eleFluid) +1.f;
     float rhoMax = *std::max_element(rho.begin(), rho.end());
     float rhoMin = *std::min_element(rho.begin(), rho.end());
 
@@ -91,8 +92,8 @@ if(Fwrite && nextOutTime < nt +1)
     writeFile << "DATASET STRUCTURED_POINTS\n";
     writeFile << "DIMENSIONS " << nx << " " << ny << " " << nz << "\n";
 
-    // writeFile << "ORIGIN " << 0.0 << " " << 0.0 << " " << 0.0 << "\n";
-    writeFile << "ORIGIN " << L/2 << " " << L/2 << " " << L/2 << "\n";
+    writeFile << "ORIGIN " << 0.0 << " " << 0.0 << " " << 0.0 << "\n";
+    //writeFile << "ORIGIN " << L/2 << " " << L/2 << " " << L/2 << "\n";
     writeFile << "SPACING " << L << " " << L << " " << L << "\n\n";
 
 
@@ -459,6 +460,32 @@ if(Fwrite && nextOutTime < nt +1)
                     else
                     {
                         writeFile << (float)(GzIBM[ic]) << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // omega output
+    {
+        writeFile << "SCALARS omega float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(omega[ic]));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << (float)(omega[ic]) << "\n";
                     }
                 }
             }
