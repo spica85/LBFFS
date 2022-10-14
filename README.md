@@ -44,15 +44,16 @@ LBFFS is a flow simulator based on lattice boltzmann method, written in C++ and 
 
 * Flow around a cylinder (Re=100, Laminar)
 
-https://user-images.githubusercontent.com/109857341/180644337-b0e62fda-41a7-487d-9cee-98e37b96f939.mp4
+https://user-images.githubusercontent.com/109857341/195817642-dc11b2af-c81f-4ab7-9215-0dbf3b18e614.mp4
+
 <table>
 <tr>
 <td>Cx</td>
 <td>Cy</td>
 </tr>
 <tr>
-<td><img src="https://user-images.githubusercontent.com/109857341/194307687-ff727395-d461-435e-9d19-b295e130288a.png" width="320px"></td>
-<td><img src="https://user-images.githubusercontent.com/109857341/194307752-b4ae2f76-a6d1-4143-95a4-1acfcf35c55a.png" width="320px"></td>
+<td><img src="https://user-images.githubusercontent.com/109857341/195794865-2a9b0cf8-9825-48bc-81aa-85fd03c4bf30.png" width="320px"></td>
+<td><img src="https://user-images.githubusercontent.com/109857341/195794938-69f6a37a-250e-42c5-a596-59c255b23292.png" width="320px"></td>
 </tr>
 </table>
 
