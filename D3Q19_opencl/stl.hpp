@@ -535,12 +535,12 @@ class STL
     STL(const std::string fileName, const float L): fileName(fileName), L(L)
     {
         readSTL();
-        xMin = patch[0]->xMin;
-        xMax = patch[0]->xMax;
-        yMin = patch[0]->yMin;
-        yMax = patch[0]->yMax;
-        zMin = patch[0]->zMin;
-        zMax = patch[0]->zMax;
+        xMin = 0.f;
+        xMax = 0.f;
+        yMin = 0.f;
+        yMax = 0.f;
+        zMin = 0.f;
+        zMax = 0.f;
         for(int iPatch = 0; iPatch < patch.size(); iPatch++)
         {
             std::cout << "Number of elements of " << patch[iPatch]->patchName << ": " << patch[iPatch]->nSize() << std::endl;
