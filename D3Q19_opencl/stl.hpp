@@ -117,6 +117,19 @@ class STLpatch
     std::vector<std::vector<float> > STLv2;
     std::vector<std::vector<float> > STLnormal;
     std::vector<std::vector<float> > STLc;
+    std::vector<float> eleXMin;
+    std::vector<float> eleXMax;
+    std::vector<float> eleYMin;
+    std::vector<float> eleYMax;
+    std::vector<float> eleZMin;
+    std::vector<float> eleZMax;
+    
+    float xMin;
+    float xMax;
+    float yMin;
+    float yMax;
+    float zMin;
+    float zMax;
 
     STLpatch(const std::string patchName): 
         patchName(patchName), STLnormal(3),
@@ -171,6 +184,86 @@ class STLpatch
             setPoint(STLc, x, y, z);
         }
     }
+
+    void setBoundingBox()
+    {
+        float v0xMin = *min_element(STLv0[0].begin(),STLv0[0].end());
+        float v0yMin = *min_element(STLv0[1].begin(),STLv0[1].end());
+        float v0zMin = *min_element(STLv0[2].begin(),STLv0[2].end());
+
+        float v1xMin = *min_element(STLv1[0].begin(),STLv1[0].end());
+        float v1yMin = *min_element(STLv1[1].begin(),STLv1[1].end());
+        float v1zMin = *min_element(STLv1[2].begin(),STLv1[2].end());
+
+        float v2xMin = *min_element(STLv2[0].begin(),STLv2[0].end());
+        float v2yMin = *min_element(STLv2[1].begin(),STLv2[1].end());
+        float v2zMin = *min_element(STLv2[2].begin(),STLv2[2].end());
+
+        xMin = fmin(v0xMin, fmin(v1xMin, v2xMin));
+        yMin = fmin(v0yMin, fmin(v1yMin, v2yMin));
+        zMin = fmin(v0zMin, fmin(v1zMin, v2zMin));
+
+
+        float v0xMax = *max_element(STLv0[0].begin(),STLv0[0].end());
+        float v0yMax = *max_element(STLv0[1].begin(),STLv0[1].end());
+        float v0zMax = *max_element(STLv0[2].begin(),STLv0[2].end());
+
+        float v1xMax = *max_element(STLv1[0].begin(),STLv1[0].end());
+        float v1yMax = *max_element(STLv1[1].begin(),STLv1[1].end());
+        float v1zMax = *max_element(STLv1[2].begin(),STLv1[2].end());
+
+        float v2xMax = *max_element(STLv2[0].begin(),STLv2[0].end());
+        float v2yMax = *max_element(STLv2[1].begin(),STLv2[1].end());
+        float v2zMax = *max_element(STLv2[2].begin(),STLv2[2].end());
+
+        xMax = fmax(v0xMax, fmax(v1xMax, v2xMax));
+        yMax = fmax(v0yMax, fmax(v1yMax, v2yMax));
+        zMax = fmax(v0zMax, fmax(v1zMax, v2zMax));
+    }
+
+    void eleBoundingBox(const int iSTL, float& xMin, float& xMax, float& yMin, float& yMax, float& zMin, float& zMax)
+    {
+        std::vector<float> v0(3);
+        v0[0] = STLv0[0][iSTL];
+        v0[1] = STLv0[1][iSTL];
+        v0[2] = STLv0[2][iSTL];
+        std::vector<float> v1(3);
+        v1[0] = STLv1[0][iSTL];
+        v1[1] = STLv1[1][iSTL];
+        v1[2] = STLv1[2][iSTL];
+        std::vector<float> v2(3);
+        v2[0] = STLv2[0][iSTL];
+        v2[1] = STLv2[1][iSTL];
+        v2[2] = STLv2[2][iSTL];
+
+        xMin = fmin(v0[0], fmin(v1[0],v2[0]));
+        yMin = fmin(v0[1], fmin(v1[1],v2[1]));
+        zMin = fmin(v0[2], fmin(v1[2],v2[2]));
+        xMax = fmax(v0[0], fmax(v1[0],v2[0]));
+        yMax = fmax(v0[1], fmax(v1[1],v2[1]));
+        zMax = fmax(v0[2], fmax(v1[2],v2[2]));
+    }
+
+    void setEleBoundingBox()
+    {
+        for(int i = 0; i < STLnormal[0].size(); i++)
+        {
+            float xMin;
+            float xMax;
+            float yMin;
+            float yMax;
+            float zMin;
+            float zMax;
+            eleBoundingBox(i,xMin,xMax,yMin,yMax,zMin,zMax);
+            eleXMin.push_back(xMin);
+            eleXMax.push_back(xMax);
+            eleYMin.push_back(yMin);
+            eleYMax.push_back(yMax);
+            eleZMin.push_back(zMin);
+            eleZMax.push_back(zMax);
+        }
+    }
+
 
     void printSTLnormal()
     {
@@ -424,6 +517,7 @@ class STL
         {
             patch[iPatch]->normalizeSTLv(L);
             patch[iPatch]->setSTLc();
+            patch[iPatch]->setBoundingBox();
         }
 
         return 1;
@@ -431,13 +525,32 @@ class STL
 
     public:
     std::vector<std::unique_ptr<STLpatch> > patch;
+    float xMin;
+    float xMax;
+    float yMin;
+    float yMax;
+    float zMin;
+    float zMax;
     
     STL(const std::string fileName, const float L): fileName(fileName), L(L)
     {
         readSTL();
+        xMin = patch[0]->xMin;
+        xMax = patch[0]->xMax;
+        yMin = patch[0]->yMin;
+        yMax = patch[0]->yMax;
+        zMin = patch[0]->zMin;
+        zMax = patch[0]->zMax;
         for(int iPatch = 0; iPatch < patch.size(); iPatch++)
         {
             std::cout << "Number of elements of " << patch[iPatch]->patchName << ": " << patch[iPatch]->nSize() << std::endl;
+            xMin = fmin(xMin, patch[iPatch]->xMin);
+            xMax = fmax(xMax, patch[iPatch]->xMax);
+            yMin = fmin(yMin, patch[iPatch]->yMin);
+            yMax = fmax(yMax, patch[iPatch]->yMax);
+            zMin = fmin(zMin, patch[iPatch]->zMin);
+            zMax = fmax(zMax, patch[iPatch]->zMax);
+            patch[iPatch]->setEleBoundingBox();
         }
     }
 

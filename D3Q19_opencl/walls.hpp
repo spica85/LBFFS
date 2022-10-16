@@ -15,6 +15,167 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+float det(const std::vector<float>& a, const std::vector<float>& b, const std::vector<float>& c)
+{
+    return (a[0]*b[1]*c[2]) +(a[1]*b[2]*c[0]) +(a[2]*b[0]*c[1])
+            -(a[0]*b[2]*c[1]) -(a[1]*b[0]*c[2]) -(a[2]*b[1]*c[0]);
+}
+
+bool isCross(const std::vector<float>& v0, const std::vector<float>& v1, const std::vector<float>& v2, const int i, const int j, const int k)
+{
+    const std::vector<float> ray = {1.f, 0.f, 0.f};
+    const std::vector<float> invRay = {-1.f, 0.f, 0.f};
+
+    std::vector<float> a(3);
+    a[0] = v1[0] -v0[0];
+    a[1] = v1[1] -v0[1];
+    a[2] = v1[2] -v0[2];
+    std::vector<float> b(3);
+    b[0] = v2[0] -v0[0];
+    b[1] = v2[1] -v0[1];
+    b[2] = v2[2] -v0[2];
+    const std::vector<float> c = invRay;
+
+    std::vector<float> d(3);
+    d[0] = float(i) -v0[0];
+    d[1] = float(j) -v0[1];
+    d[2] = float(k) -v0[2];
+
+    float x = det(d,b,c)/det(a,b,c);
+    float y = det(a,d,c)/det(a,b,c);
+    float z = det(a,b,d)/det(a,b,c);
+
+    if(x < 0.f || x > 1.f)
+    {
+        return false;
+    }
+    else if(y < 0.f || y > 1.f)
+    {
+        return false;
+    }
+    else if(x+y < 0.f || x+y > 1.f)
+    {
+        return false;
+    }
+    else if(z < 0.f)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+bool isInner(const STL& stl, const int i, const int j, const int k)
+{
+    if(float(i) < stl.xMin)
+    {
+        return false;
+    }
+    else if(float(i) > stl.xMax)
+    {
+        return false;
+    }
+    else if(float(j) < stl.yMin)
+    {
+        return false;
+    }
+    else if(float(j) > stl.yMax)
+    {
+        return false;
+    }
+    else if(float(k) < stl.zMin)
+    {
+        return false;
+    }
+    else if(float(k) > stl.zMax)
+    {
+        return false;
+    }
+    else
+    {
+        int nCross = 0;
+        int nCount = 0;
+        for(int iPatch = 0; iPatch < stl.patch.size(); iPatch++)
+        {
+            const std::unique_ptr<STLpatch>& patch = stl.patch[iPatch];
+            
+            std::vector<std::vector<float> >& STLv0 = patch->STLv0;
+            std::vector<std::vector<float> >& STLv1 = patch->STLv1;
+            std::vector<std::vector<float> >& STLv2 = patch->STLv2;
+            const int nSTL = STLv0[0].size();
+            
+            for(int iSTL = 0; iSTL < nSTL; iSTL++)
+            {
+                float xMin = patch->eleXMin[iSTL];
+                float xMax = patch->eleXMax[iSTL];
+                float yMin = patch->eleYMin[iSTL];
+                float yMax = patch->eleYMax[iSTL];
+                float zMin = patch->eleZMin[iSTL];
+                float zMax = patch->eleZMax[iSTL];
+                
+                if
+                (
+                    float(j) >= yMin &&
+                    float(j) <= yMax &&
+                    float(k) >= zMin &&
+                    float(k) <= zMax
+                ) 
+                {
+                    std::vector<float> v0(3);
+                    v0[0] = STLv0[0][iSTL];
+                    v0[1] = STLv0[1][iSTL];
+                    v0[2] = STLv0[2][iSTL];
+                    std::vector<float> v1(3);
+                    v1[0] = STLv1[0][iSTL];
+                    v1[1] = STLv1[1][iSTL];
+                    v1[2] = STLv1[2][iSTL];
+                    std::vector<float> v2(3);
+                    v2[0] = STLv2[0][iSTL];
+                    v2[1] = STLv2[1][iSTL];
+                    v2[2] = STLv2[2][iSTL];
+
+                    nCount++;
+                    if(isCross(v0,v1,v2,i,j,k))
+                    {
+                        nCross++;
+                    }   
+                }
+            }
+        }
+        
+        if(nCross%2 == 0)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+}
+
+void setSolid(std::vector<unsigned char>& solid, const STL& stl, const int nx, const int ny, const int nz)
+{
+    for(int i = 0; i < nx; i++)
+    {
+        for(int j = 0; j < ny; j++)
+        {
+            for(int k = 0; k < nz; k++)
+            {
+                int ic = index1d(i,j,k,nx,ny);
+                if(isInner(stl,i,j,k))
+                {
+                    solid[ic] = 1;
+                    // std::cout << "solid[" << ic << "]: " << int(solid[ic]) << std::endl;
+                }
+            }
+        }
+    }
+}
+
+
 void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, const std::unique_ptr<STLpatch>& patch, const int nx, const int ny, const int nz, const bool boundary)
 {
     std::vector<std::vector<float> >& STLc = patch->STLc;
