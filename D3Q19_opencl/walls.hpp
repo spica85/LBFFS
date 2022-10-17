@@ -15,75 +15,256 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, const std::unique_ptr<STLpatch>& patch, const int nx, const int ny, const int nz, const bool boundary)
+float det(const std::vector<float>& a, const std::vector<float>& b, const std::vector<float>& c)
 {
+    return (a[0]*b[1]*c[2]) +(a[1]*b[2]*c[0]) +(a[2]*b[0]*c[1])
+            -(a[0]*b[2]*c[1]) -(a[1]*b[0]*c[2]) -(a[2]*b[1]*c[0]);
+}
+
+bool isCross(const std::vector<float>& v0, const std::vector<float>& v1, const std::vector<float>& v2, const int i, const int j, const int k)
+{
+    const std::vector<float> ray = {1.f, 0.f, 0.f};
+    const std::vector<float> invRay = {-1.f, 0.f, 0.f};
+
+    std::vector<float> a(3);
+    a[0] = v1[0] -v0[0];
+    a[1] = v1[1] -v0[1];
+    a[2] = v1[2] -v0[2];
+    std::vector<float> b(3);
+    b[0] = v2[0] -v0[0];
+    b[1] = v2[1] -v0[1];
+    b[2] = v2[2] -v0[2];
+    const std::vector<float> c = invRay;
+
+    std::vector<float> d(3);
+    d[0] = float(i) -v0[0];
+    d[1] = float(j) -v0[1];
+    d[2] = float(k) -v0[2];
+
+    float x = det(d,b,c)/det(a,b,c);
+    float y = det(a,d,c)/det(a,b,c);
+    float z = det(a,b,d)/det(a,b,c);
+
+    if(x < 0.f || x > 1.f)
+    {
+        return false;
+    }
+    else if(y < 0.f || y > 1.f)
+    {
+        return false;
+    }
+    else if(x+y < 0.f || x+y > 1.f)
+    {
+        return false;
+    }
+    else if(z < 0.f)
+    {
+        return false;
+    }
+    else
+    {
+        return true;
+    }
+}
+
+bool isInner(const STL& stl, const int i, const int j, const int k)
+{
+    if(float(i) < stl.xMin)
+    {
+        return false;
+    }
+    else if(float(i) > stl.xMax)
+    {
+        return false;
+    }
+    else if(float(j) < stl.yMin)
+    {
+        return false;
+    }
+    else if(float(j) > stl.yMax)
+    {
+        return false;
+    }
+    else if(float(k) < stl.zMin)
+    {
+        return false;
+    }
+    else if(float(k) > stl.zMax)
+    {
+        return false;
+    }
+    else
+    {
+        int nCross = 0;
+        int nCount = 0;
+        for(int iPatch = 0; iPatch < stl.patch.size(); iPatch++)
+        {
+            const std::unique_ptr<STLpatch>& patch = stl.patch[iPatch];
+            
+            std::vector<std::vector<float> >& STLv0 = patch->STLv0;
+            std::vector<std::vector<float> >& STLv1 = patch->STLv1;
+            std::vector<std::vector<float> >& STLv2 = patch->STLv2;
+            const int nSTL = STLv0[0].size();
+            
+            for(int iSTL = 0; iSTL < nSTL; iSTL++)
+            {
+                float xMin = patch->eleXMin[iSTL];
+                float xMax = patch->eleXMax[iSTL];
+                float yMin = patch->eleYMin[iSTL];
+                float yMax = patch->eleYMax[iSTL];
+                float zMin = patch->eleZMin[iSTL];
+                float zMax = patch->eleZMax[iSTL];
+                
+                if
+                (
+                    float(j) >= yMin &&
+                    float(j) <= yMax &&
+                    float(k) >= zMin &&
+                    float(k) <= zMax
+                ) 
+                {
+                    std::vector<float> v0(3);
+                    v0[0] = STLv0[0][iSTL];
+                    v0[1] = STLv0[1][iSTL];
+                    v0[2] = STLv0[2][iSTL];
+                    std::vector<float> v1(3);
+                    v1[0] = STLv1[0][iSTL];
+                    v1[1] = STLv1[1][iSTL];
+                    v1[2] = STLv1[2][iSTL];
+                    std::vector<float> v2(3);
+                    v2[0] = STLv2[0][iSTL];
+                    v2[1] = STLv2[1][iSTL];
+                    v2[2] = STLv2[2][iSTL];
+
+                    nCount++;
+                    if(isCross(v0,v1,v2,i,j,k))
+                    {
+                        nCross++;
+                    }   
+                }
+            }
+        }
+        
+        if(nCross%2 == 0)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+}
+
+void setSolid(std::vector<unsigned char>& solid, const STL& stl, const int nx, const int ny, const int nz, const bool fluid = true)
+{
+    for(int i = 0; i < nx; i++)
+    {
+        for(int j = 0; j < ny; j++)
+        {
+            for(int k = 0; k < nz; k++)
+            {
+                int ic = index1d(i,j,k,nx,ny);
+                if(isInner(stl,i,j,k))
+                {
+                    solid[ic] = 1;
+                }
+            }
+        }
+    }
+
+    const int elements = nx*ny*nz;
+    if(!fluid)
+    {
+        for(int ic = 0; ic < elements; ic++)
+        {            
+            solid[ic] = (solid[ic] == 1) ? 0 : 1;
+        }        
+    }
+}
+
+
+void setNeiSolid(std::vector<unsigned char>& neiSolid, const std::vector<unsigned char>& solid, const int nx, const int ny, const int nz)
+{
+    const int elements = nx*ny*nz;
+    for(int ic = 0; ic < elements; ic++)
+    {
+        int i = ic2i(ic,nx,ny);
+        int j = ic2j(ic,nx,ny);
+        int k = ic2k(ic,nx,ny);
+        
+        if
+        (
+            (nx == 1 && (j != 0 && j != ny-1 && k != 0 && k != nz-1)) ||
+            (ny == 1 && (i != 0 && i != nx-1 && k != 0 && k != nz-1)) || 
+            (nz == 1 && (i != 0 && i != nx-1 && j != 0 && j != ny-1)) ||
+            (i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
+        )
+        {
+            for(int q = 0; q < 19; q++)
+            {
+                int qic = q*elements +ic;
+                const int upID = upwindID(q,i,j,k,nx,ny,nz);
+                
+                if(solid[ic] == 0 && solid[upID] == 1)
+                {
+                    neiSolid[ic] = 1;
+                }
+            }
+        }
+    }
+}
+
+void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const float p, const std::unique_ptr<STLpatch>& patch, const int nx, const int ny, const int nz, const bool boundary, std::vector<unsigned char>& neiSolid)
+{
+    const int elements = nx*ny*nz;
+    const int drn = int(dr);
+    
+    std::vector<int> nearSTL;
+    for(int ic = 0; ic < elements; ic++)
+    {
+        if(neiSolid[ic] == 1)
+        {
+            int i = ic2i(ic,nx,ny);
+            int j = ic2j(ic,nx,ny);
+            int k = ic2k(ic,nx,ny);
+
+            for(int ii = -drn; ii <= drn; ii++)
+            {
+                int iNear = i + ii;
+                if(0 <= iNear && iNear <= nx-1)
+                {
+                    for(int jj = -drn; jj <= drn; jj++)
+                    {
+                        int jNear = j + jj;
+                        if(0 <= jNear && jNear <= ny-1)
+                        {
+                            for(int kk = -drn; kk <= drn; kk++)
+                            {
+                                int kNear = k + kk;
+                                if(0 <= kNear && kNear <= nz-1)
+                                {
+                                    int ic = index1d(iNear,jNear,kNear,nx,ny);
+                                    nearSTL.push_back(ic);
+                                }
+                            }
+                        }
+                    }
+                }   
+            }
+        }
+    }
+
+    std::sort(nearSTL.begin(), nearSTL.end());
+    nearSTL.erase(std::unique(nearSTL.begin(), nearSTL.end()), nearSTL.end());
+    std::cout << "Number of near walls: " << nearSTL.size() << std::endl;
+
     std::vector<std::vector<float> >& STLc = patch->STLc;
     std::vector<std::vector<float> >& STLv0 = patch->STLv0;
     std::vector<std::vector<float> >& STLv1 = patch->STLv1;
     std::vector<std::vector<float> >& STLv2 = patch->STLv2;
     std::vector<std::vector<float> >& STLnormal = patch->STLnormal;
-    const int drn = int(dr);
     const int nSTL = STLc[0].size();
-
-    std::vector<int> nearSTL;
-    for(int iSTL = 0; iSTL < nSTL; iSTL++)
-    {
-        int i;
-        int j;
-        int k;
-        for(int iv = 0; iv < 3; iv++)
-        {
-            if(iv == 0)
-            {
-                i = int(STLv0[0][iSTL]);
-                j = int(STLv0[1][iSTL]);
-                k = int(STLv0[2][iSTL]);
-            }
-            else if(iv == 1)
-            {
-                i = int(STLv1[0][iSTL]);
-                j = int(STLv1[1][iSTL]);
-                k = int(STLv1[2][iSTL]);
-            }
-            else
-            {
-                i = int(STLv2[0][iSTL]);
-                j = int(STLv2[1][iSTL]);
-                k = int(STLv2[2][iSTL]);
-            }
-            
-            // if(boundary || (0 < i && i < nx-1 && 0 < j && j < ny-1 && 0 < k && k < nz-1))
-            {
-                for(int ii = -drn; ii <= drn; ii++)
-                {
-                    int iNear = i + ii;
-                    if(0 <= iNear && iNear <= nx-1)
-                    {
-                        for(int jj = -drn; jj <= drn; jj++)
-                        {
-                            int jNear = j + jj;
-                            if(0 <= jNear && jNear <= ny-1)
-                            {
-                                for(int kk = -drn; kk <= drn; kk++)
-                                {
-                                    int kNear = k + kk;
-                                    if(0 <= kNear && kNear <= nz-1)
-                                    {
-                                        int ic = index1d(iNear,jNear,kNear,nx,ny);
-                                        nearSTL.push_back(ic);
-                                    }
-                                }
-                            }
-                        }
-                    }   
-                }
-            }
-        }
-    }
-    std::sort(nearSTL.begin(), nearSTL.end());
-    nearSTL.erase(std::unique(nearSTL.begin(), nearSTL.end()), nearSTL.end());
-
-    std::cout << "Number of near walls: " << nearSTL.size() << std::endl;
     for(int iNSTL = 0; iNSTL < nearSTL.size(); iNSTL++)
     {
         int ic = nearSTL[iNSTL];
@@ -188,55 +369,6 @@ void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const f
     }
 }
 
-void setSolid(std::vector<unsigned char>& solid, std::vector<float>& sdf, const float sdfIni, const int nx, const int ny, const int nz, const bool fluid)
-{
-    const int elements = sdf.size();
-
-    for(int ic = 0; ic < elements; ic++)
-    {
-        if(sdf[ic] < 0.f)
-        {
-            solid[ic] = 1;
-        }
-    }
-
-    for(int j = 0; j < ny; j++)
-    {
-        for(int k = 0; k < nz; k++)
-        {
-            std::vector<int> tmp;
-            for(int i = 0; i < nx; i++)
-            {
-                int ic = index1d(i,j,k,nx,ny);
-                if(sdf[ic] == sdfIni)
-                {
-                    tmp.push_back(ic);
-                }
-                else if(tmp.size() != 0 && (sdf[ic] < 0.0 || i == nx-1))
-                {
-                    for(int id = 0; id < tmp.size(); id++)
-                    {
-                        solid[tmp[id]] = 1;
-                    }
-                    tmp.clear();
-                }
-                else if(tmp.size() != 0 && sdf[ic] != sdfIni && sdf[ic] > 0.0)
-                {
-                    tmp.clear();
-                }
-            }
-        }
-    }
-
-    if(!fluid)
-    {
-        for(int ic = 0; ic < elements; ic++)
-        {            
-            solid[ic] = (solid[ic] == 1) ? 0 : 1;
-        }        
-    }
-}
-
 void setBwalls(std::vector<std::vector<float> >& bWallsC, std::vector<std::vector<float> >& bWallsNormal, const std::vector<int>& boundary1, const std::vector<int>& boundary2, const std::vector<int>& boundary3, const int nx, const int ny, const int nz)
 {
     for(int j = 0; j < ny; j++)
@@ -319,7 +451,7 @@ void setBwalls(std::vector<std::vector<float> >& bWallsC, std::vector<std::vecto
     }
 }
 
-void setQf(std::vector<float>& qf, std::vector<unsigned char>& neiSolid, std::vector<float>& sdf, std::vector<unsigned char>& solid, const int nx, const int ny, const int nz)
+void setQf(std::vector<float>& qf, const std::vector<unsigned char>& neiSolid, std::vector<float>& sdf, const int nx, const int ny, const int nz)
 {
     const int elements = nx*ny*nz;
     for(int ic = 0; ic < elements; ic++)
@@ -343,9 +475,8 @@ void setQf(std::vector<float>& qf, std::vector<unsigned char>& neiSolid, std::ve
                 const int upID = upwindID(q,i,j,k,nx,ny,nz);
                 
                 const float sdf1 = sdf[upID];
-                if(solid[ic] == 0 && solid[upID] == 1)
+                if(neiSolid[ic] == 1)
                 {
-                    neiSolid[ic] = 1;
                     qf[qic] = abs(sdf0)/(abs(sdf0)+abs(sdf1));
                 }
             }

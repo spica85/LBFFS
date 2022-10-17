@@ -164,6 +164,12 @@ int main()
     std::vector<float> Fwy(nx*ny*nz,0.0f);
     std::vector<float> Fwz(nx*ny*nz,0.0f);
 
+    std::vector<unsigned char> solid(elements,0);
+    setSolid(solid,wallSTL,nx,ny,nz);
+
+    std::vector<unsigned char> neiSolid(nx*ny*nz,0);
+    setNeiSolid(neiSolid, solid, nx, ny, nz);
+
     //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
     const float sdfIni = 10000.f;
     std::vector<float> sdf(nx*ny*nz,sdfIni);
@@ -173,18 +179,12 @@ int main()
     for(int iPatch = 0; iPatch < wallSTL.patch.size(); iPatch++)
     {
         const std::unique_ptr<STLpatch>& patch = wallSTL.patch[iPatch];
-
-        // setSDF(sdf, sdfIni, dr, p, patch->STLc, patch->STLnormal, nx, ny, nz, false);
-        setSDF(sdf, sdfIni, dr, p, patch, nx, ny, nz, false);
+        setSDF(sdf, sdfIni, dr, p, patch, nx, ny, nz, false, neiSolid);
     }
-    
-    std::vector<unsigned char> solid(elements,0);
-    setSolid(solid, sdf, sdfIni, nx, ny, nz, true);
 
     const float qfIni = 0.5f;
     std::vector<float> qf(19*nx*ny*nz,qfIni);
-    std::vector<unsigned char> neiSolid(nx*ny*nz,0);
-    setQf(qf, neiSolid, sdf, solid, nx, ny, nz);
+    setQf(qf, neiSolid, sdf, nx, ny, nz);
     //--
 
     //-- Calculation of sdf for the boundaries of the calculation region
