@@ -156,7 +156,7 @@ bool isInner(const STL& stl, const int i, const int j, const int k)
     }
 }
 
-void setSolid(std::vector<unsigned char>& solid, const STL& stl, const int nx, const int ny, const int nz, const bool fluid = true)
+void setSolid(std::vector<unsigned char>& solid, const STL& stl, const int nx, const int ny, const int nz, const bool invertFluidSolid = false)
 {
     for(int i = 0; i < nx; i++)
     {
@@ -174,7 +174,7 @@ void setSolid(std::vector<unsigned char>& solid, const STL& stl, const int nx, c
     }
 
     const int elements = nx*ny*nz;
-    if(!fluid)
+    if(invertFluidSolid)
     {
         for(int ic = 0; ic < elements; ic++)
         {            

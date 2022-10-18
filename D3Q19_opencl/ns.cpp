@@ -59,8 +59,9 @@ int main()
     float Dref;
     float omegaB;
     float spzWidth;
+    bool invertFluidSolid;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB, spzWidth);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB, spzWidth, invertFluidSolid);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -165,7 +166,7 @@ int main()
     std::vector<float> Fwz(nx*ny*nz,0.0f);
 
     std::vector<unsigned char> solid(elements,0);
-    setSolid(solid,wallSTL,nx,ny,nz);
+    setSolid(solid,wallSTL,nx,ny,nz,invertFluidSolid);
 
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
     setNeiSolid(neiSolid, solid, nx, ny, nz);
