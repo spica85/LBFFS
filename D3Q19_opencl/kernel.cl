@@ -1477,6 +1477,7 @@ void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fw
     }
 }
 
+// Geier et al., Comput. Math. Appl. (2015), Appendix F
 void outflowBC(float* ft, const float* f, const float u, const float v, const float w, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     for(int q = 1; q < 19; q++)
@@ -2091,6 +2092,21 @@ void collisionRecursiveRegularized(float* fTmp, const float* ft, const float rho
     fTmp[18*elements +ic] = 0.5f*rho*(-RMcoll011 -RMcoll012) +0.25f*rho*(RMcoll011 +RMcoll021 +RMcoll012 +RMcoll022) +rho*wt[18]*3.0f*dpdx*cx[18];
 }
 
+void updateRhoUVW(const float* ft, float* rhoList, float* uList, float* vList, float* wList, const int ic)
+{
+    float rho = 0.0f;
+    float u = 0.0f;
+    float v = 0.0f;
+    float w = 0.0f;
+
+    cal_rhoUVW(ft, &rho, &u, &v, &w);
+
+    rhoList[ic] = rho;
+    uList[ic] = u;
+    vList[ic] = v;
+    wList[ic] = w;
+}
+
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
@@ -2143,53 +2159,34 @@ __kernel void k_streamingCollision // Pull
         const float omega = omegaList[ic];
         float tauSGS = tauSGSList[ic];
 
-        //-- Streaming --
         streaming(ft, f, upID, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, elements);
-
-        // -- Zou-He velocity and pressure BC --
+    
         const int corner = cornerFlag(boundary3, i, j, k, nx, ny, nz);
         fixedVelocityBC(ft, rhoList, u0, v0, w0, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);
 
-        // FixedDensity (rhow = 1.0) by Bounce Back
         fixedDensityBC(ft, 1.f, uList, vList, wList, cx, cy, cz, wt, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);        
 
-        //-- Bounce-Back for internal walls
         internalWallBC(ft, f, Fwx, Fwy, Fwz, solidList, neiSolidList, sdfList, sdf, upID, omega, tauSGS, cx, cy, cz, wt, ic, i, j, k, nx, ny, nz, elements);
 
-        //-- Outflow Boundary (Geier et al., Comput. Math. Appl. (2015), Appendix F)
         outflowBC(ft, f, u, v, w, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz);
 
-        float rho = 0.0f;
-        u = 0.0f;
-        v = 0.0f;
-        w = 0.0f;
-        cal_rhoUVW(ft, &rho, &u, &v, &w);
-
-        rhoList[ic] = rho;
-        uList[ic] = u;
-        vList[ic] = v;
-        wList[ic] = w;
+        updateRhoUVW(ft, rhoList, uList, vList, wList, ic);
+        float rho = rhoList[ic];
+        u = uList[ic];
+        v = vList[ic];
+        w = wList[ic];
 
         GxIBM[ic] = 0.f;
         GyIBM[ic] = 0.f;
         GzIBM[ic] = 0.f;            
        
-        //-- Collision
-          
-        //-- LES viscosity
         tauSGSList[ic] = smagorinskyTauSGS(ft, rho, u, v, w, omega, LES, sdf, cx, cy, cz, wt);
         tauSGS = tauSGSList[ic];
 
-        //-- spongeZone
         float tau = tauSpongeZone(spzWidth, boundary1List, boundary2List, boundary3List, omega, tauSGS, i, j, k, nx, ny, nz);
         
-        //-- BGK model
         // collisionBGK(fTmp, ft, rho, u, v, w, tau, tauSGS, dpdx, cx, cy, cz, wt, ic, elements);
-        
-        // //-- Cumulant model
         // collisionCumulant(fTmp, ft, rho, u, v, w, tau, tauSGS, omegaB, dpdx, cx, cy, cz, wt, ic, elements);
-        
-        //-- Recursive-regularized model
         collisionRecursiveRegularized(fTmp, ft, rho, u, v, w, tau, tauSGS, omegaB, dpdx, cx, cy, cz, wt, ic, elements);
     }
 }
