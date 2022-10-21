@@ -146,6 +146,255 @@ inline int reflectQ(const int q)
     exit(EXIT_FAILURE);    
 }
 
+inline int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int boundary1, const int boundary2, const int boundary3)
+{
+    bool isnotWall1 = (boundary1 == 1 || boundary1 == 4 || boundary1 == 5 || boundary1 == 6) ? false : true;
+    bool isnotWall2 = (boundary2 == 1 || boundary2 == 4 || boundary2 == 5 || boundary2 == 6) ? false : true;
+    bool isnotWall3 = (boundary3 == 1 || boundary3 == 4 || boundary3 == 5 || boundary3 == 6) ? false : true;
+
+
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return i != 0 ? index1d(i-1,j,k,nx,ny) : (isnotWall1 ? index1d(nx-1,j,k,nx,ny) : -1);
+    }
+    else if(q == 2)
+    {
+        return i != nx-1 ? index1d(i+1,j,k,nx,ny) : (isnotWall1 ? index1d(0,j,k,nx,ny) : -1);
+    }
+    else if(q == 3)
+    {
+        if(j != 0)
+        {
+            return index1d(i,j-1,k,nx,ny);
+        }
+        else
+        {
+            return isnotWall2 ? index1d(i,ny-1,k,nx,ny) : -1;
+        }
+    }
+    else if(q == 4)
+    {
+        if(j != ny-1)
+        {
+            return index1d(i,j+1,k,nx,ny);
+        }
+        else
+        {
+            return isnotWall2 ? index1d(i,0,k,nx,ny) : -1;
+        }
+    }
+    else if(q == 5)
+    {
+        if(k != 0)
+        {
+            return index1d(i,j,k-1,nx,ny);
+        }
+        else
+        {
+            return isnotWall3 ? index1d(i,j,nz-1,nx,ny) : -1;
+        }
+    }
+    else if(q == 6)
+    {
+        if(k != nz-1)
+        {
+            return index1d(i,j,k+1,nx,ny);
+        }
+        else
+        {
+            return isnotWall3 ? index1d(i,j,0,nx,ny) : -1;
+        }
+    }
+    else if(q == 7)
+    {
+        return (i != 0 && j != 0) ? index1d(i-1, j-1, k, nx, ny) :
+               (i == 0 && j != 0) ? (isnotWall1 ? index1d(nx-1, j-1, k, nx, ny) : -1) :
+               (i != 0 && j == 0) ? (isnotWall2 ? index1d(i-1, ny-1, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(nx-1, ny-1, k, nx, ny) : -1);
+    }
+    else if(q == 8)
+    {
+        return (i != nx-1 && j != ny-1) ? index1d(i+1, j+1, k, nx, ny) :
+               (i == nx-1 && j != ny-1) ? (isnotWall1 ? index1d(0, j+1, k, nx, ny) : -1) :
+               (i != nx-1 && j == ny-1) ? (isnotWall2 ? index1d(i+1, 0, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(0, 0, k, nx, ny) : -1);
+    }
+    else if(q == 9)
+    {
+        return (i != 0 && j != ny-1) ? index1d(i-1, j+1, k, nx, ny) :
+               (i == 0 && j != ny-1) ? (isnotWall1 ? index1d(nx-1, j+1, k, nx, ny) : -1):
+               (i != 0 && j == ny-1) ? (isnotWall2 ? index1d(i-1, 0, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(nx-1, 0, k, nx, ny) : -1);
+    }
+    else if(q == 10)
+    {
+        return (i != nx-1 && j != 0) ? index1d(i+1, j-1, k, nx, ny) :
+               (i == nx-1 && j != 0) ? (isnotWall1 ? index1d(0, j-1, k, nx, ny) : -1) :
+               (i != nx-1 && j == 0) ? (isnotWall2 ? index1d(i+1, ny-1, k, nx, ny) : -1) :
+               ((isnotWall1 && isnotWall2) ? index1d(0, ny-1, k, nx, ny) : -1);
+    }
+    else if(q == 11)
+    {
+        if(i != 0 && k != 0)
+        {
+            return index1d(i-1, j, k-1, nx, ny);
+        }
+        else if(i == 0 && k != 0)
+        {
+            return isnotWall1 ? index1d(nx-1, j, k-1, nx, ny) : -1;
+        }
+        else if(i != 0 && k == 0)
+        {
+            return isnotWall3 ? index1d(i-1, j, nz-1, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall1 && isnotWall3) ? index1d(nx-1, j, nz-1, nx, ny) : -1;
+        }
+    }
+    else if(q == 12)
+    {
+        if(i != nx-1 && k != nz-1)
+        {
+            return index1d(i+1, j, k+1, nx, ny);
+        }
+        else if(i == nx-1 && k != nz-1)
+        {
+            return isnotWall1 ? index1d(0, j, k+1, nx, ny) : -1;
+        }
+        else if(i != nx-1 && k == nz-1)
+        {
+            return isnotWall3 ? index1d(i+1, j, 0, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall1 && isnotWall3) ? index1d(0, j, 0, nx, ny) : -1;
+        }
+    }
+    else if(q == 13)
+    {
+        if(i != 0 && k != nz-1)
+        {
+            return index1d(i-1, j, k+1, nx, ny);
+        }
+        else if(i == 0 && k != nz-1)
+        {
+            return isnotWall1 ? index1d(nx-1, j, k+1, nx, ny) : -1;
+        }
+        else if(i != 0 && k == nz-1)
+        {
+            return isnotWall3 ? index1d(i-1, j, 0, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall1 && isnotWall3) ? index1d(nx-1, j, 0, nx, ny) : -1;
+        }
+    }
+    else if(q == 14)
+    {
+        if(i != nx-1 && k != 0)
+        {
+            return index1d(i+1, j, k-1, nx, ny);
+        }
+        else if(i == nx-1 && k != 0)
+        {
+            return isnotWall1 ? index1d(0, j, k-1, nx, ny) : -1;
+        }
+        else if(i != nx-1 && k == 0)
+        {
+            return isnotWall3 ? index1d(i+1, j, nz-1, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall1 && isnotWall3) ? index1d(0, j, nz-1, nx, ny) : -1;
+        }
+    }
+    else if(q == 15)
+    {
+        if(j != 0 && k != 0)
+        {
+            return index1d(i, j-1, k-1, nx, ny);
+        }
+        else if(j == 0 && k != 0)
+        {
+            return isnotWall2 ? index1d(i, ny-1, k-1, nx, ny) : -1;
+        }
+        else if(j != 0 && k == 0)
+        {
+            return isnotWall3 ? index1d(i, j-1, nz-1, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall2 && isnotWall3) ? index1d(i, ny-1, nz-1, nx, ny) : -1;
+        }
+    }
+    else if(q == 16)
+    {
+        if(j != ny-1 && k != nz-1)
+        {
+            return index1d(i, j+1, k+1, nx, ny);
+        }
+        else if(j == ny-1 && k != nz-1)
+        {
+            return isnotWall2 ? index1d(i, 0, k+1, nx, ny) : -1;
+        }
+        else if(j != ny-1 && k == nz-1)
+        {
+            return isnotWall3 ? index1d(i, j+1, 0, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall2 && isnotWall3) ? index1d(i, 0, 0, nx, ny) : -1;
+        }
+    }
+    else if(q == 17)
+    {
+        if(j != 0 && k != nz-1)
+        {
+            return index1d(i, j-1, k+1, nx, ny);
+        }
+        else if(j == 0 && k != nz-1)
+        {
+            return isnotWall2 ? index1d(i, ny-1, k+1, nx, ny) : -1;
+        }
+        else if(j != 0 && k == nz-1)
+        {
+            return isnotWall3 ? index1d(i, j-1, 0, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall2 && isnotWall3) ? index1d(i, ny-1, 0, nx, ny) : -1;
+        }
+    }
+    else if(q == 18)
+    {
+        if(j != ny-1 && k != 0)
+        {
+            return index1d(i, j+1, k-1, nx, ny);
+        }
+        else if(j == ny-1 && k != 0)
+        {
+            return isnotWall2 ? index1d(i, 0, k-1, nx, ny) : -1;
+        }
+        else if(j != ny-1 && k == 0)
+        {
+            return isnotWall3 ? index1d(i, j+1, nz-1, nx, ny) : -1;
+        }
+        else
+        {
+            return (isnotWall2 && isnotWall3) ? index1d(i, 0, nz-1, nx, ny) : -1;
+        }
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 inline int upwindID(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     if(q == 0)

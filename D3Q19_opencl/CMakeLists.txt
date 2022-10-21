@@ -6,7 +6,7 @@ set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 project(D3Q19_opencl CXX)
 # Making an execution file named ns.out from ns.cpp
 add_executable(ns.opencl ns.cpp)
-# Setting for the option of g++
+# Setting for the compile option
 set(CMAKE_CXX_FLAGS "-O3 -std=c++11")
 
 # For Boost
