@@ -180,7 +180,10 @@ int main()
     for(int iPatch = 0; iPatch < wallSTL.patch.size(); iPatch++)
     {
         const std::unique_ptr<STLpatch>& patch = wallSTL.patch[iPatch];
-        setSDF(sdf, sdfIni, dr, p, patch, nx, ny, nz, false, neiSolid);
+        if(LES)
+        {
+            setSDF(sdf, sdfIni, dr, p, patch, nx, ny, nz, false, neiSolid);
+        }
     }
 
     const float qfIni = 0.5f;
@@ -193,7 +196,10 @@ int main()
     std::vector<std::vector<float> > bWallsC(3);
     std::vector<std::vector<float> > bWallsNormal(3);
     setBwalls(bWallsC, bWallsNormal, boundary1, boundary2, boundary3, nx, ny, nz);
-    setSDF(sdf, sdfIni, dr, p, bWallsC, bWallsNormal, nx, ny, nz, true);
+    if(LES)
+    {
+        setSDF(sdf, sdfIni, dr, p, bWallsC, bWallsNormal, nx, ny, nz, true);
+    }
     //--
 
     //-- Reading and settings of moving STL
