@@ -1402,25 +1402,6 @@ void fixedDensityBC(float* ft, const float rhow, const float* uList, const float
 
 void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fwz, const unsigned char* solidList, const unsigned char* neiSolidList, const float* sdfList, const float sdf, const int* upID, const float omega, const float tauSGS, const float* rhoList, const float* uList, const float* vList, const float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
 {
-    // float rho = 0.0f;
-    // float u = 0.0f;
-    // float v = 0.0f;
-    // float w = 0.0f;
-    // for(int q = 0; q < 19; q++)
-    // {
-    //     int qic = q*elements +ic;
-    //     const float fq = f[qic];
-    //     rho += fq;
-
-    //     u += fq*cx[q];
-    //     v += fq*cy[q];
-    //     w += fq*cz[q];
-    // }
-    // u /= rho;
-    // v /= rho;
-    // w /= rho;
-    // float p = rho/3.f;
-
     float u = uList[ic];
     float v = vList[ic];
     float w = wList[ic];
