@@ -1400,26 +1400,31 @@ void fixedDensityBC(float* ft, const float rhow, const float* uList, const float
     }
 }
 
-void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fwz, const unsigned char* solidList, const unsigned char* neiSolidList, const float* sdfList, const float sdf, const int* upID, const float omega, const float tauSGS, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
+void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fwz, const unsigned char* solidList, const unsigned char* neiSolidList, const float* sdfList, const float sdf, const int* upID, const float omega, const float tauSGS, const float* rhoList, const float* uList, const float* vList, const float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
 {
-    float rho = 0.0f;
-    float u = 0.0f;
-    float v = 0.0f;
-    float w = 0.0f;
-    for(int q = 0; q < 19; q++)
-    {
-        int qic = q*elements +ic;
-        const float fq = f[qic];
-        rho += fq;
+    // float rho = 0.0f;
+    // float u = 0.0f;
+    // float v = 0.0f;
+    // float w = 0.0f;
+    // for(int q = 0; q < 19; q++)
+    // {
+    //     int qic = q*elements +ic;
+    //     const float fq = f[qic];
+    //     rho += fq;
 
-        u += fq*cx[q];
-        v += fq*cy[q];
-        w += fq*cz[q];
-    }
-    u /= rho;
-    v /= rho;
-    w /= rho;
-    float p = rho/3.f;
+    //     u += fq*cx[q];
+    //     v += fq*cy[q];
+    //     w += fq*cz[q];
+    // }
+    // u /= rho;
+    // v /= rho;
+    // w /= rho;
+    // float p = rho/3.f;
+
+    float u = uList[ic];
+    float v = vList[ic];
+    float w = wList[ic];
+    float rho = rhoList[ic];
 
     Fwx[ic] = 0.f;
     Fwy[ic] = 0.f;
@@ -1431,44 +1436,59 @@ void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fw
         {
             if(solidList[upID[q]] == 1)
             {
-                const float sdf0 = sdf;
-                const float sdf1 = sdfList[upID[q]];
-                const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
-
                 int qbb = reflectQ(q);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
-                int upQID = idf(q, upID[qbb], nx, ny, nz);
-                int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
-
-                float uSqr =u*u+v*v+w*w;
-                float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
-                float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
-                // float feq = (1.0f+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*rho*wt[q];
-
-                float tau = 1.f/omega;
-                float omegaEff = 1.f/(tau +tauSGS);
                 
+                ft[q] = f[bbQID]; // Simple Bounce-Back               
 
-                if(qf <= 0.5f)
-                {
+                //- Interpolated Bounce Back (Unstable for hi Reynolds number flows)
+                // const float sdf0 = sdf;
+                // const float sdf1 = sdfList[upID[q]];
+                // const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+
+                // int upQID = idf(q, upID[qbb], nx, ny, nz);
+                // int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
+
+                
+                // float tau = 1.f/omega;
+                // float omegaEff = 1.f/(tau +tauSGS);
+
+                // float uSqr =u*u+v*v+w*w;
+
+                // if(qf <= 0.5f)
+                // {
                     // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
                     // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
-                    ft[q] = f[bbQID]; // Simple Bounce-Back
 
+                    //- Filippova & Hanel's Interpolated Bounce-Back (FHIBB) (physically local)
+                    // float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                    // float feq = (rho+3.0f*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
                     // float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
-                    // ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
-                }
-                else
-                {
+
+                    //- Mei, Luo and Shyy's modification for FHIBB
+                    // float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                    // float ufDotC = -uList[upID[qbb]]*cx[q]-vList[upID[qbb]]*cy[q]-wList[upID[qbb]]*cz[q];
+                    // float feq = (rho+3.0f*ufDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                    // float chi = omegaEff*(2.f*qf -1.f)/(1.f-2.f*omegaEff);
+
+                    // ft[q] = (1.f -chi)*f[bbQID] +chi*feq;
+                    
+                    // ft[q] = f[bbQID]; // Simple Bounce-Back               
+                // }
+                // else
+                // {
                     // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
                     // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
-                    ft[q] = f[bbQID]; // Simple Bounce-Back
 
-                    // uSqr *= (1.f -1.f/qf)*(1.f -1.f/qf);
-                    // uDotC *= (1.f -1.f/qf);
-                    // float chi = omegaEff*(2.f*qf -1.f);
-                    // ft[q] = (1.f -chi)*f[bbQID] +chi*feq; // Filippova & Hanel's Interpolated Bounce-Back (physically local)
-                }
+                    //- Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                //     float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                //     float feq = (rho+3.0f*(1.f -1.f/qf)*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                //     float chi = omegaEff*(2.f*qf -1.f);
+
+                //     ft[q] = (1.f -chi)*f[bbQID] +chi*feq; 
+                // }
+                //--
+
                 Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
                 Fwy[ic] += -(f[bbQID] + ft[q])*cy[q];
                 Fwz[ic] += -(f[bbQID] + ft[q])*cz[q];
@@ -2166,7 +2186,7 @@ __kernel void k_streamingCollision // Pull
 
         fixedDensityBC(ft, 1.f, uList, vList, wList, cx, cy, cz, wt, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);        
 
-        internalWallBC(ft, f, Fwx, Fwy, Fwz, solidList, neiSolidList, sdfList, sdf, upID, omega, tauSGS, cx, cy, cz, wt, ic, i, j, k, nx, ny, nz, elements);
+        internalWallBC(ft, f, Fwx, Fwy, Fwz, solidList, neiSolidList, sdfList, sdf, upID, omega, tauSGS, rhoList, uList, vList, wList, cx, cy, cz, wt, ic, i, j, k, nx, ny, nz, elements);
 
         outflowBC(ft, f, u, v, w, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz);
 
