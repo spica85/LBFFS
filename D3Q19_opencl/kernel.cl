@@ -820,6 +820,174 @@ inline int upwindID(const int q, const int i, const int j, const int k, const in
     }
 }
 
+inline int upwindID_internal(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+{
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return index1d(i-1,j,k,nx,ny);
+    }
+    else if(q == 2)
+    {
+        return index1d(i+1,j,k,nx,ny);
+    }
+    else if(q == 3)
+    {
+        return index1d(i,j-1,k,nx,ny);
+    }
+    else if(q == 4)
+    {
+        return index1d(i,j+1,k,nx,ny);
+    }
+    else if(q == 5)
+    {
+        return index1d(i,j,k-1,nx,ny);
+    }
+    else if(q == 6)
+    {
+        return index1d(i,j,k+1,nx,ny);
+    }
+    else if(q == 7)
+    {
+        return index1d(i-1, j-1, k, nx, ny);
+    }
+    else if(q == 8) 
+    {
+        return index1d(i+1, j+1, k, nx, ny);
+    }
+    else if(q == 9)
+    {
+        return index1d(i-1, j+1, k, nx, ny);
+    }
+    else if(q == 10)
+    {
+        return index1d(i+1, j-1, k, nx, ny);
+    }
+    else if(q == 11)
+    {
+        return index1d(i-1, j, k-1, nx, ny);
+    }
+    else if(q == 12)
+    {
+        return index1d(i+1, j, k+1, nx, ny);
+    }
+    else if(q == 13)
+    {
+        return index1d(i-1, j, k+1, nx, ny);
+    }
+    else if(q == 14)
+    {
+        return index1d(i+1, j, k-1, nx, ny);
+    }
+    else if(q == 15)
+    {
+        return index1d(i, j-1, k-1, nx, ny);
+    }
+    else if(q == 16)
+    {
+        return index1d(i, j+1, k+1, nx, ny);
+    }
+    else if(q == 17)
+    {
+        return index1d(i, j-1, k+1, nx, ny);
+    }
+    else if(q == 18)
+    {
+        return index1d(i, j+1, k-1, nx, ny);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+inline int upwindID_2D(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+{
+    if(q == 0)
+    {
+        return index1d(i,j,k,nx,ny);
+    }
+    else if(q == 1)
+    {
+        return index1d(i-1,j,k,nx,ny);
+    }
+    else if(q == 2)
+    {
+        return index1d(i+1,j,k,nx,ny);
+    }
+    else if(q == 3)
+    {
+        return index1d(i,j-1,k,nx,ny);
+    }
+    else if(q == 4)
+    {
+        return index1d(i,j+1,k,nx,ny);
+    }
+    else if(q == 5)
+    {
+        return index1d(i,j,nz-1,nx,ny);
+    }
+    else if(q == 6)
+    {
+        return index1d(i,j,0,nx,ny);
+    }
+    else if(q == 7)
+    {
+        return index1d(i-1, j-1, k, nx, ny);
+    }
+    else if(q == 8) 
+    {
+        return index1d(i+1, j+1, k, nx, ny);
+    }
+    else if(q == 9)
+    {
+        return index1d(i-1, j+1, k, nx, ny);
+    }
+    else if(q == 10)
+    {
+        return index1d(i+1, j-1, k, nx, ny);
+    }
+    else if(q == 11)
+    {
+        return index1d(i-1, j, nz-1, nx, ny);
+    }
+    else if(q == 12)
+    {
+        return index1d(i+1, j, 0, nx, ny);
+    }
+    else if(q == 13)
+    {
+        return index1d(i-1, j, 0, nx, ny);
+    }
+    else if(q == 14)
+    {
+        return index1d(i+1, j, nz-1, nx, ny);
+    }
+    else if(q == 15)
+    {
+        return index1d(i, j-1, nz-1, nx, ny);
+    }
+    else if(q == 16)
+    {
+        return index1d(i, j+1, 0, nx, ny);
+    }
+    else if(q == 17)
+    {
+        return index1d(i, j-1, 0, nx, ny);
+    }
+    else if(q == 18)
+    {
+        return index1d(i, j+1, nz-1, nx, ny);
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 int icNear(int ic, int iNear, int nx, int ny, int nz)
 {
     int i = ic2i(ic,nx,ny);
@@ -1131,6 +1299,38 @@ void streaming(float* ft, const float* f, int* upID, const int boundary1, const 
             int bbQID = idf(qbb, ic, nx, ny, nz);
             ft[q] = f[bbQID];
         }
+    }
+}
+
+__attribute__((always_inline))
+void streamingInternal(float* ft, const float* f, int* upID, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
+{
+    ft[0] = f[ic];
+    upID[0] = ic;
+
+    #pragma unroll
+    for(int q = 1; q < 19; q++)
+    {
+        upID[q] = upwindID_internal(q,i,j,k,nx,ny,nz);
+
+        int upQID = idf(q, upID[q], nx, ny, nz);
+        ft[q] = f[upQID];
+    }
+}
+
+__attribute__((always_inline))
+void streaming2D(float* ft, const float* f, int* upID, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
+{
+    ft[0] = f[ic];
+    upID[0] = ic;
+
+    #pragma unroll
+    for(int q = 1; q < 19; q++)
+    {
+        upID[q] = upwindID_2D(q,i,j,k,nx,ny,nz);
+
+        int upQID = idf(q, upID[q], nx, ny, nz);
+        ft[q] = f[upQID];
     }
 }
 
@@ -2117,6 +2317,7 @@ void updateRhoUVW(const float* ft, float* rhoList, float* uList, float* vList, f
 __kernel void k_streamingCollision // Pull
 (
    __global float* f, __global float* fTmp,
+   __global int* boundaryList,
    __global int* boundary1List, __global int* boundary2List, __global int* boundary3List,
    __global float* sdfList, __global unsigned char* solidList, __global unsigned char* neiSolidList, 
    __global float* u0List, __global float* v0List, __global float* w0List,
@@ -2156,6 +2357,7 @@ __kernel void k_streamingCollision // Pull
         float u = uList[ic];
         float v = vList[ic];
         float w = wList[ic];
+        const int boundary = boundaryList[ic];
         const int boundary1 = boundary1List[ic];
         const int boundary2 = boundary2List[ic];
         const int boundary3 = boundary3List[ic];
@@ -2166,17 +2368,30 @@ __kernel void k_streamingCollision // Pull
         const float omega = omegaList[ic];
         float tauSGS = tauSGSList[ic];
 
-        streaming(ft, f, upID, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, elements);
-    
-        const int corner = cornerFlag(boundary3, i, j, k, nx, ny, nz);
-        fixedVelocityBC(ft, rhoList, u0, v0, w0, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);
+        if(boundary == 1)
+        {
+            streaming(ft, f, upID, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, elements);
+        
+            const int corner = cornerFlag(boundary3, i, j, k, nx, ny, nz);
+            fixedVelocityBC(ft, rhoList, u0, v0, w0, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);
 
-        fixedDensityBC(ft, 1.f, uList, vList, wList, cx, cy, cz, wt, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);        
+            fixedDensityBC(ft, 1.f, uList, vList, wList, cx, cy, cz, wt, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner);        
+
+            outflowBC(ft, f, u, v, w, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz);
+        }
+        else
+        {
+            if(nz-1 == 0)
+            {
+                streaming2D(ft, f, upID, ic, i, j, k, nx, ny, nz, elements);
+            }
+            else
+            {
+                streamingInternal(ft, f, upID, ic, i, j, k, nx, ny, nz, elements);
+            }
+        }
 
         internalWallBC(ft, f, Fwx, Fwy, Fwz, solidList, neiSolidList, sdfList, sdf, upID, omega, tauSGS, rhoList, uList, vList, wList, cx, cy, cz, wt, ic, i, j, k, nx, ny, nz, elements);
-
-        outflowBC(ft, f, u, v, w, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz);
-
         updateRhoUVW(ft, rhoList, uList, vList, wList, ic);
         float rho = rhoList[ic];
         u = uList[ic];
@@ -2186,7 +2401,7 @@ __kernel void k_streamingCollision // Pull
         GxIBM[ic] = 0.f;
         GyIBM[ic] = 0.f;
         GzIBM[ic] = 0.f;            
-       
+
         tauSGSList[ic] = smagorinskyTauSGS(ft, rho, u, v, w, omega, LES, sdf, cx, cy, cz, wt);
         tauSGS = tauSGSList[ic];
 

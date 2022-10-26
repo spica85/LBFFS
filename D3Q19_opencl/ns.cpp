@@ -85,6 +85,7 @@ int main()
     std::vector<float> u0(nx*ny*nz,0.0f);
     std::vector<float> v0(nx*ny*nz,0.0f);
     std::vector<float> w0(nx*ny*nz,0.0f);
+    std::vector<int> boundary(nx*ny*nz,0);
     std::vector<int> boundary1(nx*ny*nz,0);
     std::vector<int> boundary2(nx*ny*nz,0);
     std::vector<int> boundary3(nx*ny*nz,0);
@@ -149,6 +150,21 @@ int main()
         );
     
     #include "setBoundaryConditions.hpp"
+
+    for(int i = 0; i < nx; i++)
+    {
+        for(int j = 0; j < ny; j++)
+        {
+            for(int k = 0; k < nz; k++)
+            {
+                if(i == 0 || i == nx-1 || j == 0 || j == ny-1 || (nz-1 != 0 && (k == 0 || k == nz-1)))
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    boundary[ic] = 1;
+                }
+            }
+        }   
+    }
 
     if(restart)
     {
@@ -370,7 +386,11 @@ int main()
     
 
     // Load in kernel source, creating and building a program object for the context
-    cl::Program program(context, util::loadProgram("kernel.cl"), true);
+    // cl::Program program(context, util::loadProgram("kernel.cl"), true);
+    cl::Program program(context, util::loadProgram("kernel.cl"), false);
+    program.build("-cl-mad-enable -cl-fast-relaxed-math -cl-no-signed-zeros");
+    
+    
 
     
     cl::CommandQueue queue(context);
@@ -385,6 +405,7 @@ int main()
     cl::Buffer Fwx_d(context, Fwx.begin(), Fwx.end(), true);
     cl::Buffer Fwy_d(context, Fwy.begin(), Fwy.end(), true);
     cl::Buffer Fwz_d(context, Fwz.begin(), Fwz.end(), true);
+    cl::Buffer boundary_d(context, boundary.begin(), boundary.end(), true);
     cl::Buffer boundary1_d(context, boundary1.begin(), boundary1.end(), true);
     cl::Buffer boundary2_d(context, boundary2.begin(), boundary2.end(), true);
     cl::Buffer boundary3_d(context, boundary3.begin(), boundary3.end(), true);
@@ -413,6 +434,7 @@ int main()
     cl::KernelFunctor
     <
         cl::Buffer, cl::Buffer,
+        cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
         cl::Buffer, cl::Buffer, cl::Buffer,
@@ -486,6 +508,7 @@ int main()
         (
             cl::EnqueueArgs(queue,cl::NDRange(elements)),
             f_d, fTmp_d,
+            boundary_d,
             boundary1_d, boundary2_d, boundary3_d,
             sdf_d, solid_d, neiSolid_d,
             u0_d, v0_d, w0_d,
