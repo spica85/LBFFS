@@ -325,20 +325,18 @@ inline int reflectOrMirrorQ(const int q, const int boundary1, const int boundary
     // exit(EXIT_FAILURE);    
 }
 
-inline int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int boundary1, const int boundary2, const int boundary3)
+int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int boundary1, const int boundary2, const int boundary3)
 {
-    int ic = index1d(i, j, k, nx, ny);
-
-    bool isnotWall1 = (boundary1 == 1 || boundary1 == 4 || boundary1 == 5 || boundary1 == 6) ? false : true;
-    bool isnotWall2 = (boundary2 == 1 || boundary2 == 4 || boundary2 == 5 || boundary2 == 6) ? false : true;
-    bool isnotWall3 = (boundary3 == 1 || boundary3 == 4 || boundary3 == 5 || boundary3 == 6) ? false : true;
-
-
     if(q == 0)
     {
         return index1d(i,j,k,nx,ny);
     }
-    else if(q == 1)
+
+    bool isnotWall1 = (boundary1 == 1 || boundary1 == 4 || boundary1 == 5 || boundary1 == 6) ? false : true;
+    bool isnotWall2 = (boundary2 == 1 || boundary2 == 4 || boundary2 == 5 || boundary2 == 6) ? false : true;
+    bool isnotWall3 = (boundary3 == 1 || boundary3 == 4 || boundary3 == 5 || boundary3 == 6) ? false : true;
+    
+    if(q == 1)
     {
         return i != 0 ? index1d(i-1,j,k,nx,ny) : (isnotWall1 ? index1d(nx-1,j,k,nx,ny) : -1);
     }
@@ -999,6 +997,7 @@ void cal_rhoUVW(const float* f, float* rho, float* u, float* v, float* w)
     *v = 0.0f;
     *w = 0.0f;
 
+    #pragma unroll
     for(int q = 0; q < 19; q++)
     {
         *rho += f[q];
@@ -1111,14 +1110,16 @@ void Xrot
     *Xrot_z = rotZ +OOp_z +r*(cos(rotOmega)*e1_z +sin(rotOmega)*e2_z);
 }
 
+__attribute__((always_inline))
 void streaming(float* ft, const float* f, int* upID, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
 {
     ft[0] = f[ic];
+
+    #pragma unroll
     for(int q = 1; q < 19; q++)
     {
-        int qic = q*elements +ic;
-
         upID[q] = upwindID_B(q,i,j,k,nx,ny,nz,boundary1,boundary2,boundary3);
+
         if(upID[q] != -1) // Streaming
         {   
             int upQID = idf(q, upID[q], nx, ny, nz);
@@ -1411,6 +1412,7 @@ void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fw
     Fwy[ic] = 0.f;
     Fwz[ic] = 0.f;
 
+    #pragma unroll
     for(int q = 1; q < 19; q++)
     {
         if(neiSolidList[ic] == 1)
@@ -1481,6 +1483,7 @@ void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fw
 // Geier et al., Comput. Math. Appl. (2015), Appendix F
 void outflowBC(float* ft, const float* f, const float u, const float v, const float w, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
+    #pragma unroll
     for(int q = 1; q < 19; q++)
     {
         if(boundary1 == 3 || boundary2 == 3 || boundary3 == 3)
@@ -1582,6 +1585,7 @@ float smagorinskyTauSGS(const float* ft, const float rho, const float u, const f
     float PIyz = 0.f;
     float PIzz = 0.f;
 
+    #pragma unroll
     for(int q = 0; q < 19; q++)
     {
         float uSqr =u*u+v*v+w*w;
@@ -1701,6 +1705,7 @@ float tauSpongeZone(const float spzWidth, const int* boundary1List, const int* b
 float collisionBGK(float* fTmp, const float* ft, const float rho, const float u, const float v, const float w, const float tau, const float tauSGS, const float dpdx, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int elements)
 {
     const float omegaEff = 1.f/(tau +tauSGS);
+    #pragma unroll
     for(int q = 0; q < 19; q++)
     {
         float uSqr =u*u+v*v+w*w;
@@ -1804,6 +1809,7 @@ float collisionCumulant(float* fTmp, const float* ft, const float rho, const flo
     // K022 -= (2.*w*K021 + 2.*v*K012 + uz2*K020 + uy2*K002 + 4.*uyz*K011 + uy2*uz2);
 
 
+    #pragma unroll
     for(int q = 0; q < 19; q++)
     {
         float cxq = cx[q] -u;
@@ -1982,7 +1988,7 @@ void collisionRecursiveRegularized(float* fTmp, const float* ft, const float rho
     float RReq202 = RReq200*RReq002;
     float RReq022 = RReq020*RReq002;
     
-    
+    #pragma unroll
     for(int q = 0; q < 19; q++)
     {
         float Hxx = cx[q]*cx[q] -sqrCs;
