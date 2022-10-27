@@ -369,6 +369,105 @@ void setSDF(std::vector<float>& sdf, const float sdfIni, const float dr, const f
     }
 }
 
+void setSDFnearBwalls(std::vector<float>& sdf, const float dr, const std::vector<int>& boundary1, const std::vector<int>& boundary2, const std::vector<int>& boundary3, const int nx, const int ny, const int nz)
+{
+    // i == 0 or nx-1 plane
+    for(int j = 0; j < ny; j++)
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            int icStart = index1d(0,j,k,nx,ny);
+            int icEnd = index1d(nx-1,j,k,nx,ny);
+            if(boundary1[icStart] == 1)
+            {
+                for(int i = 0; i < int(dr)+1; i++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(i < nx-1)
+                    {
+                        sdf[ic] = 0.5f+i;
+                    }
+                }
+            }
+            if(boundary1[icEnd] == 1)
+            {
+                for(int i = 0; i < int(dr)+1; i++)
+                {
+                    int ic = index1d(nx-1-i,j,k,nx,ny);
+                    if(nx-1-i > 0)
+                    {
+                        sdf[ic] = 0.5f+i;
+                    }
+                }
+            }
+        }
+    }
+
+    // j == 0 or ny-1 plane
+    for(int i = 0; i < nx; i++)
+    {
+        for(int k = 0; k < nz; k++)
+        {
+            int icStart = index1d(i,0,k,nx,ny);
+            int icEnd = index1d(i,ny-1,k,nx,ny);
+            if(boundary2[icStart] == 1)
+            {
+                for(int j = 0; j < int(dr)+1; j++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(j < ny-1)
+                    {
+                        sdf[ic] = 0.5f+j;
+                    }
+                }
+            }
+            if(boundary2[icEnd] == 1)
+            {
+                for(int j = 0; j < int(dr)+1; j++)
+                {
+                    int ic = index1d(i,ny-1-j,k,nx,ny);
+                    if(ny-1-j > 0)
+                    {
+                        sdf[ic] = 0.5f+j;
+                    }
+                }
+            }
+        }
+    }
+
+    // k == 0 or nz-1 plane
+    for(int i = 0; i < nx; i++)
+    {
+        for(int j = 0; j < ny; j++)
+        {
+            int icStart = index1d(i,j,0,nx,ny);
+            int icEnd = index1d(i,j,nz-1,nx,ny);
+            if(boundary3[icStart] == 1)
+            {
+                for(int k = 0; k < int(dr)+1; k++)
+                {
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(k < nz-1)
+                    {
+                        sdf[ic] = 0.5f+k;
+                    }
+                }
+            }
+            if(boundary3[icEnd] == 1)
+            {
+                for(int k = 0; k < int(dr)+1; k++)
+                {
+                    int ic = index1d(i,j,nz-1-k,nx,ny);
+                    if(nz-1-k > 0)
+                    {
+                        sdf[ic] = 0.5f+k;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void setBwalls(std::vector<std::vector<float> >& bWallsC, std::vector<std::vector<float> >& bWallsNormal, const std::vector<int>& boundary1, const std::vector<int>& boundary2, const std::vector<int>& boundary3, const int nx, const int ny, const int nz)
 {
     for(int j = 0; j < ny; j++)
@@ -400,7 +499,7 @@ void setBwalls(std::vector<std::vector<float> >& bWallsC, std::vector<std::vecto
     for(int i = 0; i < nx; i++)
     {
         for(int k = 0; k < nz; k++)
-        {
+      {
             int icStart = index1d(i,0,k,nx,ny);
             int icEnd = index1d(i,ny-1,k,nx,ny);
             if(boundary2[icStart] == 1)
