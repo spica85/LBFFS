@@ -231,6 +231,10 @@ int BCnameToNum(std::string name)
     {
         return 6;
     }
+    else if(name == "WallFunction")
+    {
+        return 7;
+    }
     else
     {
         std::cerr << "Please select from Cyclic, BounceBack, Equilibrium, Symmetry, and Outlet" << std::endl;
