@@ -48,6 +48,14 @@ if(Fwrite && nextOutTime < nt +1)
     float rhoMax = *std::max_element(rho.begin(), rho.end());
     float rhoMin = *std::min_element(rho.begin(), rho.end());
 
+    timeMean += outInterval;
+    for(int ic = 0; ic < elements; ic++)
+    {
+        uMean[ic] += u[ic]*outInterval;
+        vMean[ic] += v[ic]*outInterval;
+        wMean[ic] += w[ic]*outInterval;
+    }
+
     std::ostringstream ss;
     ss << std::setw(8) << std::setfill('0') << std::to_string(nt);
     std::string filename = ss.str();
@@ -67,7 +75,7 @@ if(Fwrite && nextOutTime < nt +1)
     end = std::chrono::system_clock::now();
     float time = static_cast<float>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
     std::cout << "Execution time: " << time << " (s)" << std::endl;
-    std::cout << "Speed: " << float(nt)*float(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
+    std::cout << "Speed: " << float(nt-startTimeStep)*float(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
 
     std::cout << "rhoMax: " << rhoMax << ", rhoMin: " << rhoMin << ", rhoAve: " << rho_av << std::endl;
 
@@ -205,9 +213,9 @@ if(Fwrite && nextOutTime < nt +1)
         writeFile << "\n";
     }
 
-    // tauSGS output
+    // nuSGS output
     {
-        writeFile << "SCALARS tauSGS float\n";
+        writeFile << "SCALARS nuSGS float\n";
         writeFile << "LOOKUP_TABLE default\n";
 
         for(int k = 0; k < nz; k++)                            
@@ -217,14 +225,15 @@ if(Fwrite && nextOutTime < nt +1)
                 for(int i = 0; i < nx; i++)
                 {
                     int ic = index1d(i,j,k,nx,ny);
+                    float nuSGS = 3.f*tauSGS[ic]*L*c;
                     if(writeBinary)
                     {
-                        asciiToBinary(str,(float)tauSGS[ic]);
+                        asciiToBinary(str,(float)3.f*nuSGS);
                         writeFile.write(str,sizeof(char)*4);
                     }
                     else
                     {
-                        writeFile << tauSGS[ic] << "\n";
+                        writeFile << 3.f*nuSGS << "\n";
                     }
                 }
             }
@@ -492,6 +501,84 @@ if(Fwrite && nextOutTime < nt +1)
         }
         writeFile << "\n";
     }
+
+    // uMean output
+    {
+        writeFile << "SCALARS uMean float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(uMean[ic]*c/timeMean));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << uMean[ic]*c/timeMean << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // vMean output
+    {
+        writeFile << "SCALARS vMean float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(vMean[ic]*c/timeMean));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << vMean[ic]*c/timeMean << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }
+
+    // wMean output
+    {
+        writeFile << "SCALARS wMean float\n";
+        writeFile << "LOOKUP_TABLE default\n";
+        for(int k = 0; k < nz; k++)
+        {
+            for(int j = 0; j < ny; j++)
+            {
+                for(int i = 0; i < nx; i++)
+                {                                
+                    int ic = index1d(i,j,k,nx,ny);
+                    if(writeBinary)
+                    {
+                        asciiToBinary(str,(float)(wMean[ic]*c/timeMean));
+                        writeFile.write(str,sizeof(char)*4);
+                    }
+                    else
+                    {
+                        writeFile << wMean[ic]*c/timeMean << "\n";
+                    }
+                }
+            }
+        }
+        writeFile << "\n";
+    }                    
 
     writeFile.close();
 

@@ -60,8 +60,11 @@ int main()
     float omegaB;
     float spzWidth;
     bool invertFluidSolid;
+    float uIni;
+    float vIni;
+    float wIni;
 
-    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB, spzWidth, invertFluidSolid);
+    input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB, spzWidth, invertFluidSolid, uIni, vIni, wIni);
 
     //-- D3Q19 model
     const std::vector<float> wt = setWt();
@@ -79,6 +82,10 @@ int main()
     std::vector<float> v(nx*ny*nz);
     std::vector<float> w(nx*ny*nz);
     float rho_av = 1.0;
+    std::vector<float> uMean(nx*ny*nz,0.f);
+    std::vector<float> vMean(nx*ny*nz,0.f);
+    std::vector<float> wMean(nx*ny*nz,0.f);
+    float timeMean = 0.f;
 
     std::vector<float> tauSGS(nx*ny*nz);
 
@@ -93,16 +100,18 @@ int main()
     const unsigned elements = nx*ny*nz;
     const unsigned qElements = 19*elements;
     //--
-
     const float L = Lx/float(nx-1);
+    const float c = uMax/U0; //Representative velocity (m/s)
+    std::cout << "L: " << L << ", c: " << c << std::endl;
+    
     Re = uMax*Lx/nu;
-
     std::cout << "Re: " << Re << std::endl;
 
-
-    const float c = uMax/U0; //Representative velocity (m/s)
     nu = nu/(L*c);
     dpdx *= L/(c*c);
+    uIni /= c;
+    vIni /= c;
+    wIni /= c;
 
     std::cout << "Size: "
               << "(" << L/2 << ", " << L/2 << ", " << L/2 << "), "

@@ -111,7 +111,7 @@ void readToLines(std::ifstream& inputFile, std::vector<std::string>& lines)
 
 
 
-void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref, float& omegaB, float& spzWidth, bool& invertFluidSolid)
+void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, int& endTimeStep, int& nextOutTime, int& outInterval, int& nx, int& ny, int& nz, float& Lx, float& uMax, float& rho0, float& U0, float& nu, float& dpdx, float& LES, bool& forceCoeffs, float& Dref, float& omegaB, float& spzWidth, bool& invertFluidSolid, float& uIni, float& vIni, float& wIni)
 {
     std::string inputFileName("input.txt");
     std::vector<std::string> lines;
@@ -201,6 +201,15 @@ void input(bool& restart, bool& Fwrite, bool& writeBinary, int& startTimeStep, i
 
     std::string invertFluidSolidStr("invertFluidSolid");
     invertFluidSolid = lookupOrDefault<bool>(lines, invertFluidSolidStr, false);
+
+    std::string uIniStr("uIni");
+    uIni = lookupOrDefault<float>(lines, uIniStr, 0.f);
+
+    std::string vIniStr("vIni");
+    vIni = lookupOrDefault<float>(lines, vIniStr, 0.f);
+
+    std::string wIniStr("wIni");
+    wIni = lookupOrDefault<float>(lines, wIniStr, 0.f);
 
     inputFile.close();
 }

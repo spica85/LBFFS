@@ -8,9 +8,9 @@ for(int k = 0; k < nz; k++)
             int ic = index1d(i,j,k,nx,ny);
         
             float rho = rho0;
-            float u = 0.0f;
-            float v = 0.0f;
-            float w = 0.0f;
+            float u = uIni;
+            float v = vIni;
+            float w = wIni;
             for(int q = 0; q < 19; q++)
             {
                 float uSqr =u*u+v*v+w*w;
