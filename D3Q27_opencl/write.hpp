@@ -620,7 +620,7 @@ if(Fwrite && nextOutTime < nt +1)
 
     //f output
     {
-        for(int q = 0; q < 19; q++)
+        for(int q = 0; q < 27; q++)
         {
             for(int k = 0; k < nz; k++)
             {

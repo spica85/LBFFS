@@ -11,7 +11,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-#include "D3Q19.hpp"
+#include "D3Q27.hpp"
 #include "input.hpp"
 #include "walls.hpp"
 
@@ -67,15 +67,15 @@ int main()
 
     input(restart, Fwrite, writeBinary, startTimeStep, endTimeStep, nextOutTime, outInterval, nx, ny, nz, Lx, uMax, rho0, U0, nu, dpdx, LES, forceCoeffs, Dref, omegaB, spzWidth, clim, invertFluidSolid, uIni, vIni, wIni);
 
-    //-- D3Q19 model
+    //-- D3Q27 model
     const std::vector<float> wt = setWt();
 
     const std::vector<float> cx = setCx();
     const std::vector<float> cy = setCy();
     const std::vector<float> cz = setCz();
 
-    std::vector<float> f(19*nx*ny*nz);
-    std::vector<float> fTmp(19*nx*ny*nz);
+    std::vector<float> f(27*nx*ny*nz);
+    std::vector<float> fTmp(27*nx*ny*nz);
     //--
     
     std::vector<float> rho(nx*ny*nz);
@@ -99,7 +99,7 @@ int main()
     std::vector<int> boundary3(nx*ny*nz,0);
 
     const unsigned elements = nx*ny*nz;
-    const unsigned qElements = 19*elements;
+    const unsigned qElements = 27*elements;
     //--
     const float L = Lx/float(nx-1);
     const float c = uMax/U0; //Representative velocity (m/s)
@@ -195,7 +195,7 @@ int main()
     setSolid(solid,wallSTL,nx,ny,nz,invertFluidSolid);
 
     std::vector<unsigned char> neiSolid(nx*ny*nz,0);
-    setNeiSolid(neiSolid, solid, nx, ny, nz, 19);
+    setNeiSolid(neiSolid, solid, nx, ny, nz, 27);
 
     //-- Calculations of sdf, solid, and qf for the boundaries defined by STL
     const float sdfIni = 10000.f;
@@ -213,8 +213,8 @@ int main()
     }
 
     const float qfIni = 0.5f;
-    std::vector<float> qf(19*nx*ny*nz,qfIni);
-    setQf(qf, neiSolid, sdf, nx, ny, nz, 19);   
+    std::vector<float> qf(27*nx*ny*nz,qfIni);
+    setQf(qf, neiSolid, sdf, nx, ny, nz, 27);
     //--
 
     //-- Calculation of sdf for the boundaries of the calculation region
@@ -290,12 +290,17 @@ int main()
             std::vector<int> points;
 
             inputBoundaryCondition(patch->patchName,patchBoundary1,patchBoundary2,patchBoundary3,patchU0,patchV0,patchW0,c);
+            int spzWidth = inputSpzWidth(patch->patchName, L);
+            float tau0 = 0.55f;
 
             patch->findPoints(points,nx,ny,nz);
 
             for(int id = 0; id < points.size(); id++)
             {
                 int ic = points[id];
+                int i = ic2i(ic,nx,ny);
+                int j = ic2j(ic,nx,ny);
+                int k = ic2k(ic,nx,ny);
 
                 boundary1[ic] = patchBoundary1;
                 boundary2[ic] = patchBoundary2;
@@ -303,6 +308,40 @@ int main()
                 u0[ic] = patchU0;
                 v0[ic] = patchV0;
                 w0[ic] = patchW0;
+
+                if(patchBoundary1 != BCnameToNum("Cyclic"))
+                {
+                    for(int iSpz = fmax(i-spzWidth,0); iSpz < fmin(i+spzWidth, nx); iSpz++)
+                    {
+                        int icSpz = index1d(iSpz,j,k,nx,ny);
+                        float fx = (i-spzWidth < 0) ? float(iSpz)/spzWidth : float((nx-1)-iSpz)/spzWidth;
+                        fx = 1.f -cos(0.5f*M_PI*fx);
+                        float tau = fx*(1.f/omega0) + (1.f-fx)*tau0;
+                        omega[icSpz] = 1.f/tau;
+                    }
+                }
+                if(patchBoundary2 != BCnameToNum("Cyclic"))
+                {   
+                    for(int jSpz = fmax(j-spzWidth,0); jSpz < fmin(j+spzWidth, ny); jSpz++)
+                    {
+                        int icSpz = index1d(i,jSpz,k,nx,ny);
+                        float fx = (j-spzWidth < 0) ? float(jSpz)/spzWidth : float((ny-1)-jSpz)/spzWidth;
+                        fx = 1.f -cos(0.5f*M_PI*fx);
+                        float tau = fx*(1.f/omega0) + (1.f-fx)*tau0;
+                        omega[icSpz] = 1.f/tau;
+                    }
+                }
+                if(patchBoundary3 != BCnameToNum("Cyclic"))
+                {
+                    for(int kSpz = fmax(k-spzWidth,0); kSpz < fmin(k+spzWidth, nz); kSpz++)
+                    {
+                        int icSpz = index1d(i,j,kSpz,nx,ny);
+                        float fx = (k-spzWidth < 0) ? float(kSpz)/spzWidth : float((nz-1)-kSpz)/spzWidth;
+                        fx = 1.f -cos(0.5f*M_PI*fx);
+                        float tau = fx*(1.f/omega0) + (1.f-fx)*tau0;
+                        omega[icSpz] = 1.f/tau;
+                    }
+                }
             }
         }
     // --
@@ -458,48 +497,49 @@ int main()
         const float,
         const int,
         const float,
+        const float,
         const float
     > k_streamingCollision(program, "k_streamingCollision");  
 
-    // Create the kernel functor of Gwall
-    cl::KernelFunctor
-    <
-        cl::Buffer,
-        cl::Buffer, cl::Buffer, cl::Buffer,
-        cl::Buffer,
-        cl::Buffer, cl::Buffer, cl::Buffer,
-        const int,
-        const int, const int, const int,
-        const float, const float, const float,
-        const float, const float, const float,
-        const float, const float, const float,
-        const float
-    > k_Gwall(program, "k_Gwall");
+    // // Create the kernel functor of Gwall
+    // cl::KernelFunctor
+    // <
+    //     cl::Buffer,
+    //     cl::Buffer, cl::Buffer, cl::Buffer,
+    //     cl::Buffer,
+    //     cl::Buffer, cl::Buffer, cl::Buffer,
+    //     const int,
+    //     const int, const int, const int,
+    //     const float, const float, const float,
+    //     const float, const float, const float,
+    //     const float, const float, const float,
+    //     const float
+    // > k_Gwall(program, "k_Gwall");
 
-    // Create the kernel functor of Gibm
-    cl::KernelFunctor
-    <
-        cl::Buffer,
-        cl::Buffer, cl::Buffer, cl::Buffer,
-        cl::Buffer,
-        cl::Buffer, cl::Buffer, cl::Buffer,
-        const int,
-        const int, const int, const int,
-        const float, const float, const float,
-        const float, const float, const float,
-        const float, const float, const float,
-        const float
-    > k_Gibm(program, "k_Gibm");
+    // // Create the kernel functor of Gibm
+    // cl::KernelFunctor
+    // <
+    //     cl::Buffer,
+    //     cl::Buffer, cl::Buffer, cl::Buffer,
+    //     cl::Buffer,
+    //     cl::Buffer, cl::Buffer, cl::Buffer,
+    //     const int,
+    //     const int, const int, const int,
+    //     const float, const float, const float,
+    //     const float, const float, const float,
+    //     const float, const float, const float,
+    //     const float
+    // > k_Gibm(program, "k_Gibm");
 
-    // Create the kernel functor of Force
-    cl::KernelFunctor
-    <
-        cl::Buffer,
-        cl::Buffer,
-        cl::Buffer,
-        cl::Buffer, cl::Buffer, cl::Buffer,
-        const unsigned
-    > k_Force(program, "k_Force");
+    // // Create the kernel functor of Force
+    // cl::KernelFunctor
+    // <
+    //     cl::Buffer,
+    //     cl::Buffer,
+    //     cl::Buffer,
+    //     cl::Buffer, cl::Buffer, cl::Buffer,
+    //     const unsigned
+    // > k_Force(program, "k_Force");
 
     std::chrono::system_clock::time_point start;
     std::chrono::system_clock::time_point end;
@@ -532,73 +572,74 @@ int main()
             LES,
             isReadMovingWalls,
             omegaB,
-            spzWidth
+            spzWidth,
+            clim
         );
         queue.finish();
         double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
         // printf("\nThe kernel of streamingCollision ran in %lf m seconds\n", rtime);
         }
     
-        if(nMovingSTL > 1)
-        {
-            {
-            util::Timer timer;
-            k_Gwall
-            (
-                cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
-                rho_d,
-                u_d, v_d, w_d,
-                movingSTLcList_d,
-                GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
-                nMovingSTL,
-                nx, ny, nz,
-                uMovingTrans, vMovingTrans, wMovingTrans,
-                rotX, rotY, rotZ,
-                rotAxisX, rotAxisY, rotAxisZ,
-                rotOmega
-            );
-            queue.finish();
-            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-            // printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
-            }
+        // if(nMovingSTL > 1)
+        // {
+        //     {
+        //     util::Timer timer;
+        //     k_Gwall
+        //     (
+        //         cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+        //         rho_d,
+        //         u_d, v_d, w_d,
+        //         movingSTLcList_d,
+        //         GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+        //         nMovingSTL,
+        //         nx, ny, nz,
+        //         uMovingTrans, vMovingTrans, wMovingTrans,
+        //         rotX, rotY, rotZ,
+        //         rotAxisX, rotAxisY, rotAxisZ,
+        //         rotOmega
+        //     );
+        //     queue.finish();
+        //     double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        //     // printf("\nThe kernel of Gwall ran in %lf m seconds\n", rtime);
+        //     }
 
-            {
-            util::Timer timer;
-            k_Gibm
-            (
-                cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
-                rho_d,
-                GxIBM_d, GyIBM_d, GzIBM_d,
-                movingSTLcList_d,
-                GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
-                nMovingSTL,
-                nx, ny, nz,
-                uMovingTrans, vMovingTrans, wMovingTrans,
-                rotX, rotY, rotZ,
-                rotAxisX, rotAxisY, rotAxisZ,
-                rotOmega
-            );
-            queue.finish();
-            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-            // printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
-            }
+        //     {
+        //     util::Timer timer;
+        //     k_Gibm
+        //     (
+        //         cl::EnqueueArgs(queue,cl::NDRange(nMovingSTL)),
+        //         rho_d,
+        //         GxIBM_d, GyIBM_d, GzIBM_d,
+        //         movingSTLcList_d,
+        //         GxMovingWall_d, GyMovingWall_d, GzMovingWall_d,
+        //         nMovingSTL,
+        //         nx, ny, nz,
+        //         uMovingTrans, vMovingTrans, wMovingTrans,
+        //         rotX, rotY, rotZ,
+        //         rotAxisX, rotAxisY, rotAxisZ,
+        //         rotOmega
+        //     );
+        //     queue.finish();
+        //     double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        //     // printf("\nThe kernel of Gibm ran in %lf m seconds\n", rtime);
+        //     }
 
-            {
-            util::Timer timer;
-            k_Force
-            (
-                cl::EnqueueArgs(queue,cl::NDRange(elements)),
-                fTmp_d,
-                solid_d,
-                rho_d,
-                GxIBM_d, GyIBM_d, GzIBM_d,
-                elements
-            );
-            queue.finish();
-            double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
-            // printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
-            }
-        }
+        //     {
+        //     util::Timer timer;
+        //     k_Force
+        //     (
+        //         cl::EnqueueArgs(queue,cl::NDRange(elements)),
+        //         fTmp_d,
+        //         solid_d,
+        //         rho_d,
+        //         GxIBM_d, GyIBM_d, GzIBM_d,
+        //         elements
+        //     );
+        //     queue.finish();
+        //     double rtime = static_cast<double>(timer.getTimeMicroseconds()) / 1000.0;
+        //     // printf("\nThe kernel of Force ran in %lf m seconds\n", rtime);
+        //     }
+        // }
         std::swap(fTmp_d,f_d);
     }
     end = std::chrono::system_clock::now();

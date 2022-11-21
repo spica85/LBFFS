@@ -184,7 +184,7 @@ void setSolid(std::vector<unsigned char>& solid, const STL& stl, const int nx, c
 }
 
 
-void setNeiSolid(std::vector<unsigned char>& neiSolid, const std::vector<unsigned char>& solid, const int nx, const int ny, const int nz)
+void setNeiSolid(std::vector<unsigned char>& neiSolid, const std::vector<unsigned char>& solid, const int nx, const int ny, const int nz, const int nq)
 {
     const int elements = nx*ny*nz;
     for(int ic = 0; ic < elements; ic++)
@@ -201,7 +201,7 @@ void setNeiSolid(std::vector<unsigned char>& neiSolid, const std::vector<unsigne
             (i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
         )
         {
-            for(int q = 0; q < 19; q++)
+            for(int q = 0; q < nq; q++)
             {
                 int qic = q*elements +ic;
                 const int upID = upwindID(q,i,j,k,nx,ny,nz);
@@ -550,7 +550,7 @@ void setBwalls(std::vector<std::vector<float> >& bWallsC, std::vector<std::vecto
     }
 }
 
-void setQf(std::vector<float>& qf, const std::vector<unsigned char>& neiSolid, std::vector<float>& sdf, const int nx, const int ny, const int nz)
+void setQf(std::vector<float>& qf, const std::vector<unsigned char>& neiSolid, std::vector<float>& sdf, const int nx, const int ny, const int nz, const int nq)
 {
     const int elements = nx*ny*nz;
     for(int ic = 0; ic < elements; ic++)
@@ -567,7 +567,7 @@ void setQf(std::vector<float>& qf, const std::vector<unsigned char>& neiSolid, s
             (i != 0 && i != nx-1 && j != 0 && j != ny-1 && k != 0 && k != nz-1)
         )
         {
-            for(int q = 0; q < 19; q++)
+            for(int q = 0; q < nq; q++)
             {
                 int qic = q*elements +ic;
                 const float sdf0 = sdf[ic];
