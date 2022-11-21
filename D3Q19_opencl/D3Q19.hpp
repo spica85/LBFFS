@@ -2,47 +2,9 @@
 #define D3Q19_H
 
 #include <vector>
+#include "base.hpp"
 
 //D3Q19
-inline int ic2i(int ic, int nx, int ny)
-{
-    return int((ic%(nx*ny))%nx);
-}
-
-inline int ic2j(int ic, int nx, int ny)
-{
-    return int(ic%(nx*ny)/nx);
-}
-
-inline int ic2k(int ic, int nx, int ny)
-{
-    return int(ic/(nx*ny));
-}
-
-inline int index1d(int i, int j, int k, int nx, int ny)
-{
-    return nx*ny*k+nx*j+i;
-}
-
-inline int index1df(int q, int i, int j, int k, int nx, int ny, int nz)
-{
-    return q*nx*ny*nz+nx*ny*k+nx*j+i;
-}
-
-inline int idf(int q, int i, int nx, int ny, int nz)
-{
-    return q*nx*ny*nz+i;
-}
-
-char* asciiToBinary(char* str, const float x)
-{
-    str[0] = ((char*)&x)[3 + 0];
-    str[1] = ((char*)&x)[2 + 0];
-    str[2] = ((char*)&x)[1 + 0];
-    str[3] = ((char*)&x)[3 + 0];
-
-    return str;    
-}
 
 inline const std::vector<float> setWt()
 {
@@ -682,7 +644,7 @@ void externalForce(const float dpdx, const int ic, const int nx, const int ny, c
     }
 }
 
-void cal_rhoUVW(int ic, int nx, int ny, int nz, const std::vector<float>& f, const std::vector<float>& cx, const std::vector<float>& cy, const std::vector<float>& cz, float& rho, float& u, float& v, float& w)
+void cal_rhoUVW(int ic, int nx, int ny, int nz, const std::vector<float>& f, const std::vector<float>& cx, const std::vector<float>& cy, const std::vector<float>& cz, float& rho, float& u, float& v, float& w, float& dpdx)
 {
     rho = 0.0;
     u = 0.0;
@@ -699,7 +661,8 @@ void cal_rhoUVW(int ic, int nx, int ny, int nz, const std::vector<float>& f, con
     }
     u /= rho;
     v /= rho;
-    w /= rho;                    
+    w /= rho;                   
+    u += 0.5f*dpdx/rho;
 }
 
 void streaming(const int ic, const int i, const int j, const int k,const int nx, const int ny, const int nz, std::vector<float>& ftmp, std::vector<float>& f)

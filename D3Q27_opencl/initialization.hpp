@@ -11,7 +11,7 @@ for(int k = 0; k < nz; k++)
             float u = uIni;
             float v = vIni;
             float w = wIni;
-            for(int q = 0; q < 19; q++)
+            for(int q = 0; q < 27; q++)
             {
                 float uSqr =u*u+v*v+w*w;
                 float uDotC = u*cx[q]+v*cy[q]+w*cz[q];
