@@ -1332,267 +1332,222 @@ float calcTauw(const float rhow, const float magUp, const float nu, const float 
 
 void wallFunctionBC(float* ft, const float* rhoList, const float* uList, const float* vList, const float* wList, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner, const float nu, const float nuEff, const float Fwx, const float Fwy, const float Fwz) // Stationary wall
 {
-    if(corner == 0)
+    if(boundary1 == 7 || boundary2 == 7 || boundary3 == 7)
     {
-        if(i == 0 && boundary1 == 7)
+        if(corner == 0)
         {
-            const float u0 = 0.f;
-            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[8]+ft[10]+ft[12]+ft[14]+ft[20]+ft[21]+ft[24]+ft[26]))/(1.f-u0);
-
-            float v0 = 0.f;
-            float w0 = 0.f;
-            float u = uList[index1d(i+1,j,k,nx,ny)];
-            float v = vList[index1d(i+1,j,k,nx,ny)];
-            float w = wList[index1d(i+1,j,k,nx,ny)];
-            float magUp = sqrt(v*v+w*w);
-            
-            if(magUp != 0.f)
+            if(i == 0 && boundary1 == 7)
             {
-                float tauw = calcTauw(rhow,magUp,nu,nuEff);
-                u = uList[index1d(i,j,k,nx,ny)];
-                v = vList[index1d(i,j,k,nx,ny)];
-                w = wList[index1d(i,j,k,nx,ny)];
-                magUp = sqrt(v*v+w*w);
+                const float u0 = 0.f;
+                float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[8]+ft[10]+ft[12]+ft[14]+ft[20]+ft[21]+ft[24]+ft[26]))/(1.f-u0);
+
+                float v0 = 0.f;
+                float w0 = 0.f;
+                float u = uList[index1d(i+1,j,k,nx,ny)];
+                float v = vList[index1d(i+1,j,k,nx,ny)];
+                float w = wList[index1d(i+1,j,k,nx,ny)];
+                float magUp = sqrt(v*v+w*w);
+                
                 if(magUp != 0.f)
                 {
-                    float ex = 0.f/magUp;
-                    float ey = v/magUp;
-                    float ez = w/magUp;
+                    float tauw = calcTauw(rhow,magUp,nu,nuEff);
+                    u = uList[index1d(i,j,k,nx,ny)];
+                    v = vList[index1d(i,j,k,nx,ny)];
+                    w = wList[index1d(i,j,k,nx,ny)];
+                    magUp = sqrt(v*v+w*w);
+                    if(magUp != 0.f)
+                    {
+                        float ex = 0.f/magUp;
+                        float ey = v/magUp;
+                        float ez = w/magUp;
 
-                    float Fuw_x = tauw*ex -Fwx;
-                    float Fuw_y = tauw*ey -Fwy;
-                    float Fuw_z = tauw*ez -Fwz;
+                        float Fuw_x = tauw*ex -Fwx;
+                        float Fuw_y = tauw*ey -Fwy;
+                        float Fuw_z = tauw*ez -Fwz;
 
-                    v0 = -3.f*Fuw_y/rhow;
-                    w0 = -3.f*Fuw_z/rhow;
+                        v0 = -3.f*Fuw_y/rhow;
+                        w0 = -3.f*Fuw_z/rhow;
+                    }
                 }
+                            
+                ft[1] += 4.f*rhow*u0/9.f;
+                // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+                // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+                float Nyx = 0.f;
+                float Nzx = 0.f;
+                ft[7]  += rhow*(u0+v0)/9.f -Nyx;
+                ft[9]  += rhow*(u0-v0)/9.f +Nyx;
+                ft[11] += rhow*(u0+w0)/9.f -Nzx;
+                ft[13] += rhow*(u0-w0)/9.f +Nzx;
+                ft[19] += rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
+                ft[22] += rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
+                ft[23] += rhow*(u0-v0+w0)/36.f +Nyx -Nzx;
+                ft[25] += rhow*(u0+v0-w0)/36.f -Nyx +Nzx;
             }
-                        
-            ft[1] += 4.f*rhow*u0/9.f;
-            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
-            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
-            float Nyx = 0.f;
-            float Nzx = 0.f;
-            ft[7]  += rhow*(u0+v0)/9.f -Nyx;
-            ft[9]  += rhow*(u0-v0)/9.f +Nyx;
-            ft[11] += rhow*(u0+w0)/9.f -Nzx;
-            ft[13] += rhow*(u0-w0)/9.f +Nzx;
-            ft[19] += rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
-            ft[22] += rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
-            ft[23] += rhow*(u0-v0+w0)/36.f +Nyx -Nzx;
-            ft[25] += rhow*(u0+v0-w0)/36.f -Nyx +Nzx;
-        }
-        else if(i == nx-1 && boundary1 == 7)
-        {
-            const float u0 = 0.f;
-            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]+ft[19]+ft[22]+ft[23]+ft[25]))/(1.f+u0);
-
-            float v0 = 0.f;
-            float w0 = 0.f;
-            float u = uList[index1d(i-1,j,k,nx,ny)];
-            float v = vList[index1d(i-1,j,k,nx,ny)];
-            float w = wList[index1d(i-1,j,k,nx,ny)];
-            float magUp = sqrt(v*v+w*w);
-            
-            if(magUp != 0.f)
+            else if(i == nx-1 && boundary1 == 7)
             {
-                float tauw = calcTauw(rhow,magUp,nu,nuEff);
-                u = uList[index1d(i,j,k,nx,ny)];
-                v = vList[index1d(i,j,k,nx,ny)];
-                w = wList[index1d(i,j,k,nx,ny)];
-                magUp = sqrt(v*v+w*w);
+                const float u0 = 0.f;
+                float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]+ft[19]+ft[22]+ft[23]+ft[25]))/(1.f+u0);
+
+                float v0 = 0.f;
+                float w0 = 0.f;
+                float u = uList[index1d(i-1,j,k,nx,ny)];
+                float v = vList[index1d(i-1,j,k,nx,ny)];
+                float w = wList[index1d(i-1,j,k,nx,ny)];
+                float magUp = sqrt(v*v+w*w);
+                
                 if(magUp != 0.f)
                 {
-                    float ex = 0.f/magUp;
-                    float ey = v/magUp;
-                    float ez = w/magUp;
+                    float tauw = calcTauw(rhow,magUp,nu,nuEff);
+                    u = uList[index1d(i,j,k,nx,ny)];
+                    v = vList[index1d(i,j,k,nx,ny)];
+                    w = wList[index1d(i,j,k,nx,ny)];
+                    magUp = sqrt(v*v+w*w);
+                    if(magUp != 0.f)
+                    {
+                        float ex = 0.f/magUp;
+                        float ey = v/magUp;
+                        float ez = w/magUp;
 
-                    float Fuw_x = tauw*ex -Fwx;
-                    float Fuw_y = tauw*ey -Fwy;
-                    float Fuw_z = tauw*ez -Fwz;
+                        float Fuw_x = tauw*ex -Fwx;
+                        float Fuw_y = tauw*ey -Fwy;
+                        float Fuw_z = tauw*ez -Fwz;
 
-                    v0 = -3.f*Fuw_y/rhow;
-                    w0 = -3.f*Fuw_z/rhow;
+                        v0 = -3.f*Fuw_y/rhow;
+                        w0 = -3.f*Fuw_z/rhow;
+                    }
                 }
+                
+                ft[2] += -4.f*rhow*u0/9.f;
+                // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+                // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+                float Nyx = 0.f;
+                float Nzx = 0.f;
+                ft[8]  += -rhow*(u0+v0)/9.f +Nyx;
+                ft[10] += -rhow*(u0-v0)/9.f -Nyx;
+                ft[12] += -rhow*(u0+w0)/9.f +Nzx;
+                ft[14] += -rhow*(u0-w0)/9.f -Nzx;
+                ft[20] += -rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
+                ft[21] += -rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
+                ft[24] += -rhow*(u0-v0+w0)/36.f -Nyx +Nzx;
+                ft[26] += -rhow*(u0+v0-w0)/36.f +Nyx -Nzx;
             }
-            
-            ft[2] += -4.f*rhow*u0/9.f;
-            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
-            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
-            float Nyx = 0.f;
-            float Nzx = 0.f;
-            ft[8]  += -rhow*(u0+v0)/9.f +Nyx;
-            ft[10] += -rhow*(u0-v0)/9.f -Nyx;
-            ft[12] += -rhow*(u0+w0)/9.f +Nzx;
-            ft[14] += -rhow*(u0-w0)/9.f -Nzx;
-            ft[20] += -rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
-            ft[21] += -rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
-            ft[24] += -rhow*(u0-v0+w0)/36.f -Nyx +Nzx;
-            ft[26] += -rhow*(u0+v0-w0)/36.f +Nyx -Nzx;
-        }
-        if(j == 0 && boundary2 == 7)
-        {
-            const float v0 = 0.f;
-            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[8]+ft[9]+ft[16]+ft[18]+ft[20]+ft[22]+ft[23]+ft[26]))/(1.f-v0);
-
-            float u0 = 0.f;
-            float w0 = 0.f;
-            float u = uList[index1d(i,j+1,k,nx,ny)];
-            float v = vList[index1d(i,j+1,k,nx,ny)];
-            float w = wList[index1d(i,j+1,k,nx,ny)];
-            float magUp = sqrt(u*u+w*w);
-
-            if(magUp != 0.f)
+            if(j == 0 && boundary2 == 7)
             {
-                float tauw = calcTauw(rhow,magUp,nu,nuEff);
-                u = uList[index1d(i,j,k,nx,ny)];
-                v = vList[index1d(i,j,k,nx,ny)];
-                w = wList[index1d(i,j,k,nx,ny)];
-                magUp = sqrt(u*u+w*w);
-                // printf("magUp1: %.12f, u1: %.12f,w1: %.12f\n", magUp, u, w);
+                const float v0 = 0.f;
+                float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[8]+ft[9]+ft[16]+ft[18]+ft[20]+ft[22]+ft[23]+ft[26]))/(1.f-v0);
+
+                float u0 = 0.f;
+                float w0 = 0.f;
+                float u = uList[index1d(i,j+1,k,nx,ny)];
+                float v = vList[index1d(i,j+1,k,nx,ny)];
+                float w = wList[index1d(i,j+1,k,nx,ny)];
+                float magUp = sqrt(u*u+w*w);
+
                 if(magUp != 0.f)
                 {
-                    float ex = u/magUp;
-                    float ey = 0.f/magUp;
-                    float ez = w/magUp;
+                    float tauw = calcTauw(rhow,magUp,nu,nuEff);
+                    u = uList[index1d(i,j,k,nx,ny)];
+                    v = vList[index1d(i,j,k,nx,ny)];
+                    w = wList[index1d(i,j,k,nx,ny)];
+                    magUp = sqrt(u*u+w*w);
+                    // printf("magUp1: %.12f, u1: %.12f,w1: %.12f\n", magUp, u, w);
+                    if(magUp != 0.f)
+                    {
+                        float ex = u/magUp;
+                        float ey = 0.f/magUp;
+                        float ez = w/magUp;
 
-                    float Fuw_x = tauw*ex -Fwx;
-                    float Fuw_y = tauw*ey -Fwy;
-                    float Fuw_z = tauw*ez -Fwz;
+                        float Fuw_x = tauw*ex -Fwx;
+                        float Fuw_y = tauw*ey -Fwy;
+                        float Fuw_z = tauw*ez -Fwz;
 
-                    u0 = -3.f*Fuw_x/rhow;
-                    w0 = -3.f*Fuw_z/rhow;
+                        u0 = -3.f*Fuw_x/rhow;
+                        w0 = -3.f*Fuw_z/rhow;
+                    }
                 }
+                
+                ft[3] += 4.f*rhow*v0/9.f;
+                // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+                // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+                float Nxy = 0.f;
+                float Nzy = 0.f;
+                ft[7]  += rhow*(v0+u0)/9.f -Nxy;
+                ft[10] += rhow*(v0-u0)/9.f +Nxy;
+                ft[15] += rhow*(v0+w0)/9.f -Nzy;
+                ft[17] += rhow*(v0-w0)/9.f +Nzy;
+                ft[19] += rhow*(u0+v0+w0)/36.f -Nxy -Nzy;
+                ft[21] += rhow*(-u0+v0+w0)/36.f +Nxy -Nzy;
+                ft[24] += rhow*(-u0+v0-w0)/36.f +Nxy +Nzy;
+                ft[25] += rhow*(u0+v0-w0)/36.f -Nxy +Nzy;
             }
-            
-            ft[3] += 4.f*rhow*v0/9.f;
-            // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
-            // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
-            float Nxy = 0.f;
-            float Nzy = 0.f;
-            ft[7]  += rhow*(v0+u0)/9.f -Nxy;
-            ft[10] += rhow*(v0-u0)/9.f +Nxy;
-            ft[15] += rhow*(v0+w0)/9.f -Nzy;
-            ft[17] += rhow*(v0-w0)/9.f +Nzy;
-            ft[19] += rhow*(u0+v0+w0)/36.f -Nxy -Nzy;
-            ft[21] += rhow*(-u0+v0+w0)/36.f +Nxy -Nzy;
-            ft[24] += rhow*(-u0+v0-w0)/36.f +Nxy +Nzy;
-            ft[25] += rhow*(u0+v0-w0)/36.f -Nxy +Nzy;
-        }
-        else if(j == ny-1 && boundary2 == 7)
-        {
-            const float v0 = 0.f;
-            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[3]+ft[7]+ft[10]+ft[15]+ft[17]+ft[19]+ft[21]+ft[24]+ft[25]))/(1.f+v0);
-
-            float u0 = 0.f;
-            float w0 = 0.f;
-            float u = uList[index1d(i,j-1,k,nx,ny)];
-            float v = vList[index1d(i,j-1,k,nx,ny)];
-            float w = wList[index1d(i,j-1,k,nx,ny)];
-            float magUp = sqrt(u*u+w*w);
-
-            if(magUp != 0.f)
+            else if(j == ny-1 && boundary2 == 7)
             {
-                float tauw = calcTauw(rhow,magUp,nu,nuEff);
-                u = uList[index1d(i,j,k,nx,ny)];
-                v = vList[index1d(i,j,k,nx,ny)];
-                w = wList[index1d(i,j,k,nx,ny)];
-                magUp = sqrt(u*u+w*w);
+                const float v0 = 0.f;
+                float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[3]+ft[7]+ft[10]+ft[15]+ft[17]+ft[19]+ft[21]+ft[24]+ft[25]))/(1.f+v0);
+
+                float u0 = 0.f;
+                float w0 = 0.f;
+                float u = uList[index1d(i,j-1,k,nx,ny)];
+                float v = vList[index1d(i,j-1,k,nx,ny)];
+                float w = wList[index1d(i,j-1,k,nx,ny)];
+                float magUp = sqrt(u*u+w*w);
+
                 if(magUp != 0.f)
                 {
-                    float ex = u/magUp;
-                    float ey = 0.f/magUp;
-                    float ez = w/magUp;
+                    float tauw = calcTauw(rhow,magUp,nu,nuEff);
+                    u = uList[index1d(i,j,k,nx,ny)];
+                    v = vList[index1d(i,j,k,nx,ny)];
+                    w = wList[index1d(i,j,k,nx,ny)];
+                    magUp = sqrt(u*u+w*w);
+                    if(magUp != 0.f)
+                    {
+                        float ex = u/magUp;
+                        float ey = 0.f/magUp;
+                        float ez = w/magUp;
 
-                    float Fuw_x = tauw*ex -Fwx;
-                    float Fuw_y = tauw*ey -Fwy;
-                    float Fuw_z = tauw*ez -Fwz;
+                        float Fuw_x = tauw*ex -Fwx;
+                        float Fuw_y = tauw*ey -Fwy;
+                        float Fuw_z = tauw*ez -Fwz;
 
-                    u0 = -3.f*Fuw_x/rhow;
-                    w0 = -3.f*Fuw_z/rhow;
+                        u0 = -3.f*Fuw_x/rhow;
+                        w0 = -3.f*Fuw_z/rhow;
+                    }
                 }
+                
+                ft[4] += -4.f*rhow*v0/9.f;
+                // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+                // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+                float Nxy = 0.f;
+                float Nzy = 0.f;
+                ft[8]  += -rhow*(v0+u0)/9.f +Nxy;
+                ft[9]  += -rhow*(v0-u0)/9.f -Nxy;
+                ft[16] += -rhow*(v0+w0)/9.f +Nzy;
+                ft[18] += -rhow*(v0-w0)/9.f -Nzy;
+                ft[20] += -rhow*(u0+v0+w0)/36.f +Nxy +Nzy;
+                ft[22] += -rhow*(-u0+v0+w0)/36.f -Nxy +Nzy;
+                ft[23] += -rhow*(-u0+v0-w0)/36.f -Nxy -Nzy;
+                ft[26] += -rhow*(u0+v0-w0)/36.f +Nxy -Nzy;
             }
-            
-            ft[4] += -4.f*rhow*v0/9.f;
-            // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
-            // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
-            float Nxy = 0.f;
-            float Nzy = 0.f;
-            ft[8]  += -rhow*(v0+u0)/9.f +Nxy;
-            ft[9]  += -rhow*(v0-u0)/9.f -Nxy;
-            ft[16] += -rhow*(v0+w0)/9.f +Nzy;
-            ft[18] += -rhow*(v0-w0)/9.f -Nzy;
-            ft[20] += -rhow*(u0+v0+w0)/36.f +Nxy +Nzy;
-            ft[22] += -rhow*(-u0+v0+w0)/36.f -Nxy +Nzy;
-            ft[23] += -rhow*(-u0+v0-w0)/36.f -Nxy -Nzy;
-            ft[26] += -rhow*(u0+v0-w0)/36.f +Nxy -Nzy;
-        }
-        if(k == 0 && boundary3 == 7)
-        {
-            const float w0 = 0.f;
-            float rhow =(ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]+ft[20]+ft[22]+ft[24]+ft[25]))/(1.f-w0);
-
-            float u0 = 0.f;
-            float v0 = 0.f;
-            float u = nz-1 != 0 ? uList[index1d(i,j,k+1,nx,ny)] : uList[ic];
-            float v = nz-1 != 0 ? vList[index1d(i,j,k+1,nx,ny)] : vList[ic];
-            float w = nz-1 != 0 ? wList[index1d(i,j,k+1,nx,ny)] : wList[ic];
-            float magUp = sqrt(u*u+v*v);
-            
-            if(magUp != 0.f)
+            if(k == 0 && boundary3 == 7)
             {
-                float tauw = calcTauw(rhow,magUp,nu,nuEff);
-                u = uList[index1d(i,j,k,nx,ny)];
-                v = vList[index1d(i,j,k,nx,ny)];
-                w = wList[index1d(i,j,k,nx,ny)];
-                magUp = sqrt(u*u+v*v);
-                float ex = u/magUp;
-                float ey = v/magUp;
-                float ez = 0.f/magUp;
+                const float w0 = 0.f;
+                float rhow =(ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]+ft[20]+ft[22]+ft[24]+ft[25]))/(1.f-w0);
 
-                float Fuw_x = tauw*ex -Fwx;
-                float Fuw_y = tauw*ey -Fwy;
-                float Fuw_z = tauw*ez -Fwz;
-
-                u0 = -3.f*Fuw_x/rhow;
-                v0 = -3.f*Fuw_y/rhow;
-            }
-            
-            ft[5] += 4.f*rhow*w0/9.f;
-            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
-            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
-            float Nxz = 0.f;
-            float Nyz = 0.f;
-            ft[11] += rhow*(w0+u0)/9.f -Nxz;
-            ft[14] += rhow*(w0-u0)/9.f +Nxz;
-            ft[15] += rhow*(w0+v0)/9.f -Nyz;
-            ft[18] += rhow*(w0-v0)/9.f +Nyz;
-            ft[19] += rhow*(u0+v0+w0)/36.f -Nxz -Nyz;
-            ft[21] += rhow*(-u0+v0+w0)/36.f +Nxz -Nyz;
-            ft[23] += rhow*(u0-v0+w0)/36.f -Nxz +Nyz;
-            ft[26] += rhow*(-u0-v0+w0)/36.f +Nxz +Nyz;
-        }
-        else if(k == nz-1 && boundary3 == 7)
-        {
-            const float w0 = 0.f;
-            float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[11]+ft[14]+ft[15]+ft[18]+ft[19]+ft[21]+ft[23]+ft[26]))/(1.f+w0);
-
-            float u0 = 0.f;
-            float v0 = 0.f;
-            float u = nz-1 != 0 ? uList[index1d(i,j,k+1,nx,ny)] : uList[ic];
-            float v = nz-1 != 0 ? vList[index1d(i,j,k+1,nx,ny)] : vList[ic];
-            float w = nz-1 != 0 ? wList[index1d(i,j,k+1,nx,ny)] : wList[ic];
-            float magUp = sqrt(u*u+v*v);
-            
-            if(magUp != 0.f)
-            {
-                float tauw = calcTauw(rhow,magUp,nu,nuEff);
-                u = uList[index1d(i,j,k,nx,ny)];
-                v = vList[index1d(i,j,k,nx,ny)];
-                w = wList[index1d(i,j,k,nx,ny)];
-                magUp = sqrt(u*u+v*v);
+                float u0 = 0.f;
+                float v0 = 0.f;
+                float u = nz-1 != 0 ? uList[index1d(i,j,k+1,nx,ny)] : uList[ic];
+                float v = nz-1 != 0 ? vList[index1d(i,j,k+1,nx,ny)] : vList[ic];
+                float w = nz-1 != 0 ? wList[index1d(i,j,k+1,nx,ny)] : wList[ic];
+                float magUp = sqrt(u*u+v*v);
+                
                 if(magUp != 0.f)
                 {
+                    float tauw = calcTauw(rhow,magUp,nu,nuEff);
+                    u = uList[index1d(i,j,k,nx,ny)];
+                    v = vList[index1d(i,j,k,nx,ny)];
+                    w = wList[index1d(i,j,k,nx,ny)];
+                    magUp = sqrt(u*u+v*v);
                     float ex = u/magUp;
                     float ey = v/magUp;
                     float ez = 0.f/magUp;
@@ -1604,21 +1559,69 @@ void wallFunctionBC(float* ft, const float* rhoList, const float* uList, const f
                     u0 = -3.f*Fuw_x/rhow;
                     v0 = -3.f*Fuw_y/rhow;
                 }
+                
+                ft[5] += 4.f*rhow*w0/9.f;
+                // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+                // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+                float Nxz = 0.f;
+                float Nyz = 0.f;
+                ft[11] += rhow*(w0+u0)/9.f -Nxz;
+                ft[14] += rhow*(w0-u0)/9.f +Nxz;
+                ft[15] += rhow*(w0+v0)/9.f -Nyz;
+                ft[18] += rhow*(w0-v0)/9.f +Nyz;
+                ft[19] += rhow*(u0+v0+w0)/36.f -Nxz -Nyz;
+                ft[21] += rhow*(-u0+v0+w0)/36.f +Nxz -Nyz;
+                ft[23] += rhow*(u0-v0+w0)/36.f -Nxz +Nyz;
+                ft[26] += rhow*(-u0-v0+w0)/36.f +Nxz +Nyz;
             }
-            
-            ft[6] += -4.f*rhow*w0/9.f;
-            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
-            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
-            float Nxz = 0.f;
-            float Nyz = 0.f;
-            ft[12] += -rhow*(w0+u0)/9.f +Nxz;
-            ft[13] += -rhow*(w0-u0)/9.f -Nxz;
-            ft[16] += -rhow*(w0+v0)/9.f +Nyz;
-            ft[17] += -rhow*(w0-v0)/9.f -Nyz;
-            ft[20] += -rhow*(u0+v0+w0)/9.f +Nxz +Nyz;
-            ft[22] += -rhow*(-u0+v0+w0)/9.f -Nxz +Nyz;
-            ft[24] += -rhow*(u0-v0+w0)/9.f +Nxz -Nyz;
-            ft[25] += -rhow*(-u0-v0+w0)/9.f -Nxz -Nyz;
+            else if(k == nz-1 && boundary3 == 7)
+            {
+                const float w0 = 0.f;
+                float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[11]+ft[14]+ft[15]+ft[18]+ft[19]+ft[21]+ft[23]+ft[26]))/(1.f+w0);
+
+                float u0 = 0.f;
+                float v0 = 0.f;
+                float u = nz-1 != 0 ? uList[index1d(i,j,k+1,nx,ny)] : uList[ic];
+                float v = nz-1 != 0 ? vList[index1d(i,j,k+1,nx,ny)] : vList[ic];
+                float w = nz-1 != 0 ? wList[index1d(i,j,k+1,nx,ny)] : wList[ic];
+                float magUp = sqrt(u*u+v*v);
+                
+                if(magUp != 0.f)
+                {
+                    float tauw = calcTauw(rhow,magUp,nu,nuEff);
+                    u = uList[index1d(i,j,k,nx,ny)];
+                    v = vList[index1d(i,j,k,nx,ny)];
+                    w = wList[index1d(i,j,k,nx,ny)];
+                    magUp = sqrt(u*u+v*v);
+                    if(magUp != 0.f)
+                    {
+                        float ex = u/magUp;
+                        float ey = v/magUp;
+                        float ez = 0.f/magUp;
+
+                        float Fuw_x = tauw*ex -Fwx;
+                        float Fuw_y = tauw*ey -Fwy;
+                        float Fuw_z = tauw*ez -Fwz;
+
+                        u0 = -3.f*Fuw_x/rhow;
+                        v0 = -3.f*Fuw_y/rhow;
+                    }
+                }
+                
+                ft[6] += -4.f*rhow*w0/9.f;
+                // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+                // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+                float Nxz = 0.f;
+                float Nyz = 0.f;
+                ft[12] += -rhow*(w0+u0)/9.f +Nxz;
+                ft[13] += -rhow*(w0-u0)/9.f -Nxz;
+                ft[16] += -rhow*(w0+v0)/9.f +Nyz;
+                ft[17] += -rhow*(w0-v0)/9.f -Nyz;
+                ft[20] += -rhow*(u0+v0+w0)/9.f +Nxz +Nyz;
+                ft[22] += -rhow*(-u0+v0+w0)/9.f -Nxz +Nyz;
+                ft[24] += -rhow*(u0-v0+w0)/9.f +Nxz -Nyz;
+                ft[25] += -rhow*(-u0-v0+w0)/9.f -Nxz -Nyz;
+            }
         }
     }
 }
@@ -1705,10 +1708,10 @@ void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fw
 // Geier et al., Comput. Math. Appl. (2015), Appendix F
 void outflowBC(float* ft, const float* f, const float u, const float v, const float w, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
-    #pragma unroll
-    for(int q = 1; q < 19; q++)
+    if(boundary1 == 3 || boundary2 == 3 || boundary3 == 3)
     {
-        if(boundary1 == 3 || boundary2 == 3 || boundary3 == 3)
+        #pragma unroll
+        for(int q = 1; q < 27; q++)
         {
             int i = ic2i(ic,nx,ny);
             int j = ic2j(ic,nx,ny);
@@ -1718,7 +1721,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
             {
                 if(boundary1 == 3)
                 {
-                    if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13)
+                    if(q == 1 || q == 7 || q == 9 || q == 11 || q == 13 || q == 19 || q == 22 || q == 23 || q == 25)
                     {
                         int innerID = index1d(1,j,k,nx,ny);
                         int qinic = idf(q, innerID, nx, ny, nz);
@@ -1731,7 +1734,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
             {
                 if(boundary1 == 3)
                 {
-                    if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14)
+                    if(q == 2 || q == 8 || q == 10 || q == 12 || q == 14 || q == 20 || q == 21 || q == 24 || q == 26)
                     {
                         int innerID = index1d(nx-2,j,k,nx,ny);
                         int qinic = idf(q, innerID, nx, ny, nz);
@@ -1744,7 +1747,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
             {
                 if(boundary2 == 3)
                 {
-                    if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17)
+                    if(q == 3 || q == 7 || q == 10 || q == 15 || q == 17 || q == 19 || q == 21 || q == 24 || q == 25)
                     {
                         int innerID = index1d(i,1,k,nx,ny);
                         int qinic = idf(q, innerID, nx, ny, nz);
@@ -1757,7 +1760,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
             {
                 if(boundary2 == 3)
                 {
-                    if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18)
+                    if(q == 4 || q == 8 || q == 9 || q == 16 || q == 18 || q == 20|| q == 22 || q == 23 || q == 26)
                     {
                         int innerID = index1d(i,ny-2,k,nx,ny);
                         int qinic = idf(q, innerID, nx, ny, nz);
@@ -1770,7 +1773,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
             {
                 if(boundary3 == 3)
                 {
-                    if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18)
+                    if(q == 5 || q == 11 || q == 14 || q == 15 || q == 18 || q == 19 || q == 21 || q == 23 || q == 26)
                     {
                         int innerID = index1d(i,j,1,nx,ny);
                         int qinic = idf(q, innerID, nx, ny, nz);
@@ -1783,7 +1786,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
             {
                 if(boundary3 == 3)
                 {
-                    if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17)
+                    if(q == 6 || q == 12 || q == 13 || q == 16 || q == 17 || q == 20 || q == 22 || q == 24 || q == 25)
                     {
                         int innerID = index1d(i,j,nz-2,nx,ny);
                         int qinic = idf(q, innerID, nx, ny, nz);
@@ -2648,7 +2651,7 @@ __kernel void k_streamingCollision // Pull
 
             wallFunctionBC(ft, rhoList, uList, vList, wList, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz, corner, nu, nuEff, Fwx[ic], Fwy[ic], Fwz[ic]);
 
-            // outflowBC(ft, f, u, v, w, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz);
+            outflowBC(ft, f, u, v, w, boundary1, boundary2, boundary3, ic, i, j, k, nx, ny, nz);
         }
         else
         {
