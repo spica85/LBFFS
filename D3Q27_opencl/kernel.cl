@@ -29,6 +29,22 @@ inline int idf(int q, int i, int nx, int ny, int nz)
     return q*nx*ny*nz+i;
 }
 
+inline int c2q(const float cxi, const float cyi, const float czi)
+{
+    float cx[27] = {0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f};
+    float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f};
+    float cz[27] = {0.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f};
+
+    #pragma unroll
+    for(int q = 0; q < 27; q++)
+    {
+        if(cxi == cx[q] && cyi == cy[q] && czi == cz[q])
+        {
+            return q;
+        }
+    }
+}
+
 inline int reflectQ(const int q)
 {
     if(q == 0)
@@ -143,219 +159,373 @@ inline int reflectQ(const int q)
     // exit(EXIT_FAILURE);    
 }
 
-// inline int reflectOrMirrorQ(const int q, const int boundary1, const int boundary2, const int boundary3) //
-// {
-//     if(q == 0)
-//     {
-//         return 0;
-//     }
-//     else if(q == 1)
-//     {
-//         return 2;
-//     }
-//     else if(q == 2)
-//     {
-//         return 1;
-//     }
-//     else if(q == 3)
-//     {
-//         return 4;
-//     }
-//     else if(q == 4)
-//     {
-//         return 3;
-//     }
-//     else if(q == 5)
-//     {
-//         return 6;
-//     }
-//     else if(q == 6)
-//     {
-//         return 5;
-//     }
-//     else if(q == 7)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 10;
-//         }
-//         else if(boundary2 == 4)
-//         {
-//             return 9;
-//         }
-//         else
-//         {
-//             return 8;
-//         }
-//     }
-//     else if(q == 8)
-//     {   
-//         if(boundary1 == 4)
-//         {
-//             return 9;
-//         }
-//         else if(boundary2 == 4)
-//         {
-//             return 10;
-//         }
-//         else
-//         {
-//             return 7;
-//         }
-//     }
-//     else if(q == 9)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 8;
-//         }
-//         else if(boundary2 == 4)
-//         {
-//             return 7;
-//         }
-//         else
-//         {
-//             return 10;
-//         }
-//     }
-//     else if(q == 10)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 7;
-//         }
-//         else if(boundary2 == 4)
-//         {
-//             return 8;
-//         }
-//         else
-//         {
-//             return 9;
-//         }
-//     }
-//     else if(q == 11)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 14;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 13;
-//         }
-//         else
-//         {
-//             return 12;
-//         }
-//     }
-//     else if(q == 12)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 13;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 14;
-//         }
-//         else
-//         {
-//             return 11;
-//         }
-//     }
-//     else if(q == 13)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 12;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 11;
-//         }
-//         else
-//         {
-//             return 14;
-//         }
-//     }
-//     else if(q == 14)
-//     {
-//         if(boundary1 == 4)
-//         {
-//             return 11;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 12;
-//         }
-//         else
-//         {
-//             return 13;
-//         }
-//     }
-//     else if(q == 15)
-//     {
-//         if(boundary2 == 4)
-//         {
-//             return 18;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 17;
-//         }
-//         else
-//         {
-//             return 16;
-//         }
-//     }
-//     else if(q == 16)
-//     {
-//         if(boundary2 == 4)
-//         {
-//             return 17;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 18;
-//         }
-//         else
-//         {
-//             return 15;
-//         }
-//     }
-//     else if(q == 17)
-//     {
-//         if(boundary2 == 4)
-//         {
-//             return 16;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 15;
-//         }
-//         else
-//         {
-//             return 18;
-//         }
-//     }
-//     else if(q == 18)
-//     {
-//         if(boundary2 == 4)
-//         {
-//             return 15;
-//         }
-//         else if(boundary3 == 4)
-//         {
-//             return 16;
-//         }
-//         else
-//         {
-//             return 17;
-//         }
-//     }
-//     // std::cerr << "Error q = [0:18], q = " << q << std::endl;
-//     // exit(EXIT_FAILURE);    
-// }
+inline reflectQs(const int q) //Simple but slow
+{
+    float cx[27] = {0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f};
+    float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f};
+    float cz[27] = {0.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f};
+
+    float cxi = -cx[q];
+    float cyi = -cy[q];
+    float czi = -cz[q];
+
+    return c2q(cxi,cyi,czi);
+}
+
+inline int mirrorQxs(const int q) //Simple but slow
+{
+    float cx[27] = {0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f};
+    float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f};
+    float cz[27] = {0.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f};
+
+    float cxi = -cx[q];
+    float cyi = cy[q];
+    float czi = cz[q];
+    return c2q(cxi, cyi, czi);
+}
+
+inline int mirrorQx(const int q)
+{
+    if(q == 0)
+    {
+        return 0;
+    }
+    else if(q == 1)
+    {
+        return 2;
+    }
+    else if(q == 2)
+    {
+        return 1;
+    }
+    else if(q == 3)
+    {
+        return 4;
+    }
+    else if(q == 4)
+    {
+        return 3;
+    }
+    else if(q == 5)
+    {
+        return 6;
+    }
+    else if(q == 6)
+    {
+        return 5;
+    }
+    else if(q == 7)
+    {
+        return 10;
+    }
+    else if(q == 8)
+    {
+        return 9;
+    }
+    else if(q == 9)
+    {
+        return 8;
+    }
+    else if(q == 10)
+    {
+        return 7;
+    }
+    else if(q == 11)
+    {
+        return 14;
+    }
+    else if(q == 12)
+    {
+        return 13;
+    }
+    else if(q == 13)
+    {
+        return 12;
+    }
+    else if(q == 14)
+    {
+        return 11;
+    }
+    else if(q == 15)
+    {
+        return 16;
+    }
+    else if(q == 16)
+    {
+        return 15;
+    }
+    else if(q == 17)
+    {
+        return 18;
+    }
+    else if(q == 18)
+    {
+        return 17;
+    }
+    else if(q == 19)
+    {
+        return 21;
+    }
+    else if(q == 20)
+    {
+        return 22;
+    }
+    else if(q == 21)
+    {
+        return 19;
+    }
+    else if(q == 22)
+    {
+        return 20;
+    }
+    else if(q == 23)
+    {
+        return 26;
+    }
+    else if(q == 24)
+    {
+        return 25;
+    }
+    else if(q == 25)
+    {
+        return 24;
+    }
+    else if(q == 26)
+    {
+        return 23;
+    }
+    // std::cerr << "Error q = [0:18], q = " << q << std::endl;
+    // exit(EXIT_FAILURE);    
+}
+
+inline int mirrorQy(const int q)
+{
+    if(q == 0)
+    {
+        return 0;
+    }
+    else if(q == 1)
+    {
+        return 2;
+    }
+    else if(q == 2)
+    {
+        return 1;
+    }
+    else if(q == 3)
+    {
+        return 4;
+    }
+    else if(q == 4)
+    {
+        return 3;
+    }
+    else if(q == 5)
+    {
+        return 6;
+    }
+    else if(q == 6)
+    {
+        return 5;
+    }
+    else if(q == 7)
+    {
+        return 9;
+    }
+    else if(q == 8)
+    {
+        return 10;
+    }
+    else if(q == 9)
+    {
+        return 7;
+    }
+    else if(q == 10)
+    {
+        return 8;
+    }
+    else if(q == 11)
+    {
+        return 12;
+    }
+    else if(q == 12)
+    {
+        return 11;
+    }
+    else if(q == 13)
+    {
+        return 14;
+    }
+    else if(q == 14)
+    {
+        return 13;
+    }
+    else if(q == 15)
+    {
+        return 18;
+    }
+    else if(q == 16)
+    {
+        return 17;
+    }
+    else if(q == 17)
+    {
+        return 16;
+    }
+    else if(q == 18)
+    {
+        return 15;
+    }
+    else if(q == 19)
+    {
+        return 23;
+    }
+    else if(q == 20)
+    {
+        return 24;
+    }
+    else if(q == 21)
+    {
+        return 26;
+    }
+    else if(q == 22)
+    {
+        return 25;
+    }
+    else if(q == 23)
+    {
+        return 19;
+    }
+    else if(q == 24)
+    {
+        return 20;
+    }
+    else if(q == 25)
+    {
+        return 22;
+    }
+    else if(q == 26)
+    {
+        return 21;
+    }
+    // std::cerr << "Error q = [0:18], q = " << q << std::endl;
+    // exit(EXIT_FAILURE);    
+}
+
+inline int mirrorQz(const int q)
+{
+    if(q == 0)
+    {
+        return 0;
+    }
+    else if(q == 1)
+    {
+        return 2;
+    }
+    else if(q == 2)
+    {
+        return 1;
+    }
+    else if(q == 3)
+    {
+        return 4;
+    }
+    else if(q == 4)
+    {
+        return 3;
+    }
+    else if(q == 5)
+    {
+        return 6;
+    }
+    else if(q == 6)
+    {
+        return 5;
+    }
+    else if(q == 7)
+    {
+        return 8;
+    }
+    else if(q == 8)
+    {
+        return 7;
+    }
+    else if(q == 9)
+    {
+        return 10;
+    }
+    else if(q == 10)
+    {
+        return 9;
+    }
+    else if(q == 11)
+    {
+        return 13;
+    }
+    else if(q == 12)
+    {
+        return 14;
+    }
+    else if(q == 13)
+    {
+        return 11;
+    }
+    else if(q == 14)
+    {
+        return 12;
+    }
+    else if(q == 15)
+    {
+        return 17;
+    }
+    else if(q == 16)
+    {
+        return 18;
+    }
+    else if(q == 17)
+    {
+        return 15;
+    }
+    else if(q == 18)
+    {
+        return 16;
+    }
+    else if(q == 19)
+    {
+        return 25;
+    }
+    else if(q == 20)
+    {
+        return 26;
+    }
+    else if(q == 21)
+    {
+        return 24;
+    }
+    else if(q == 22)
+    {
+        return 23;
+    }
+    else if(q == 23)
+    {
+        return 22;
+    }
+    else if(q == 24)
+    {
+        return 21;
+    }
+    else if(q == 25)
+    {
+        return 19;
+    }
+    else if(q == 26)
+    {
+        return 20;
+    }
+    // std::cerr << "Error q = [0:18], q = " << q << std::endl;
+    // exit(EXIT_FAILURE);    
+}
+
 
 int upwindID_B(const int q, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int boundary1, const int boundary2, const int boundary3)
 {
@@ -961,8 +1131,19 @@ void streaming(float* ft, const float* f, int* upID, const int boundary1, const 
         }
         else // Bounce-Back or Symmetry for boundary wall
         {
-            // int qbb = (boundary1 == 4 || boundary2 == 4 || boundary3 == 4) ? reflectOrMirrorQ(q,boundary1,boundary2,boundary3) : reflectQ(q);
             int qbb = reflectQ(q);
+            if(boundary1 == 4)
+            {
+                qbb = mirrorQx(q);
+            }
+            if(boundary2 == 4)
+            {
+                qbb = mirrorQy(q);
+            }
+            if(boundary3 == 4)
+            {
+                qbb = mirrorQz(q);
+            }
             int bbQID = idf(qbb, ic, nx, ny, nz);
             ft[q] = f[bbQID];
             
@@ -1061,236 +1242,242 @@ int cornerFlag(const int boundary3, const int i, const int j, const int k, const
 
 void fixedVelocityBC(float* ft, const float* rhoList, const float u0, const float v0, const float w0, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner)
 {
-    if(corner == 0)
+    if(boundary1 == 5 || boundary2 == 5 || boundary3 == 5)
     {
-        if(i == 0 && boundary1 == 5)
+        if(corner == 0)
         {
-            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[8]+ft[10]+ft[12]+ft[14]+ft[20]+ft[21]+ft[24]+ft[26]))/(1.f-u0);
-            if(u0 < 0.f)
+            if(i == 0 && boundary1 == 5)
             {
-                int innerID = index1d(1,j,k,nx,ny);
-                rhow = rhoList[innerID];
+                float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[2]+ft[8]+ft[10]+ft[12]+ft[14]+ft[20]+ft[21]+ft[24]+ft[26]))/(1.f-u0);
+                if(u0 < 0.f)
+                {
+                    int innerID = index1d(1,j,k,nx,ny);
+                    rhow = rhoList[innerID];
+                }
+                ft[1] += 4.f*rhow*u0/9.f;
+                // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+                // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+                float Nyx = 0.f;
+                float Nzx = 0.f;
+                ft[7]  += rhow*(u0+v0)/9.f -Nyx;
+                ft[9]  += rhow*(u0-v0)/9.f +Nyx;
+                ft[11] += rhow*(u0+w0)/9.f -Nzx;
+                ft[13] += rhow*(u0-w0)/9.f +Nzx;
+                ft[19] += rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
+                ft[22] += rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
+                ft[23] += rhow*(u0-v0+w0)/36.f +Nyx -Nzx;
+                ft[25] += rhow*(u0+v0-w0)/36.f -Nyx +Nzx;
             }
-            ft[1] += 4.f*rhow*u0/9.f;
-            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
-            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
-            float Nyx = 0.f;
-            float Nzx = 0.f;
-            ft[7]  += rhow*(u0+v0)/9.f -Nyx;
-            ft[9]  += rhow*(u0-v0)/9.f +Nyx;
-            ft[11] += rhow*(u0+w0)/9.f -Nzx;
-            ft[13] += rhow*(u0-w0)/9.f +Nzx;
-            ft[19] += rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
-            ft[22] += rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
-            ft[23] += rhow*(u0-v0+w0)/36.f +Nyx -Nzx;
-            ft[25] += rhow*(u0+v0-w0)/36.f -Nyx +Nzx;
-        }
-        else if(i == nx-1 && boundary1 == 5)
-        {
-            float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]+ft[19]+ft[22]+ft[23]+ft[25]))/(1.f+u0);
-            if(u0 > 0.f)
+            else if(i == nx-1 && boundary1 == 5)
             {
-                int innerID = index1d(nx-2,j,k,nx,ny);
-                rhow = rhoList[ic];
+                float rhow = (ft[0]+ft[3]+ft[4]+ft[5]+ft[6]+ft[15]+ft[16]+ft[17]+ft[18] +2.f*(ft[1]+ft[7]+ft[9]+ft[11]+ft[13]+ft[19]+ft[22]+ft[23]+ft[25]))/(1.f+u0);
+                if(u0 > 0.f)
+                {
+                    int innerID = index1d(nx-2,j,k,nx,ny);
+                    rhow = rhoList[ic];
+                }
+                ft[2] += -4.f*rhow*u0/9.f;
+                // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
+                // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
+                float Nyx = 0.f;
+                float Nzx = 0.f;
+                ft[8]  += -rhow*(u0+v0)/9.f +Nyx;
+                ft[10] += -rhow*(u0-v0)/9.f -Nyx;
+                ft[12] += -rhow*(u0+w0)/9.f +Nzx;
+                ft[14] += -rhow*(u0-w0)/9.f -Nzx;
+                ft[20] += -rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
+                ft[21] += -rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
+                ft[24] += -rhow*(u0-v0+w0)/36.f -Nyx +Nzx;
+                ft[26] += -rhow*(u0+v0-w0)/36.f +Nyx -Nzx;
             }
-            ft[2] += -4.f*rhow*u0/9.f;
-            // float Nyx = -rhow*v0/3.f +0.5f*(ft[3]+ft[15]+ft[17]-(ft[4]+ft[18]+ft[16]));
-            // float Nzx = -rhow*w0/3.f +0.5f*(ft[5]+ft[15]+ft[18]-(ft[6]+ft[17]+ft[16]));
-            float Nyx = 0.f;
-            float Nzx = 0.f;
-            ft[8]  += -rhow*(u0+v0)/9.f +Nyx;
-            ft[10] += -rhow*(u0-v0)/9.f -Nyx;
-            ft[12] += -rhow*(u0+w0)/9.f +Nzx;
-            ft[14] += -rhow*(u0-w0)/9.f -Nzx;
-            ft[20] += -rhow*(u0+v0+w0)/36.f -Nyx -Nzx;
-            ft[21] += -rhow*(u0-v0-w0)/36.f +Nyx +Nzx;
-            ft[24] += -rhow*(u0-v0+w0)/36.f -Nyx +Nzx;
-            ft[26] += -rhow*(u0+v0-w0)/36.f +Nyx -Nzx;
-        }
-        if(j == 0 && boundary2 == 5)
-        {
-            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[8]+ft[9]+ft[16]+ft[18]+ft[20]+ft[22]+ft[23]+ft[26]))/(1.f-v0);
-            if(v0 < 0.f)
+            if(j == 0 && boundary2 == 5)
             {
-                int innerID = index1d(i,1,k,nx,ny);
-                rhow = rhoList[innerID];
+                float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[4]+ft[8]+ft[9]+ft[16]+ft[18]+ft[20]+ft[22]+ft[23]+ft[26]))/(1.f-v0);
+                if(v0 < 0.f)
+                {
+                    int innerID = index1d(i,1,k,nx,ny);
+                    rhow = rhoList[innerID];
+                }
+                ft[3] += 4.f*rhow*v0/9.f;
+                // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+                // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+                float Nxy = 0.f;
+                float Nzy = 0.f;
+                ft[7]  += rhow*(v0+u0)/9.f -Nxy;
+                ft[10] += rhow*(v0-u0)/9.f +Nxy;
+                ft[15] += rhow*(v0+w0)/9.f -Nzy;
+                ft[17] += rhow*(v0-w0)/9.f +Nzy;
+                ft[19] += rhow*(u0+v0+w0)/36.f -Nxy -Nzy;
+                ft[21] += rhow*(-u0+v0+w0)/36.f +Nxy -Nzy;
+                ft[24] += rhow*(-u0+v0-w0)/36.f +Nxy +Nzy;
+                ft[25] += rhow*(u0+v0-w0)/36.f -Nxy +Nzy;
             }
-            ft[3] += 4.f*rhow*v0/9.f;
-            // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
-            // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
-            float Nxy = 0.f;
-            float Nzy = 0.f;
-            ft[7]  += rhow*(v0+u0)/9.f -Nxy;
-            ft[10] += rhow*(v0-u0)/9.f +Nxy;
-            ft[15] += rhow*(v0+w0)/9.f -Nzy;
-            ft[17] += rhow*(v0-w0)/9.f +Nzy;
-            ft[19] += rhow*(u0+v0+w0)/36.f -Nxy -Nzy;
-            ft[21] += rhow*(-u0+v0+w0)/36.f +Nxy -Nzy;
-            ft[24] += rhow*(-u0+v0-w0)/36.f +Nxy +Nzy;
-            ft[25] += rhow*(u0+v0-w0)/36.f -Nxy +Nzy;
-        }
-        else if(j == ny-1 && boundary2 == 5)
-        {
-            float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[3]+ft[7]+ft[10]+ft[15]+ft[17]+ft[19]+ft[21]+ft[24]+ft[25]))/(1.f+v0);
-            if(v0 > 0.f)
+            else if(j == ny-1 && boundary2 == 5)
             {
-                int innerID = index1d(i,ny-2,k,nx,ny);
-                rhow = rhoList[innerID];
+                float rhow = (ft[0]+ft[1]+ft[2]+ft[5]+ft[6]+ft[11]+ft[12]+ft[14]+ft[13] +2.f*(ft[3]+ft[7]+ft[10]+ft[15]+ft[17]+ft[19]+ft[21]+ft[24]+ft[25]))/(1.f+v0);
+                if(v0 > 0.f)
+                {
+                    int innerID = index1d(i,ny-2,k,nx,ny);
+                    rhow = rhoList[innerID];
+                }
+                ft[4] += -4.f*rhow*v0/9.f;
+                // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
+                // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
+                float Nxy = 0.f;
+                float Nzy = 0.f;
+                ft[8]  += -rhow*(v0+u0)/9.f +Nxy;
+                ft[9]  += -rhow*(v0-u0)/9.f -Nxy;
+                ft[16] += -rhow*(v0+w0)/9.f +Nzy;
+                ft[18] += -rhow*(v0-w0)/9.f -Nzy;
+                ft[20] += -rhow*(u0+v0+w0)/36.f +Nxy +Nzy;
+                ft[22] += -rhow*(-u0+v0+w0)/36.f -Nxy +Nzy;
+                ft[23] += -rhow*(-u0+v0-w0)/36.f -Nxy -Nzy;
+                ft[26] += -rhow*(u0+v0-w0)/36.f +Nxy -Nzy;
             }
-            ft[4] += -4.f*rhow*v0/9.f;
-            // float Nxy = -rhow*u0/3.f +0.5f*(ft[1]+ft[11]+ft[13]-(ft[2]+ft[14]+ft[12]));
-            // float Nzy = -rhow*w0/3.f +0.5f*(ft[5]+ft[11]+ft[14]-(ft[6]+ft[13]+ft[12]));
-            float Nxy = 0.f;
-            float Nzy = 0.f;
-            ft[8]  += -rhow*(v0+u0)/9.f +Nxy;
-            ft[9]  += -rhow*(v0-u0)/9.f -Nxy;
-            ft[16] += -rhow*(v0+w0)/9.f +Nzy;
-            ft[18] += -rhow*(v0-w0)/9.f -Nzy;
-            ft[20] += -rhow*(u0+v0+w0)/36.f +Nxy +Nzy;
-            ft[22] += -rhow*(-u0+v0+w0)/36.f -Nxy +Nzy;
-            ft[23] += -rhow*(-u0+v0-w0)/36.f -Nxy -Nzy;
-            ft[26] += -rhow*(u0+v0-w0)/36.f +Nxy -Nzy;
-        }
-        if(k == 0 && boundary3 == 5)
-        {
-            float rhow =(ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]+ft[20]+ft[22]+ft[24]+ft[25]))/(1.f-w0);
-            if(w0 < 0.f)
+            if(k == 0 && boundary3 == 5)
             {
-                int innerID = index1d(i,j,1,nx,ny);
-                rhow = rhoList[innerID];
+                float rhow =(ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[6]+ft[12]+ft[13]+ft[16]+ft[17]+ft[20]+ft[22]+ft[24]+ft[25]))/(1.f-w0);
+                if(w0 < 0.f)
+                {
+                    int innerID = index1d(i,j,1,nx,ny);
+                    rhow = rhoList[innerID];
+                }
+                ft[5] += 4.f*rhow*w0/9.f;
+                // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+                // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+                float Nxz = 0.f;
+                float Nyz = 0.f;
+                ft[11] += rhow*(w0+u0)/9.f -Nxz;
+                ft[14] += rhow*(w0-u0)/9.f +Nxz;
+                ft[15] += rhow*(w0+v0)/9.f -Nyz;
+                ft[18] += rhow*(w0-v0)/9.f +Nyz;
+                ft[19] += rhow*(u0+v0+w0)/36.f -Nxz -Nyz;
+                ft[21] += rhow*(-u0+v0+w0)/36.f +Nxz -Nyz;
+                ft[23] += rhow*(u0-v0+w0)/36.f -Nxz +Nyz;
+                ft[26] += rhow*(-u0-v0+w0)/36.f +Nxz +Nyz;
             }
-            ft[5] += 4.f*rhow*w0/9.f;
-            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
-            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
-            float Nxz = 0.f;
-            float Nyz = 0.f;
-            ft[11] += rhow*(w0+u0)/9.f -Nxz;
-            ft[14] += rhow*(w0-u0)/9.f +Nxz;
-            ft[15] += rhow*(w0+v0)/9.f -Nyz;
-            ft[18] += rhow*(w0-v0)/9.f +Nyz;
-            ft[19] += rhow*(u0+v0+w0)/36.f -Nxz -Nyz;
-            ft[21] += rhow*(-u0+v0+w0)/36.f +Nxz -Nyz;
-            ft[23] += rhow*(u0-v0+w0)/36.f -Nxz +Nyz;
-            ft[26] += rhow*(-u0-v0+w0)/36.f +Nxz +Nyz;
-        }
-        else if(k == nz-1 && boundary3 == 5)
-        {
-            float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[11]+ft[14]+ft[15]+ft[18]+ft[19]+ft[21]+ft[23]+ft[26]))/(1.f+w0);
-            if(w0 > 0.f)
+            else if(k == nz-1 && boundary3 == 5)
             {
-                int innerID = index1d(i,j,nz-2,nx,ny);
-                rhow = rhoList[innerID];
+                float rhow = (ft[0]+ft[1]+ft[2]+ft[3]+ft[4]+ft[7]+ft[8]+ft[9]+ft[10]+2.f*(ft[5]+ft[11]+ft[14]+ft[15]+ft[18]+ft[19]+ft[21]+ft[23]+ft[26]))/(1.f+w0);
+                if(w0 > 0.f)
+                {
+                    int innerID = index1d(i,j,nz-2,nx,ny);
+                    rhow = rhoList[innerID];
+                }
+                ft[6] += -4.f*rhow*w0/9.f;
+                // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
+                // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
+                float Nxz = 0.f;
+                float Nyz = 0.f;
+                ft[12] += -rhow*(w0+u0)/9.f +Nxz;
+                ft[13] += -rhow*(w0-u0)/9.f -Nxz;
+                ft[16] += -rhow*(w0+v0)/9.f +Nyz;
+                ft[17] += -rhow*(w0-v0)/9.f -Nyz;
+                ft[20] += -rhow*(u0+v0+w0)/9.f +Nxz +Nyz;
+                ft[22] += -rhow*(-u0+v0+w0)/9.f -Nxz +Nyz;
+                ft[24] += -rhow*(u0-v0+w0)/9.f +Nxz -Nyz;
+                ft[25] += -rhow*(-u0-v0+w0)/9.f -Nxz -Nyz;
             }
-            ft[6] += -4.f*rhow*w0/9.f;
-            // float Nxz = -rhow*u0/3.f +0.5f*(ft[1]+ft[7]+ft[9]-(ft[2]+ft[10]+ft[8]));
-            // float Nyz = -rhow*v0/3.f +0.5f*(ft[3]+ft[7]+ft[8]-(ft[4]+ft[9]+ft[8]));
-            float Nxz = 0.f;
-            float Nyz = 0.f;
-            ft[12] += -rhow*(w0+u0)/9.f +Nxz;
-            ft[13] += -rhow*(w0-u0)/9.f -Nxz;
-            ft[16] += -rhow*(w0+v0)/9.f +Nyz;
-            ft[17] += -rhow*(w0-v0)/9.f -Nyz;
-            ft[20] += -rhow*(u0+v0+w0)/9.f +Nxz +Nyz;
-            ft[22] += -rhow*(-u0+v0+w0)/9.f -Nxz +Nyz;
-            ft[24] += -rhow*(u0-v0+w0)/9.f +Nxz -Nyz;
-            ft[25] += -rhow*(-u0-v0+w0)/9.f -Nxz -Nyz;
-        }
-    }    
+        }    
+    }
 }
 
 void fixedDensityBC(float* ft, const float rhow, const float* uList, const float* vList, const float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner)
 {
-    if(corner == 0)
+    if(boundary1 == 6 || boundary2 == 6 || boundary3 == 6)
     {
-        if(boundary1 == 6)
+        if(corner == 0)
         {
-            int iIn = (i == 0) ? 1 : nx-2;
-            int innerID = index1d(iIn,j,k,nx,ny);
-            float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
-            float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
-            float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
-            float uSqr =u0*u0+v0*v0+w0*w0;
-            
-            if(i == 0)
+            if(boundary1 == 6)
             {
-                int qList[9] = {1,7,9,11,13,19,22,23,25};
+                int iIn = (i == 0) ? 1 : nx-2;
+                int innerID = index1d(iIn,j,k,nx,ny);
+                float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+                float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+                float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+                float uSqr =u0*u0+v0*v0+w0*w0;
                 
-                for(int qid = 0; qid < 9; qid++)
+                if(i == 0)
                 {
-                    int q = qList[qid];
-                    float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
-                    ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    int qList[9] = {1,7,9,11,13,19,22,23,25};
+                    
+                    for(int qid = 0; qid < 9; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-            }
-            if(i == nx-1)
-            {
-                int qList[9] = {2,8,10,12,14,20,21,24,26};
+                if(i == nx-1)
+                {
+                    int qList[9] = {2,8,10,12,14,20,21,24,26};
+                    
+                    for(int qid = 0; qid < 9; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
+                }
                 
-                for(int qid = 0; qid < 9; qid++)
-                {
-                    int q = qList[qid];
-                    float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
-                    ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
-                }
             }
-            
-        }
-        if(boundary2 == 6)
-        {
-            int jIn = (j == 0) ? 1 : ny-2;
-            int innerID = index1d(i,jIn,k,nx,ny);
-            float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
-            float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
-            float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
-            float uSqr =u0*u0+v0*v0+w0*w0;
-            if(j == 0)
+            if(boundary2 == 6)
             {
-                int qList[9] = {3,7,10,15,17,19,21,24,25};                    
-                for(int qid = 0; qid < 9; qid++)
+                int jIn = (j == 0) ? 1 : ny-2;
+                int innerID = index1d(i,jIn,k,nx,ny);
+                float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+                float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+                float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+                float uSqr =u0*u0+v0*v0+w0*w0;
+                if(j == 0)
                 {
-                    int q = qList[qid];
-                    float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
-                    ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    int qList[9] = {3,7,10,15,17,19,21,24,25};                    
+                    for(int qid = 0; qid < 9; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
+                }
+                if(j == ny-1)
+                {
+                    int qList[9] = {4,8,9,16,18,20,22,23,26};    
+                    for(int qid = 0; qid < 9; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
             }
-            if(j == ny-1)
-            {
-                int qList[9] = {4,8,9,16,18,20,22,23,26};    
-                for(int qid = 0; qid < 9; qid++)
-                {
-                    int q = qList[qid];
-                    float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
-                    ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
-                }
-            }
-        }
 
-        if(boundary3 == 6)
-        {
-            int kIn = (k == 0) ? 1: nz-2;
-            int innerID = index1d(i,j,kIn,nx,ny);
-            float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
-            float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
-            float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
-            float uSqr =u0*u0+v0*v0+w0*w0;
-            if(k == 0 && boundary3 == 6)
+            if(boundary3 == 6)
             {
-                int qList[9] = {5,11,14,15,18,19,21,23,26};
-                for(int qid = 0; qid < 9; qid++)
+                int kIn = (k == 0) ? 1: nz-2;
+                int innerID = index1d(i,j,kIn,nx,ny);
+                float u0 = uList[ic] +0.5f*(uList[ic] -uList[innerID]);
+                float v0 = vList[ic] +0.5f*(vList[ic] -vList[innerID]);
+                float w0 = wList[ic] +0.5f*(wList[ic] -wList[innerID]);
+                float uSqr =u0*u0+v0*v0+w0*w0;
+                if(k == 0 && boundary3 == 6)
                 {
-                    int q = qList[qid];
-                    float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
-                    ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    int qList[9] = {5,11,14,15,18,19,21,23,26};
+                    for(int qid = 0; qid < 9; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
-            }
-            if(k == nz-1 && boundary3 == 6)
-            {
-                int qList[9] = {6,12,13,16,17,20,22,24,25};
-                for(int qid = 0; qid < 9; qid++)
+                if(k == nz-1 && boundary3 == 6)
                 {
-                    int q = qList[qid];
-                    float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
-                    ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    int qList[9] = {6,12,13,16,17,20,22,24,25};
+                    for(int qid = 0; qid < 9; qid++)
+                    {
+                        int q = qList[qid];
+                        float uDotC = u0*cx[q]+v0*cy[q]+w0*cz[q];
+                        ft[q] = -ft[q] +2.f*wt[q]*rhow*(1.f +4.5f*uDotC*uDotC -1.5f*uSqr);
+                    }
                 }
             }
         }
@@ -2617,9 +2804,9 @@ __kernel void k_streamingCollision // Pull
         float wt[27] = {8.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0};
 
         //                 0    1     2    3    4     5     6    7     8     9    10    11    12    13    14   15    16    17    18   19    20    21    22    23    24    25   26
-        float cx[27] = {0.f, 1.f, -1.f, 0.f,  0.f,  0.f, 0.f, 1.f, -1.f,  1.f, -1.f,  1.f, -1.f,  1.f, -1.f, 0.f,  0.f,  0.f,  0.f, 1.f, -1.f, -1.f,  1.f,  1.f, -1.f,  1.f, -1.f};
-        float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f,  0.f, 0.f, 1.f, -1.f, -1.f,  1.f,  0.f,  0.f,  0.f,  0.f, 1.f, -1.f,  1.f, -1.f, 1.f, -1.f,  1.f, -1.f, -1.f,  1.f,  1.f, -1.f};
-        float cz[27] = {0.f, 0.f,  0.f, 0.f,  0.f,  1.f, -1.f, 0.f, 0.f,  0.f,  0.f,  1.f, -1.f, -1.f,  1.f, 1.f, -1.f, -1.f,  1.f, 1.f, -1.f,  1.f, -1.f,  1.f, -1.f, -1.f,  1.f};
+        float cx[27] = {0.f, 1.f, -1.f, 0.f,  0.f,  0.f,  0.f, 1.f, -1.f,  1.f, -1.f,  1.f, -1.f,  1.f, -1.f, 0.f,  0.f,  0.f,  0.f, 1.f, -1.f, -1.f,  1.f,  1.f, -1.f,  1.f, -1.f};
+        float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f,  0.f,  0.f, 1.f, -1.f, -1.f,  1.f,  0.f,  0.f,  0.f,  0.f, 1.f, -1.f,  1.f, -1.f, 1.f, -1.f,  1.f, -1.f, -1.f,  1.f,  1.f, -1.f};
+        float cz[27] = {0.f, 0.f,  0.f, 0.f,  0.f,  1.f, -1.f, 0.f,  0.f,  0.f,  0.f,  1.f, -1.f, -1.f,  1.f, 1.f, -1.f, -1.f,  1.f, 1.f, -1.f,  1.f, -1.f,  1.f, -1.f, -1.f,  1.f};
 
         float ft[27] = {0.f};
         int upID[27];
