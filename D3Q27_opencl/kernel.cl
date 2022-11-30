@@ -2519,8 +2519,7 @@ float collisionCumulantGeier(float* fTmp, const float* ft, const float rho, floa
 
 
     float omega1 = omegaEff;
-    // float omega2 = omegaB;
-    float omega2 = omegaEff;
+    float omega2 = omegaB;
 
     float omega3 = 8.f*(omega1 -2.f)*(omega2*(3.f*omega1 -1.f) -5.f*omega1)/(8.f*(5.f -2.f*omega1)*omega1 +omega2*(8.f +omega1*(9.f*omega1 -26.f)));
     float omega4 = 8.f*(omega1 -2.f)*(omega1 +omega2*(3.f*omega1 -7.f))/(omega2*(56.f -42.f*omega1 +9.f*omega1*omega1) -8.f*omega1);
@@ -2539,11 +2538,11 @@ float collisionCumulantGeier(float* fTmp, const float* ft, const float rho, floa
     float omega9 = 1.f;
     float omega10 = 1.f;
 
-    // float A = (4.f*omega1*omega1 +2.f*omega1*omega2*(omega1 -6.f)+omega2*omega2*(omega1*(10.f -3.f*omega1) -4.f))/((omega1 -omega2)*(omega2*(2.f +3.f*omega1) -8.f*omega1));
-    // float B = (4.f*omega1*omega2*(9.f*omega1 -16.f) -4.f*omega1*omega1 -2.f*omega2*omega2*(2.f +9.f*omega1*(omega1 -2.f)))/(3.f*(omega1 -omega2)*(omega2*(2.f +3.f*omega1)- 8.f*omega1));
+    float A = (4.f*omega1*omega1 +2.f*omega1*omega2*(omega1 -6.f)+omega2*omega2*(omega1*(10.f -3.f*omega1) -4.f))/((omega1 -omega2)*(omega2*(2.f +3.f*omega1) -8.f*omega1));
+    float B = (4.f*omega1*omega2*(9.f*omega1 -16.f) -4.f*omega1*omega1 -2.f*omega2*omega2*(2.f +9.f*omega1*(omega1 -2.f)))/(3.f*(omega1 -omega2)*(omega2*(2.f +3.f*omega1)- 8.f*omega1));
 
-    float A = 0.f;
-    float B = 0.f;
+    A = max(A,0.f);
+    B = max(B,0.f);
 
     float Cs110 = (1.f -omega1)*C110;
     float Cs101 = (1.f -omega1)*C101;
@@ -2582,14 +2581,14 @@ float collisionCumulantGeier(float* fTmp, const float* ft, const float rho, floa
 
     X1 = (1.f -omega6)*(C220 -2.f*C202 +C022) +2.f*(1.f/omega1 -0.5f)*omega6*A*rho*(Dxu -2.f*Dyv +Dzw)/3.f;
     X2 = (1.f -omega6)*(C220 +C202 -2.f*C022) +2.f*(1.f/omega1 -0.5f)*omega6*A*rho*(Dxu +Dyv -2.f*Dzw)/3.f;
-    X3 = (1.f -omega7)*(C220 +C202 +C022) -4.f*(1.f/omega1 -0.5f)*omega7*A*rho*(Dxu +Dyv +Dzw);
+    X3 = (1.f -omega7)*(C220 +C202 +C022) -4.f*(1.f/omega1 -0.5f)*omega7*A*rho*(Dxu +Dyv +Dzw)/3.f;
     float Cs220 = (X1 +X2 +X3)/3.f;
     float Cs202 = -(X1 -X3)/3.f;
     float Cs022 = -(X2 -X3)/3.f;
 
     float Cs211 = (1.f -omega8)*C211 -(1.f/omega1 -0.5f)*omega8*B*rho*Dyw_Dzv/3.f;
     float Cs121 = (1.f -omega8)*C121 -(1.f/omega1 -0.5f)*omega8*B*rho*Dxw_Dzu/3.f;
-    float Cs112 = (1.f -omega8)*C112 -(1.f/omega1 -0.5f)*omega8*B*rho*Dxv_Dyu/3.f;;
+    float Cs112 = (1.f -omega8)*C112 -(1.f/omega1 -0.5f)*omega8*B*rho*Dxv_Dyu/3.f;
 
     float Cs221 = (1.f -omega9)*C221;
     float Cs212 = (1.f -omega9)*C212;
