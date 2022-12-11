@@ -643,10 +643,6 @@ int main()
         // }
         std::swap(fTmp_d,f_d);
     }
-    end = std::chrono::system_clock::now();
-    double time = static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() *1e-6);
-    std::cout << "Execution time: " << time << " (s)" << std::endl;
-    std::cout << "Speed: " << double(endTimeStep)*double(nx*ny*nz)/time*1e-6 << " (MLUPS)" << std::endl;
     }
     catch (cl::BuildError error)
     {
