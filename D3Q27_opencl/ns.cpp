@@ -434,7 +434,8 @@ int main()
     // Load in kernel source, creating and building a program object for the context
     // cl::Program program(context, util::loadProgram("kernel.cl"), true);
     cl::Program program(context, util::loadProgram("kernel.cl"), false);
-    program.build("-cl-mad-enable -cl-fast-relaxed-math -cl-no-signed-zeros");
+    // program.build("-cl-mad-enable -cl-fast-relaxed-math -cl-no-signed-zeros");
+    program.build();
     
     
 

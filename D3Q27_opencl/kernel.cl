@@ -1490,26 +1490,30 @@ float calcTauw(const float rhow, const float magUp, const float nu, const float 
     const float kappa = 0.42f;
     const float E = 9.1f;
 
-    float ut = sqrt(nu*magUp);
+    float ut = sqrt(nuEff*magUp/y);   
 
     int iter = 0;
     float err = 1.f;
 
-    // printf("nu: %f, nuEff: %f, magUp: %f, ut: %f\n", nu,nuEff,magUp,ut);
-
-    do
+    if (ut > 1e-18f)
     {
-        float kUu = min(kappa*magUp/ut,50.f);
-        float fkUu = exp(kUu) -1.f -kUu*(1.f +0.5f*kUu);
+        // printf("nu: %f, nuEff: %f, magUp: %f, ut: %f\n", nu,nuEff,magUp,ut);
 
-        float func = -ut*y/nu +magUp/ut +(fkUu -kUu*kUu*kUu/6.f)/E;
-        float dfunc = y/nu +magUp/(ut*ut) +(kUu*fkUu/ut)/E;
+        do
+        {
+            float kUu = min(kappa*magUp/ut,50.f);
+            float fkUu = exp(kUu) -1.f -kUu*(1.f +0.5f*kUu);
 
-        float utNew = ut +func/dfunc;
-        err = fabs((ut-utNew)/ut);
-        ut = utNew;
-        // printf("func: %f, dfunc: %f, ut: %f\n", func,dfunc,ut);
-    } while (err > 0.01f && ++iter < 10);
+            float func = -ut*y/nu +magUp/ut +(fkUu -kUu*kUu*kUu/6.f)/E;
+            float dfunc = y/nu +magUp/(ut*ut) +(kUu*fkUu/ut)/E;
+
+            float utNew = ut +func/dfunc;
+            err = fabs((ut-utNew)/ut);
+
+            ut = utNew;
+            // printf("func: %f, dfunc: %f, ut: %f\n", func,dfunc,ut);
+        } while (ut > 1e-18f && err > 0.01f && ++iter < 10);
+    }
     ut = max(ut, 0.f);
     // float yPlus = y*ut/nu;
     float tauw = rhow*ut*ut;
@@ -1735,16 +1739,19 @@ void wallFunctionBC(float* ft, const float* rhoList, const float* uList, const f
                     v = vList[index1d(i,j,k,nx,ny)];
                     w = wList[index1d(i,j,k,nx,ny)];
                     magUp = sqrt(u*u+v*v);
-                    float ex = u/magUp;
-                    float ey = v/magUp;
-                    float ez = 0.f/magUp;
+                    if(magUp != 0.f)
+                    {
+                        float ex = u/magUp;
+                        float ey = v/magUp;
+                        float ez = 0.f/magUp;
 
-                    float Fuw_x = tauw*ex -Fwx;
-                    float Fuw_y = tauw*ey -Fwy;
-                    float Fuw_z = tauw*ez -Fwz;
+                        float Fuw_x = tauw*ex -Fwx;
+                        float Fuw_y = tauw*ey -Fwy;
+                        float Fuw_z = tauw*ez -Fwz;
 
-                    u0 = -3.f*Fuw_x/rhow;
-                    v0 = -3.f*Fuw_y/rhow;
+                        u0 = -3.f*Fuw_x/rhow;
+                        v0 = -3.f*Fuw_y/rhow;
+                    }
                 }
                 
                 ft[5] += 4.f*rhow*w0/9.f;
@@ -2127,33 +2134,6 @@ float vremanTauSGS(const int i, const int j, const int k, const int nx, const in
     return tauSGS;
 }
 
-float vremanTauSGSM(const float dudx, const float dudy, const float dudz, const float dvdx, const float dvdy, const float dvdz, const float dwdx, const float dwdy, const float dwdz, const float LES)
-{   
-    float Cs = 0.1f;// 0.1--0.2
-    // float Cs = 0.2f;// 0.1--0.2
-    // float Cs = 0.33f;// 0.1--0.2
-    // float Cs = 0.4f;
-
-    float Cv = 2.5f*Cs*Cs;
-    
-    float b11 = dudx*dudx+dvdx*dvdx+dwdx*dwdx;
-    float b12 = dudx*dudy+dvdx*dvdy+dwdx*dwdy;
-    float b13 = dudx*dudz+dvdx*dvdz+dwdx*dwdz;
-    float b22 = dudy*dudy+dvdy*dvdy+dwdy*dwdy;
-    float b23 = dudy*dudz+dvdy*dvdz+dwdy*dwdz;
-    float b33 = dudz*dudz+dvdz*dvdz+dwdz*dwdz;
-
-    float abeta = dudx*dudx+dvdx*dvdx+dwdx*dwdx 
-                    +dudy*dudy+dvdy*dvdy+dwdy*dwdy
-                    +dudz*dudz+dvdz*dvdz+dwdz*dwdz;
-    
-    float bbeta = b11*b22 -b12*b12 +b11*b33 -b13*b13 +b22*b33 -b23*b23;
-
-    float tauSGS = (bbeta > 0.f && abeta > 0.f) ? 3.f*LES*(Cv*sqrt(bbeta/abeta))*3.f : 0.f;
-
-    return tauSGS;
-}
-
 float waleTauSGS(const int i, const int j, const int k, const int nx, const int ny, const int nz, const float* uList, const float* vList, const float* wList, const float LES)
 {   
     // float Cs = 0.1f;// 0.1--0.2
@@ -2162,36 +2142,17 @@ float waleTauSGS(const int i, const int j, const int k, const int nx, const int 
 
     float Cw = 0.325f;
 
-    float dudx = (i > 0 && i < nx-1) ? 0.5f*(uList[index1d(i+1,j,k,nx,ny)] -uList[index1d(i-1,j,k,nx,ny)]) : 
-                    (i == 0) ? uList[index1d(1,j,k,nx,ny)]-uList[index1d(0,j,k,nx,ny)] :
-                    uList[index1d(nx-1,j,k,nx,ny)]-uList[index1d(nx-2,j,k,nx,ny)];
-    float dudy = (j > 0 && j < ny-1) ? 0.5f*(uList[index1d(i,j+1,k,nx,ny)] -uList[index1d(i,j-1,k,nx,ny)]) :
-                    (j == 0) ? uList[index1d(i,1,k,nx,ny)]-uList[index1d(i,0,k,nx,ny)] :
-                    uList[index1d(i,ny-1,k,nx,ny)]-uList[index1d(i,ny-2,k,nx,ny)];
-    float dudz = (k > 0 && k < nz-1) ? 0.5f*(uList[index1d(i,j,k+1,nx,ny)] -uList[index1d(i,j,k-1,nx,ny)]) : 
-                    (nz-1 == 0) ? 0.f:
-                    (k == 0) ? uList[index1d(i,j,1,nx,ny)]-uList[index1d(i,j,1,nx,ny)] :
-                    uList[index1d(i,j,nz-1,nx,ny)]-uList[index1d(i,j,nz-2,nx,ny)];
-    float dvdx = (i > 0 && i < nx-1) ? 0.5f*(vList[index1d(i+1,j,k,nx,ny)] -vList[index1d(i-1,j,k,nx,ny)]) : 
-                    (i == 0) ? vList[index1d(1,j,k,nx,ny)]-vList[index1d(0,j,k,nx,ny)] :
-                    vList[index1d(nx-1,j,k,nx,ny)]-vList[index1d(nx-2,j,k,nx,ny)];
-    float dvdy = (j > 0 && j < ny-1) ? 0.5f*(vList[index1d(i,j+1,k,nx,ny)] -vList[index1d(i,j-1,k,nx,ny)]) : 
-                    (j == 0) ? vList[index1d(i,1,k,nx,ny)]-vList[index1d(i,0,k,nx,ny)] :
-                    vList[index1d(i,ny-1,k,nx,ny)]-vList[index1d(i,ny-2,k,nx,ny)];;
-    float dvdz = (k > 0 && k < nz-1) ? 0.5f*(vList[index1d(i,j,k+1,nx,ny)] -vList[index1d(i,j,k-1,nx,ny)]) : 
-                    (nz-1 == 0) ? 0.f:
-                    (k == 0) ? vList[index1d(i,j,1,nx,ny)]-vList[index1d(i,j,1,nx,ny)] :
-                    vList[index1d(i,j,nz-1,nx,ny)]-vList[index1d(i,j,nz-2,nx,ny)];
-    float dwdx = (i > 0 && i < nx-1) ? 0.5f*(wList[index1d(i+1,j,k,nx,ny)] -wList[index1d(i-1,j,k,nx,ny)]) : 
-                    (i == 0) ? wList[index1d(1,j,k,nx,ny)]-wList[index1d(0,j,k,nx,ny)] :
-                    wList[index1d(nx-1,j,k,nx,ny)]-wList[index1d(nx-2,j,k,nx,ny)];
-    float dwdy = (j > 0 && j < ny-1) ? 0.5f*(wList[index1d(i,j+1,k,nx,ny)] -wList[index1d(i,j-1,k,nx,ny)]) : 
-                    (j == 0) ? wList[index1d(i,1,k,nx,ny)]-wList[index1d(i,0,k,nx,ny)] :
-                    wList[index1d(i,ny-1,k,nx,ny)]-wList[index1d(i,ny-2,k,nx,ny)];
-    float dwdz = (k > 0 && k < nz-1) ? 0.5f*(wList[index1d(i,j,k+1,nx,ny)] -wList[index1d(i,j,k-1,nx,ny)]) : 
-                    (nz-1 == 0) ? 0.f:
-                    (k == 0) ? wList[index1d(i,j,1,nx,ny)]-wList[index1d(i,j,1,nx,ny)] :
-                    wList[index1d(i,j,nz-1,nx,ny)]-wList[index1d(i,j,nz-2,nx,ny)];
+    float dudx;
+    float dudy;
+    float dudz;
+    float dvdx;
+    float dvdy;
+    float dvdz;
+    float dwdx;
+    float dwdy;
+    float dwdz;
+
+    gradU(&dudx,&dudy,&dudz,&dvdx,&dvdy,&dvdz,&dwdx,&dwdy,&dwdz, i, j, k, nx, ny, nz, uList, vList, wList);
 
     float S11 = dudx;
     float S12 = 0.5f*(dudy+dvdx);
@@ -2262,36 +2223,17 @@ float CSsmagorinskyTauSGS(const float* ft, const float rho, const float u, const
 
     float C1 = 1.f/22.f;
 
-    float dudx = (i > 0 && i < nx-1) ? 0.5f*(uList[index1d(i+1,j,k,nx,ny)] -uList[index1d(i-1,j,k,nx,ny)]) : 
-                    (i == 0) ? uList[index1d(1,j,k,nx,ny)]-uList[index1d(0,j,k,nx,ny)] :
-                    uList[index1d(nx-1,j,k,nx,ny)]-uList[index1d(nx-2,j,k,nx,ny)];
-    float dudy = (j > 0 && j < ny-1) ? 0.5f*(uList[index1d(i,j+1,k,nx,ny)] -uList[index1d(i,j-1,k,nx,ny)]) :
-                    (j == 0) ? uList[index1d(i,1,k,nx,ny)]-uList[index1d(i,0,k,nx,ny)] :
-                    uList[index1d(i,ny-1,k,nx,ny)]-uList[index1d(i,ny-2,k,nx,ny)];
-    float dudz = (k > 0 && k < nz-1) ? 0.5f*(uList[index1d(i,j,k+1,nx,ny)] -uList[index1d(i,j,k-1,nx,ny)]) : 
-                    (nz-1 == 0) ? 0.f:
-                    (k == 0) ? uList[index1d(i,j,1,nx,ny)]-uList[index1d(i,j,1,nx,ny)] :
-                    uList[index1d(i,j,nz-1,nx,ny)]-uList[index1d(i,j,nz-2,nx,ny)];
-    float dvdx = (i > 0 && i < nx-1) ? 0.5f*(vList[index1d(i+1,j,k,nx,ny)] -vList[index1d(i-1,j,k,nx,ny)]) : 
-                    (i == 0) ? vList[index1d(1,j,k,nx,ny)]-vList[index1d(0,j,k,nx,ny)] :
-                    vList[index1d(nx-1,j,k,nx,ny)]-vList[index1d(nx-2,j,k,nx,ny)];
-    float dvdy = (j > 0 && j < ny-1) ? 0.5f*(vList[index1d(i,j+1,k,nx,ny)] -vList[index1d(i,j-1,k,nx,ny)]) : 
-                    (j == 0) ? vList[index1d(i,1,k,nx,ny)]-vList[index1d(i,0,k,nx,ny)] :
-                    vList[index1d(i,ny-1,k,nx,ny)]-vList[index1d(i,ny-2,k,nx,ny)];;
-    float dvdz = (k > 0 && k < nz-1) ? 0.5f*(vList[index1d(i,j,k+1,nx,ny)] -vList[index1d(i,j,k-1,nx,ny)]) : 
-                    (nz-1 == 0) ? 0.f:
-                    (k == 0) ? vList[index1d(i,j,1,nx,ny)]-vList[index1d(i,j,1,nx,ny)] :
-                    vList[index1d(i,j,nz-1,nx,ny)]-vList[index1d(i,j,nz-2,nx,ny)];
-    float dwdx = (i > 0 && i < nx-1) ? 0.5f*(wList[index1d(i+1,j,k,nx,ny)] -wList[index1d(i-1,j,k,nx,ny)]) : 
-                    (i == 0) ? wList[index1d(1,j,k,nx,ny)]-wList[index1d(0,j,k,nx,ny)] :
-                    wList[index1d(nx-1,j,k,nx,ny)]-wList[index1d(nx-2,j,k,nx,ny)];
-    float dwdy = (j > 0 && j < ny-1) ? 0.5f*(wList[index1d(i,j+1,k,nx,ny)] -wList[index1d(i,j-1,k,nx,ny)]) : 
-                    (j == 0) ? wList[index1d(i,1,k,nx,ny)]-wList[index1d(i,0,k,nx,ny)] :
-                    wList[index1d(i,ny-1,k,nx,ny)]-wList[index1d(i,ny-2,k,nx,ny)];
-    float dwdz = (k > 0 && k < nz-1) ? 0.5f*(wList[index1d(i,j,k+1,nx,ny)] -wList[index1d(i,j,k-1,nx,ny)]) : 
-                    (nz-1 == 0) ? 0.f:
-                    (k == 0) ? wList[index1d(i,j,1,nx,ny)]-wList[index1d(i,j,1,nx,ny)] :
-                    wList[index1d(i,j,nz-1,nx,ny)]-wList[index1d(i,j,nz-2,nx,ny)];
+    float dudx;
+    float dudy;
+    float dudz;
+    float dvdx;
+    float dvdy;
+    float dvdz;
+    float dwdx;
+    float dwdy;
+    float dwdz;
+
+    gradU(&dudx,&dudy,&dudz,&dvdx,&dvdy,&dvdz,&dwdx,&dwdy,&dwdz, i, j, k, nx, ny, nz, uList, vList, wList);
 
     float S11 = dudx;
     float S12 = 0.5f*(dudy+dvdx);
@@ -2871,11 +2813,9 @@ __kernel void k_streamingCollision // Pull
         float dwdx;
         float dwdy;
         float dwdz;
-        gradU(&dudx,&dudy,&dudz,&dvdx,&dvdy,&dvdz,&dwdx,&dwdy,&dwdz, i, j, k, nx, ny, nz, uList, vList, wList);
 
         // tauSGSList[ic] = smagorinskyTauSGS(ft, rho, u, v, w, omega, LES, sdf, cx, cy, cz, wt, 0.1f, 1); //base
         // tauSGSList[ic] = vremanTauSGS(i,j,k,nx,ny,nz,uList,vList,wList,LES); //Performance -3.7%
-        // tauSGSList[ic] = vremanTauSGSM(dudx,dudy,dudz,dvdx,dvdy,dvdz,dwdx,dwdy,dwdz,LES); //Performance -3.7%
         tauSGSList[ic] = waleTauSGS(i,j,k,nx,ny,nz,uList,vList,wList,LES); //Performance -8.6%
         // tauSGSList[ic] = CSsmagorinskyTauSGS(ft, rho, u, v, w, omega, LES, sdf, cx, cy, cz, wt,i,j,k,nx,ny,nz,uList,vList,wList); // Performance -9.12%
 
