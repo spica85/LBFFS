@@ -16,6 +16,6 @@ find_package(Boost REQUIRED)
 #set(OpenCL_LIBRARY /opt/amdgpu-pro/lib/x86_64-linux-gnu/libOpenCL.so) # If necessary
 find_package(OpenCL REQUIRED)
 
-include_directories(${OpenCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} ../src ./)
+include_directories(../src ./ ${OpenCL_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
 target_link_libraries(ns.opencl ${OpenCL_LIBRARIES})
 configure_file(kernel.cl ../build/kernel.cl COPYONLY)
