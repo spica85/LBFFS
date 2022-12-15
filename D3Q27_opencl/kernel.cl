@@ -159,7 +159,7 @@ inline int reflectQ(const int q)
     // exit(EXIT_FAILURE);    
 }
 
-inline reflectQs(const int q) //Simple but slow
+inline int reflectQs(const int q) //Simple but slow
 {
     float cx[27] = {0.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f, 1.f, -1.f};
     float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f, 0.f, 0.f, 1.f, -1.f, -1.f, 1.f, 0.f, 0.f, 0.f, 0.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, 1.f, -1.f, -1.f, 1.f, 1.f, -1.f};
@@ -1110,7 +1110,7 @@ void Xrot
 }
 
 __attribute__((always_inline))
-void streaming(float* ft, const float* f, int* upID, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements, float* Fwx, float* Fwy, float* Fwz, float* cx, float* cy, float* cz)
+void streaming(float* ft, const __global float* f, int* upID, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements, __global float* Fwx, __global float* Fwy, __global float* Fwz, float* cx, float* cy, float* cz)
 {
     Fwx[ic] = 0.f;
     Fwy[ic] = 0.f;
@@ -1156,7 +1156,7 @@ void streaming(float* ft, const float* f, int* upID, const int boundary1, const 
 }
 
 __attribute__((always_inline))
-void streamingInternal(float* ft, const float* f, int* upID, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
+void streamingInternal(float* ft, const __global float* f, int* upID, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
 {
     ft[0] = f[ic];
     upID[0] = ic;
@@ -1172,7 +1172,7 @@ void streamingInternal(float* ft, const float* f, int* upID, const int ic, const
 }
 
 __attribute__((always_inline))
-void streaming2D(float* ft, const float* f, int* upID, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
+void streaming2D(float* ft, const __global float* f, int* upID, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
 {
     ft[0] = f[ic];
     upID[0] = ic;
@@ -1240,7 +1240,7 @@ int cornerFlag(const int boundary3, const int i, const int j, const int k, const
     return 0;
 }
 
-void fixedVelocityBC(float* ft, const float* rhoList, const float u0, const float v0, const float w0, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner)
+void fixedVelocityBC(float* ft, const __global float* rhoList, const float u0, const float v0, const float w0, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner)
 {
     if(boundary1 == 5 || boundary2 == 5 || boundary3 == 5)
     {
@@ -1382,7 +1382,7 @@ void fixedVelocityBC(float* ft, const float* rhoList, const float u0, const floa
     }
 }
 
-void fixedDensityBC(float* ft, const float rhow, const float* uList, const float* vList, const float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner)
+void fixedDensityBC(float* ft, const float rhow, const __global float* uList, const __global float* vList, const __global float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner)
 {
     if(boundary1 == 6 || boundary2 == 6 || boundary3 == 6)
     {
@@ -1521,7 +1521,7 @@ float calcTauw(const float rhow, const float magUp, const float nu, const float 
     return tauw;
 }
 
-void wallFunctionBC(float* ft, const float* rhoList, const float* uList, const float* vList, const float* wList, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner, const float nu, const float nuEff, const float Fwx, const float Fwy, const float Fwz) // Stationary wall
+void wallFunctionBC(float* ft, const __global float* rhoList, const __global float* uList, const __global float* vList, const __global float* wList, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int corner, const float nu, const float nuEff, const float Fwx, const float Fwy, const float Fwz) // Stationary wall
 {
     if(boundary1 == 7 || boundary2 == 7 || boundary3 == 7)
     {
@@ -1820,7 +1820,7 @@ void wallFunctionBC(float* ft, const float* rhoList, const float* uList, const f
     }
 }
 
-void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fwz, const unsigned char* solidList, const unsigned char* neiSolidList, const float* sdfList, const float sdf, const int* upID, const float omega, const float tauSGS, const float* rhoList, const float* uList, const float* vList, const float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
+void internalWallBC(float* ft, const __global float* f, __global float* Fwx, __global float* Fwy, __global float* Fwz, const __global unsigned char* solidList, const __global unsigned char* neiSolidList, const __global float* sdfList, const float sdf, const int* upID, const float omega, const float tauSGS, const __global float* rhoList, const __global float* uList, const __global float* vList, const __global float* wList, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz, const int elements)
 {
     float u = uList[ic];
     float v = vList[ic];
@@ -1900,7 +1900,7 @@ void internalWallBC(float* ft, const float* f, float* Fwx, float* Fwy, float* Fw
 }
 
 // Geier et al., Comput. Math. Appl. (2015), Appendix F
-void outflowBC(float* ft, const float* f, const float u, const float v, const float w, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+void outflowBC(float* ft, const __global float* f, const float u, const float v, const float w, const int boundary1, const int boundary2, const int boundary3, const int ic, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     if(boundary1 == 3 || boundary2 == 3 || boundary3 == 3)
     {
@@ -1993,7 +1993,7 @@ void outflowBC(float* ft, const float* f, const float u, const float v, const fl
     }    
 }
 
-void gradU(float* dudx, float* dudy, float* dudz, float* dvdx, float* dvdy, float* dvdz, float* dwdx, float* dwdy, float* dwdz, const int i, const int j, const int k, const int nx, const int ny, const int nz, const float* uList, const float* vList, const float* wList)
+void gradU(float* dudx, float* dudy, float* dudz, float* dvdx, float* dvdy, float* dvdz, float* dwdx, float* dwdy, float* dwdz, const int i, const int j, const int k, const int nx, const int ny, const int nz, const __global float* uList, const __global float* vList, const __global float* wList)
 {
     *dudx = (i > 0 && i < nx-1) ? 0.5f*(uList[index1d(i+1,j,k,nx,ny)] -uList[index1d(i-1,j,k,nx,ny)]) : 
                     (i == 0) ? uList[index1d(1,j,k,nx,ny)]-uList[index1d(0,j,k,nx,ny)] :
@@ -2097,7 +2097,7 @@ float smagorinskyTauSGS(const float* ft, const float rho, const float u, const f
     return tauSGS;
 }
 
-float vremanTauSGS(const int i, const int j, const int k, const int nx, const int ny, const int nz, const float* uList, const float* vList, const float* wList, const float LES)
+float vremanTauSGS(const int i, const int j, const int k, const int nx, const int ny, const int nz, const __global float* uList, const __global float* vList, const __global float* wList, const float LES)
 {   
     float Cs = 0.1f;// 0.1--0.2
     // float Cs = 0.2f;// 0.1--0.2
@@ -2134,7 +2134,7 @@ float vremanTauSGS(const int i, const int j, const int k, const int nx, const in
     return tauSGS;
 }
 
-float waleTauSGS(const int i, const int j, const int k, const int nx, const int ny, const int nz, const float* uList, const float* vList, const float* wList, const float LES)
+float waleTauSGS(const int i, const int j, const int k, const int nx, const int ny, const int nz, const __global float* uList, const __global float* vList, const __global float* wList, const float LES)
 {   
     // float Cs = 0.1f;// 0.1--0.2
     // float Cs = 0.2f;// 0.1--0.2
@@ -2215,7 +2215,7 @@ float waleTauSGS(const int i, const int j, const int k, const int nx, const int 
     return tauSGS;
 }
 
-float CSsmagorinskyTauSGS(const float* ft, const float rho, const float u, const float v, const float w, const float omega, const float LES, const float sdf, const float* cx, const float* cy, const float* cz, const float* wt, const int i, const int j, const int k, const int nx, const int ny, const int nz, const float* uList, const float* vList, const float* wList)
+float CSsmagorinskyTauSGS(const float* ft, const float rho, const float u, const float v, const float w, const float omega, const float LES, const float sdf, const float* cx, const float* cy, const float* cz, const float* wt, const int i, const int j, const int k, const int nx, const int ny, const int nz, const __global float* uList, const __global float* vList, const __global float* wList)
 {   
     // float Cs = 0.1f;// 0.1--0.2
     // float Cs = 0.2f;// 0.1--0.2
@@ -2273,7 +2273,7 @@ float CSsmagorinskyTauSGS(const float* ft, const float rho, const float u, const
     return tauSGS;
 }
 
-float tauSpongeZone(const float spzWidth, const int* boundary1List, const int* boundary2List, const int* boundary3List, const float omega, const float tauSGS, const int i, const int j, const int k, const int nx, const int ny, const int nz)
+float tauSpongeZone(const float spzWidth, const __global int* boundary1List, const __global int* boundary2List, const __global int* boundary3List, const float omega, const float tauSGS, const int i, const int j, const int k, const int nx, const int ny, const int nz)
 {
     float tau = 1.f/omega;
     int icX0 = index1d(0,ny/2,nz/2,nx,ny);
@@ -2352,7 +2352,7 @@ float collisionBGK(float* fTmp, const float* ft, const float rho, const float u,
 }
 
 
-float collisionCumulantGeier(float* fTmp, const float* ft, const float rho, float u, float v, float w, const float tau, const float tauSGS, const float omegaB, const float clim, const float dpdx, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int elements)
+float collisionCumulantGeier(__global float* fTmp, const float* ft, const float rho, float u, float v, float w, const float tau, const float tauSGS, const float omegaB, const float clim, const float dpdx, const float* cx, const float* cy, const float* cz, const float* wt, const int ic, const int elements)
 {
     const float sqrCs = 1.f/3.f;
     const float quadCs = 1.f/9.f;
@@ -2693,7 +2693,7 @@ float collisionCumulantGeier(float* fTmp, const float* ft, const float rho, floa
     fTmp[26*elements +ic] = fm1m11;
 }
 
-void updateRhoUVW(const float* ft, float* rhoList, float* uList, float* vList, float* wList, const int ic, const float dpdx)
+void updateRhoUVW(const float* ft, __global float* rhoList, __global float* uList, __global float* vList, __global float* wList, const int ic, const float dpdx)
 {
     float rho = 0.0f;
     float u = 0.0f;
