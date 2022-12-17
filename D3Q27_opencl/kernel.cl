@@ -1841,24 +1841,23 @@ void internalWallBC(float* ft, const __global float* f, __global float* Fwx, __g
                 int qbb = reflectQ(q);
                 int bbQID = idf(qbb, ic, nx, ny, nz);
                 
-                ft[q] = f[bbQID]; // Simple Bounce-Back               
+                // ft[q] = f[bbQID]; // Simple Bounce-Back               
 
                 //- Interpolated Bounce Back (Unstable for hi Reynolds number flows)
-                // const float sdf0 = sdf;
-                // const float sdf1 = sdfList[upID[q]];
-                // const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
+                const float sdf0 = sdf;
+                const float sdf1 = sdfList[upID[q]];
+                const float qf = fabs(sdf0)/(fabs(sdf0)+fabs(sdf1));
 
-                // int upQID = idf(q, upID[qbb], nx, ny, nz);
-                // int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
+                float tau = 1.f/omega;
+                float omegaEff = 1.f/(tau +tauSGS);
 
-                
-                // float tau = 1.f/omega;
-                // float omegaEff = 1.f/(tau +tauSGS);
+                int upQID = idf(q, upID[qbb], nx, ny, nz);
+                int upQBBID = idf(qbb, upID[qbb], nx, ny, nz);
 
-                // float uSqr =u*u+v*v+w*w;
+                float uSqr =u*u+v*v+w*w;
 
-                // if(qf <= 0.5f)
-                // {
+                if(qf <= 0.5f)
+                {
                     // ft[q] = (1.f -2.f*qf)*ft[qbb] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back
                     // ft[q] = (1.f -2.f*qf)*f[upQBBID] +(qf*f[bbQID])*2.f; // Bouzidi et al.'s Interpolated Bounce-Back (local)
 
@@ -1868,27 +1867,25 @@ void internalWallBC(float* ft, const __global float* f, __global float* Fwx, __g
                     // float chi = omegaEff*(2.f*qf -1.f)/(1.f-omegaEff);
 
                     //- Mei, Luo and Shyy's modification for FHIBB
-                    // float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
-                    // float ufDotC = -uList[upID[qbb]]*cx[q]-vList[upID[qbb]]*cy[q]-wList[upID[qbb]]*cz[q];
-                    // float feq = (rho+3.0f*ufDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
-                    // float chi = omegaEff*(2.f*qf -1.f)/(1.f-2.f*omegaEff);
+                    float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                    float ufDotC = -uList[upID[qbb]]*cx[q]-vList[upID[qbb]]*cy[q]-wList[upID[qbb]]*cz[q];
+                    float feq = (rho+3.0f*ufDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                    float chi = omegaEff*(2.f*qf -1.f)/(1.f-2.f*omegaEff);
 
-                    // ft[q] = (1.f -chi)*f[bbQID] +chi*feq;
-                    
-                    // ft[q] = f[bbQID]; // Simple Bounce-Back               
-                // }
-                // else
-                // {
+                    ft[q] = (1.f -chi)*f[bbQID] +chi*feq;
+                }
+                else
+                {
                     // ft[q] = (1.f -0.5f/qf)*ft[upQID] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back
                     // ft[q] = (1.f -0.5f/qf)*f[q] +(0.5f/qf)*f[bbQID]; // Bouzidi et al.'s Interpolated Bounce-Back (local)
 
-                    //- Filippova & Hanel's Interpolated Bounce-Back (physically local)
-                //     float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
-                //     float feq = (rho+3.0f*(1.f -1.f/qf)*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
-                //     float chi = omegaEff*(2.f*qf -1.f);
+                    // - Filippova & Hanel's Interpolated Bounce-Back (physically local)
+                    float uDotC = -u*cx[q]-v*cy[q]-w*cz[q];
+                    float feq = (rho+3.0f*(1.f -1.f/qf)*uDotC +4.5f*uDotC*uDotC -1.5f*uSqr)*wt[q];
+                    float chi = omegaEff*(2.f*qf -1.f);
 
-                //     ft[q] = (1.f -chi)*f[bbQID] +chi*feq; 
-                // }
+                    ft[q] = (1.f -chi)*f[bbQID] +chi*feq; 
+                }
                 //--
 
                 Fwx[ic] += -(f[bbQID] + ft[q])*cx[q];
