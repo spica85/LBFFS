@@ -2825,163 +2825,163 @@ __kernel void k_streamingCollision // Pull
     }
 }
 
-// __kernel void k_Gwall
-// (
-//     __global float* rho,
-//     __global float* u, __global float* v, __global float* w,
-//     __global float* movingSTLcList,
-//     __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
-//     const int nMovingSTL,
-//     const int nx, const int ny, const int nz,
-//     const float uMovingTrans, const float vMovingTrans, const float wMovingTrans,
-//     const float rotX, const float rotY, const float rotZ,
-//     const float rotAxisX, const float rotAxisY, const float rotAxisZ,
-//     const float rotOmega
-// )
-// {
-//     int iMSTL = get_global_id(0);
+__kernel void k_Gwall
+(
+    __global float* rho,
+    __global float* u, __global float* v, __global float* w,
+    __global float* movingSTLcList,
+    __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
+    const int nMovingSTL,
+    const int nx, const int ny, const int nz,
+    const float uMovingTrans, const float vMovingTrans, const float wMovingTrans,
+    const float rotX, const float rotY, const float rotZ,
+    const float rotAxisX, const float rotAxisY, const float rotAxisZ,
+    const float rotOmega
+)
+{
+    int iMSTL = get_global_id(0);
 
-//     float u0 = uMovingTrans;
-//     float v0 = vMovingTrans;
-//     float w0 = wMovingTrans;
+    float u0 = uMovingTrans;
+    float v0 = vMovingTrans;
+    float w0 = wMovingTrans;
 
-//     float uMovingWall = 0.f;
-//     float vMovingWall = 0.f;
-//     float wMovingWall = 0.f;
+    float uMovingWall = 0.f;
+    float vMovingWall = 0.f;
+    float wMovingWall = 0.f;
 
-//     float wallX = movingSTLcList[3*iMSTL];
-//     float wallY = movingSTLcList[3*iMSTL+1];
-//     float wallZ = movingSTLcList[3*iMSTL+2];
+    float wallX = movingSTLcList[3*iMSTL];
+    float wallY = movingSTLcList[3*iMSTL+1];
+    float wallZ = movingSTLcList[3*iMSTL+2];
 
-//     int i = (int)(wallX);
-//     int j = (int)(wallY);
-//     int k = (int)(wallZ);
+    int i = (int)(wallX);
+    int j = (int)(wallY);
+    int k = (int)(wallZ);
 
-//     float uMovingRot = 0.f;
-//     float vMovingRot = 0.f;
-//     float wMovingRot = 0.f;
-//     Urot(wallX, wallY, wallZ, rotX, rotY, rotZ, rotAxisX, rotAxisY, rotAxisZ, rotOmega, &uMovingRot, &vMovingRot, &wMovingRot);
+    float uMovingRot = 0.f;
+    float vMovingRot = 0.f;
+    float wMovingRot = 0.f;
+    Urot(wallX, wallY, wallZ, rotX, rotY, rotZ, rotAxisX, rotAxisY, rotAxisZ, rotOmega, &uMovingRot, &vMovingRot, &wMovingRot);
 
-//     u0 += uMovingRot;
-//     v0 += vMovingRot;
-//     w0 += wMovingRot;
+    u0 += uMovingRot;
+    v0 += vMovingRot;
+    w0 += wMovingRot;
 
-//     if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
-//     {
-//         int icM = index1d(i,j,k,nx,ny);
+    if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
+    {
+        int icM = index1d(i,j,k,nx,ny);
 
-//         for(int iBox = 0; iBox < 8; iBox++)
-//         {
-//             int icBoxPoint = icBox(icM, iBox, nx, ny, nz);
+        for(int iBox = 0; iBox < 8; iBox++)
+        {
+            int icBoxPoint = icBox(icM, iBox, nx, ny, nz);
 
-//             if(icBoxPoint != -1)
-//             {
-//                 int iBox = ic2i(icBoxPoint,nx,ny);
-//                 int jBox = ic2j(icBoxPoint,nx,ny); 
-//                 int kBox = ic2k(icBoxPoint,nx,ny); 
+            if(icBoxPoint != -1)
+            {
+                int iBox = ic2i(icBoxPoint,nx,ny);
+                int jBox = ic2j(icBoxPoint,nx,ny); 
+                int kBox = ic2k(icBoxPoint,nx,ny); 
 
-//                 float delta =   (1.f -fabs(iBox -wallX))
-//                                 *(1.f -fabs(jBox -wallY))
-//                                 *(1.f -fabs(kBox -wallZ));
+                float delta =   (1.f -fabs(iBox -wallX))
+                                *(1.f -fabs(jBox -wallY))
+                                *(1.f -fabs(kBox -wallZ));
                 
-//                 uMovingWall += u[icBoxPoint]*delta;
-//                 vMovingWall += v[icBoxPoint]*delta;
-//                 wMovingWall += w[icBoxPoint]*delta;
-//             }
-//         }
-//     }
-//     GxMovingWall[iMSTL] = u0 -uMovingWall;
-//     GyMovingWall[iMSTL] = v0 -vMovingWall;
-//     GzMovingWall[iMSTL] = w0 -wMovingWall;
-// }
+                uMovingWall += u[icBoxPoint]*delta;
+                vMovingWall += v[icBoxPoint]*delta;
+                wMovingWall += w[icBoxPoint]*delta;
+            }
+        }
+    }
+    GxMovingWall[iMSTL] = u0 -uMovingWall;
+    GyMovingWall[iMSTL] = v0 -vMovingWall;
+    GzMovingWall[iMSTL] = w0 -wMovingWall;
+}
 
-// __kernel void k_Gibm
-// (
-//     __global float* rho,
-//     __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
-//     __global float* movingSTLcList,
-//     __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
-//     const int nMovingSTL,
-//     const int nx, const int ny, const int nz,
-//     const float uMovingTrans, const float vMovingTrans, const float wMovingTrans,
-//     const float rotX, const float rotY, const float rotZ,
-//     const float rotAxisX, const float rotAxisY, const float rotAxisZ,
-//     const float rotOmega
-// )
-// {
-//     int iMSTL = get_global_id(0);
+__kernel void k_Gibm
+(
+    __global float* rho,
+    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
+    __global float* movingSTLcList,
+    __global float* GxMovingWall, __global float* GyMovingWall, __global float* GzMovingWall,
+    const int nMovingSTL,
+    const int nx, const int ny, const int nz,
+    const float uMovingTrans, const float vMovingTrans, const float wMovingTrans,
+    const float rotX, const float rotY, const float rotZ,
+    const float rotAxisX, const float rotAxisY, const float rotAxisZ,
+    const float rotOmega
+)
+{
+    int iMSTL = get_global_id(0);
 
-//     int i = (int)(movingSTLcList[3*iMSTL]);
-//     int j = (int)(movingSTLcList[3*iMSTL+1]);
-//     int k = (int)(movingSTLcList[3*iMSTL+2]);
+    int i = (int)(movingSTLcList[3*iMSTL]);
+    int j = (int)(movingSTLcList[3*iMSTL+1]);
+    int k = (int)(movingSTLcList[3*iMSTL+2]);
 
-//     float u0 = uMovingTrans;
-//     float v0 = vMovingTrans;
-//     float w0 = wMovingTrans;
+    float u0 = uMovingTrans;
+    float v0 = vMovingTrans;
+    float w0 = wMovingTrans;
 
-//     if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
-//     {
-//         int icM = index1d(i,j,k,nx,ny);
+    if(i >= 0 && i < nx && j >= 0 && j < ny && k >= 0 && k < nz)
+    {
+        int icM = index1d(i,j,k,nx,ny);
 
-//         for(int iBox = 0; iBox < 8; iBox++)
-//         {
-//             int icBoxPoint = icBox(icM, iBox, nx, ny, nz);
+        for(int iBox = 0; iBox < 8; iBox++)
+        {
+            int icBoxPoint = icBox(icM, iBox, nx, ny, nz);
 
-//             if(icBoxPoint != -1)
-//             {
-//                 int iBox = ic2i(icBoxPoint,nx,ny);
-//                 int jBox = ic2j(icBoxPoint,nx,ny); 
-//                 int kBox = ic2k(icBoxPoint,nx,ny); 
+            if(icBoxPoint != -1)
+            {
+                int iBox = ic2i(icBoxPoint,nx,ny);
+                int jBox = ic2j(icBoxPoint,nx,ny); 
+                int kBox = ic2k(icBoxPoint,nx,ny); 
 
-//                 float delta =   (1.f -fabs(iBox -movingSTLcList[3*iMSTL]))
-//                                 *(1.f -fabs(jBox -movingSTLcList[3*iMSTL+1]))
-//                                 *(1.f -fabs(kBox -movingSTLcList[3*iMSTL+2]));
+                float delta =   (1.f -fabs(iBox -movingSTLcList[3*iMSTL]))
+                                *(1.f -fabs(jBox -movingSTLcList[3*iMSTL+1]))
+                                *(1.f -fabs(kBox -movingSTLcList[3*iMSTL+2]));
                 
-//                 GxIBM[icBoxPoint] = atom_add_float(&GxIBM[icBoxPoint],GxMovingWall[iMSTL]*delta);
-//                 GyIBM[icBoxPoint] = atom_add_float(&GyIBM[icBoxPoint],GyMovingWall[iMSTL]*delta);
-//                 GzIBM[icBoxPoint] = atom_add_float(&GzIBM[icBoxPoint],GzMovingWall[iMSTL]*delta);
-//             }
-//         }
-//     }
+                GxIBM[icBoxPoint] = atom_add_float(&GxIBM[icBoxPoint],GxMovingWall[iMSTL]*delta);
+                GyIBM[icBoxPoint] = atom_add_float(&GyIBM[icBoxPoint],GyMovingWall[iMSTL]*delta);
+                GzIBM[icBoxPoint] = atom_add_float(&GzIBM[icBoxPoint],GzMovingWall[iMSTL]*delta);
+            }
+        }
+    }
     
-//     movingSTLcList[3*iMSTL] += u0;
-//     movingSTLcList[3*iMSTL+1] += v0;
-//     movingSTLcList[3*iMSTL+2] += w0;
+    movingSTLcList[3*iMSTL] += u0;
+    movingSTLcList[3*iMSTL+1] += v0;
+    movingSTLcList[3*iMSTL+2] += w0;
 
-//     float wallX = movingSTLcList[3*iMSTL];
-//     float wallY = movingSTLcList[3*iMSTL+1];
-//     float wallZ = movingSTLcList[3*iMSTL+2];
+    float wallX = movingSTLcList[3*iMSTL];
+    float wallY = movingSTLcList[3*iMSTL+1];
+    float wallZ = movingSTLcList[3*iMSTL+2];
 
-//     Xrot(wallX, wallY, wallZ, rotX, rotY, rotZ, rotAxisX, rotAxisY, rotAxisZ, rotOmega, &wallX, &wallY, &wallZ);
-//     movingSTLcList[3*iMSTL] = wallX;
-//     movingSTLcList[3*iMSTL+1] = wallY;
-//     movingSTLcList[3*iMSTL+2] = wallZ;
-// }
+    Xrot(wallX, wallY, wallZ, rotX, rotY, rotZ, rotAxisX, rotAxisY, rotAxisZ, rotOmega, &wallX, &wallY, &wallZ);
+    movingSTLcList[3*iMSTL] = wallX;
+    movingSTLcList[3*iMSTL+1] = wallY;
+    movingSTLcList[3*iMSTL+2] = wallZ;
+}
 
-// __kernel void k_Force
-// (
-//     __global float* fTmp,
-//     __global float* solid,
-//     __global float* rho,
-//     __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
-//     const unsigned elements
-// )
-// {
-//     int ic = get_global_id(0);
+__kernel void k_Force
+(
+    __global float* fTmp,
+    __global float* solid,
+    __global float* rho,
+    __global float* GxIBM, __global float* GyIBM, __global float* GzIBM,
+    const unsigned elements
+)
+{
+    int ic = get_global_id(0);
 
-//     float wt[19] = {1.0f/3.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/18.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f, 1.0f/36.0f};
+    float wt[27] = {8.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 2.0/27.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/54.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0, 1.0/216.0};
 
-//     //                 0     1      2     3      4     5      6     7      8      9     10    11     12     13     14    15     16     17     18
-//     float cx[19] = {0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f, 1.0f, -1.0f,  1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f};
-//     float cy[19] = {0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f,  1.0f, -1.0f};
-//     float cz[19] = {0.0f, 0.0f,  0.0f, 0.0f,  0.0f, 1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  0.0f, 1.0f, -1.0f, -1.0f,  1.0f, 1.0f, -1.0f, -1.0f,  1.0f};
+    //                 0    1     2    3    4     5     6    7     8     9    10    11    12    13    14   15    16    17    18   19    20    21    22    23    24    25   26
+    float cx[27] = {0.f, 1.f, -1.f, 0.f,  0.f,  0.f,  0.f, 1.f, -1.f,  1.f, -1.f,  1.f, -1.f,  1.f, -1.f, 0.f,  0.f,  0.f,  0.f, 1.f, -1.f, -1.f,  1.f,  1.f, -1.f,  1.f, -1.f};
+    float cy[27] = {0.f, 0.f,  0.f, 1.f, -1.f,  0.f,  0.f, 1.f, -1.f, -1.f,  1.f,  0.f,  0.f,  0.f,  0.f, 1.f, -1.f,  1.f, -1.f, 1.f, -1.f,  1.f, -1.f, -1.f,  1.f,  1.f, -1.f};
+    float cz[27] = {0.f, 0.f,  0.f, 0.f,  0.f,  1.f, -1.f, 0.f,  0.f,  0.f,  0.f,  1.f, -1.f, -1.f,  1.f, 1.f, -1.f, -1.f,  1.f, 1.f, -1.f,  1.f, -1.f,  1.f, -1.f, -1.f,  1.f};
 
-//     if(solid[ic] == 0)
-//     {
-//         for(int q = 0; q < 19; q++)
-//         {
-//             int qic = q*elements +ic;
-//             fTmp[qic] += rho[ic]*wt[q]*3.0f*(GxIBM[ic]*cx[q] +GyIBM[ic]*cy[q] +GzIBM[ic]*cz[q]);
-//         }
-//     }
-// }
+    if(solid[ic] == 0)
+    {
+        for(int q = 0; q < 27; q++)
+        {
+            int qic = q*elements +ic;
+            fTmp[qic] += rho[ic]*wt[q]*3.0f*(GxIBM[ic]*cx[q] +GyIBM[ic]*cy[q] +GzIBM[ic]*cz[q]);
+        }
+    }
+}
